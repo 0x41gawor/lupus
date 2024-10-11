@@ -7,7 +7,6 @@
   <br>
 </p>
 
-
 ## Architecture
 
 ![](../img/3.png)
@@ -18,4 +17,10 @@
 
 ### Decision CR
 
-```yaml
+# My notes
+
+Takich uzywałem do robienia api:
+
+```sh
+ kubebuilder create api --group lupus --version v1 --kind Execute
+```

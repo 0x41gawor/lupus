@@ -25,11 +25,6 @@ import (
 
 // DecisionSpec defines the desired state of Decision
 type DecisionSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of Decision. Edit decision_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
 }
 
 // Input defines the 4 integer fields for different locations

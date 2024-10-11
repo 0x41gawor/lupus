@@ -1,0 +1,23 @@
+# permissions for end users to view executes.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: lupus
+    app.kubernetes.io/managed-by: kustomize
+  name: execute-viewer-role
+rules:
+- apiGroups:
+  - lupus.gawor.io
+  resources:
+  - executes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - lupus.gawor.io
+  resources:
+  - executes/status
+  verbs:
+  - get

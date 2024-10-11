@@ -2,4 +2,5 @@
 resources:
 - lupus_v1_monitor.yaml
 - lupus_v1_decision.yaml
+- lupus_v1_execute.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples

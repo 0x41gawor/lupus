@@ -1,15 +1,16 @@
----
+# permissions for end users to edit executes.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: manager-role
+  labels:
+    app.kubernetes.io/name: lupus
+    app.kubernetes.io/managed-by: kustomize
+  name: execute-editor-role
 rules:
 - apiGroups:
   - lupus.gawor.io
   resources:
-  - decisions
   - executes
-  - monitors
   verbs:
   - create
   - delete
@@ -21,18 +22,6 @@ rules:
 - apiGroups:
   - lupus.gawor.io
   resources:
-  - decisions/finalizers
-  - executes/finalizers
-  - monitors/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - lupus.gawor.io
-  resources:
-  - decisions/status
   - executes/status
-  - monitors/status
   verbs:
   - get
-  - patch
-  - update

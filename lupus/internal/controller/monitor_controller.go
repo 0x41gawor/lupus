@@ -70,7 +70,7 @@ func (r *MonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	poznan := monitor.Status.Poznan
 	warsaw := monitor.Status.Warsaw
 
-	// Create or fetch the Decision resource with name "piotrek" in the "default" namespace
+	// Fetch the Decision resource with name "piotrek" in the "default" namespace
 	decisionName := "piotrek"
 	decisionNamespace := "default"
 

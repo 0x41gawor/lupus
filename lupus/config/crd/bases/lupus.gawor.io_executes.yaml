@@ -4,20 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.16.1
-  name: decisions.lupus.gawor.io
+  name: executes.lupus.gawor.io
 spec:
   group: lupus.gawor.io
   names:
-    kind: Decision
-    listKind: DecisionList
-    plural: decisions
-    singular: decision
+    kind: Execute
+    listKind: ExecuteList
+    plural: executes
+    singular: execute
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: Decision is the Schema for the decisions API
+        description: Execute is the Schema for the executes API
         properties:
           apiVersion:
             description: |-
@@ -37,12 +37,12 @@ spec:
           metadata:
             type: object
           spec:
-            description: DecisionSpec defines the desired state of Decision
+            description: ExecuteSpec defines the desired state of Execute
             type: object
           status:
-            description: DecisionStatus defines the observed state of Decision
+            description: ExecuteStatus defines the observed state of Execute
             properties:
-              decision:
+              input:
                 items:
                   description: MoveCommand represents a move command with source,
                     destination, and count
@@ -59,23 +59,6 @@ spec:
                   - to
                   type: object
                 type: array
-              input:
-                description: Input defines the 4 integer fields for different locations
-                properties:
-                  gdansk:
-                    type: integer
-                  krakow:
-                    type: integer
-                  poznan:
-                    type: integer
-                  warsaw:
-                    type: integer
-                required:
-                - gdansk
-                - krakow
-                - poznan
-                - warsaw
-                type: object
             required:
             - input
             type: object

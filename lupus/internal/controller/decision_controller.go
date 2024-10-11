@@ -139,6 +139,28 @@ func (r *DecisionReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	logger.Info("Successfully updated Decision with MoveCommands", "MoveCommands", moveCommands)
 
+	// Fetch Execute resource with name "krzysiek" in the "default" namespace
+	executeName := "krzysiek"
+	executeNamespace := "default"
+
+	var execute lupusv1.Execute
+	err := r.Get(ctx, client.ObjectKey{Name: executeName, Namespace: executeNamespace}, &execute)
+
+	if err != nil {
+		logger.Error(err, "Failed to get Execute resource.")
+		return ctrl.Result{}, err
+	}
+
+	execute.Status.Input = moveCommands
+
+	err = r.Status().Update(ctx, &execute)
+	if err != nil {
+		logger.Error(err, "Failed to update Execute status.")
+		return ctrl.Result{}, err
+	}
+
+	logger.Info("Successfully updated Execute with MoveCommands", "MoveCommands", moveCommands)
+
 	return ctrl.Result{}, nil
 }
 
