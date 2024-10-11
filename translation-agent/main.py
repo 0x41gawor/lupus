@@ -55,7 +55,8 @@ def update_monitor_status(data):
 def monitor_update():
     try:
         data = request.get_json()  # Get the JSON data from the request
-        logging.info(f"Got data: {data}")
+        formatted_data = "{" + ", ".join([f"{city}: {value: >2}" for city, value in data.items()]) + "}"
+        logging.info(f"Got data: {formatted_data}")
         update_monitor_status(data)  # Call the function to update the Kubernetes resource
         return jsonify({'message': 'Monitor status updated successfully'}), 200
     except Exception as e:

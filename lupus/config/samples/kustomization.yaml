@@ -1,4 +1,5 @@
 ## Append samples of your project ##
 resources:
 - lupus_v1_monitor.yaml
+- lupus_v1_decision.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples

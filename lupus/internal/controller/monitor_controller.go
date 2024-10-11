@@ -19,12 +19,15 @@ package controller
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	lupusv1 "github.com/0x41gawor/lupus/api/v1"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // MonitorReconciler reconciles a Monitor object
@@ -47,10 +50,70 @@ type MonitorReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
 func (r *MonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	// Create a logger from the context
+	logger := log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	// Fetch the Monitor instance
+	var monitor lupusv1.Monitor
+	if err := r.Get(ctx, req.NamespacedName, &monitor); err != nil {
+		if errors.IsNotFound(err) {
+			logger.Info("Monitor resource not found. Ignoring since object must be deleted.")
+			return ctrl.Result{}, nil
+		}
+		logger.Error(err, "Failed to get Monitor resource.")
+		return ctrl.Result{}, err
+	}
 
+	// Extract Gdansk, Krakow, Poznan, and Warsaw values from the Monitor's status
+	gdansk := monitor.Status.Gdansk
+	krakow := monitor.Status.Krakow
+	poznan := monitor.Status.Poznan
+	warsaw := monitor.Status.Warsaw
+
+	// Create or fetch the Decision resource with name "piotrek" in the "default" namespace
+	decisionName := "piotrek"
+	decisionNamespace := "default"
+
+	var decision lupusv1.Decision
+	err := r.Get(ctx, client.ObjectKey{Name: decisionName, Namespace: decisionNamespace}, &decision)
+	if err != nil && errors.IsNotFound(err) {
+		// Decision resource not found, so let's create a new one
+		decision = lupusv1.Decision{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      decisionName,
+				Namespace: decisionNamespace,
+			},
+			Spec: lupusv1.DecisionSpec{
+				// Add any relevant Spec fields here if required
+			},
+		}
+	} else if err != nil {
+		// Handle errors other than NotFound
+		logger.Error(err, "Failed to get Decision resource.")
+		return ctrl.Result{}, err
+	}
+
+	// Set the fields in the Decision resource's status
+	decision.Status.Input = lupusv1.Input{
+		Gdansk: gdansk,
+		Krakow: krakow,
+		Poznan: poznan,
+		Warsaw: warsaw,
+	}
+
+	// Update or create the Decision resource
+	if err == nil && errors.IsNotFound(err) {
+		logger.Error(err, "Failed to create new Decision resource.")
+		return ctrl.Result{}, err
+	} else {
+		// Update the existing Decision resource
+		if err := r.Status().Update(ctx, &decision); err != nil {
+			logger.Error(err, "Failed to update Decision status.")
+			return ctrl.Result{}, err
+		}
+	}
+
+	logger.Info("MONITOR: Successfully reconciled Monitor and updated Decision resource.")
 	return ctrl.Result{}, nil
 }
 

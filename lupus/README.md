@@ -6,3 +6,16 @@
   <i>Platform for closed control loops deployment on Kubernetes</i>
   <br>
 </p>
+
+
+## Architecture
+
+![](../img/3.png)
+
+### Monitor CR
+
+![](../img/4.png)
+
+### Decision CR
+
+```yaml
