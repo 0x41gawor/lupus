@@ -89,8 +89,12 @@ func (ns *NodeSessions) MoveHandler(w http.ResponseWriter, r *http.Request) {
 		ns.mu.Unlock()
 		log.Printf("Got move command: %+v", cmd.String())
 		log.Printf("%-10s %s", fmt.Sprintf("Round %d:", round), ns.String())
+		// Return success response
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Move command executed successfully")) // Optionally send a message
 	} else {
-		http.Error(w, "Invalid move command", http.StatusBadRequest)
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Move command cannot be executed")) // Optionally send a message
 	}
 }
 
