@@ -17,8 +17,12 @@ limitations under the License.
 package controller
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"net/http"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -46,10 +50,49 @@ type ExecuteReconciler struct {
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
-func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
 
-	// TODO(user): your logic here
+func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	logger := log.FromContext(ctx)
+
+	// Fetch the Execute instance
+	var execute lupusv1.Execute
+	if err := r.Get(ctx, req.NamespacedName, &execute); err != nil {
+		if errors.IsNotFound(err) {
+			// Execute resource not found, no need to reconcile
+			logger.Info("Execute resource not found. Ignoring since object must be deleted.")
+			return ctrl.Result{}, nil
+		}
+		logger.Error(err, "Failed to get Execute")
+		return ctrl.Result{}, err
+	}
+
+	// Extract the input list of MoveCommand from Execute's status
+	inputCommands := execute.Status.Input
+
+	// Iterate over each MoveCommand and send an HTTP request
+	for _, moveCommand := range inputCommands {
+		// Convert MoveCommand to JSON
+		jsonData, err := json.Marshal(moveCommand)
+		if err != nil {
+			logger.Error(err, "Failed to marshal MoveCommand to JSON")
+			return ctrl.Result{}, err
+		}
+
+		// Send HTTP POST request to 'http://localhost:4141/api/move'
+		resp, err := http.Post("http://localhost:4141/api/move", "application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			logger.Error(err, "Failed to send HTTP request")
+			return ctrl.Result{}, err
+		}
+		defer resp.Body.Close()
+
+		// Log the HTTP response
+		if resp.StatusCode != http.StatusOK {
+			logger.Error(nil, "Received non-OK response from API", "statusCode", resp.StatusCode)
+		} else {
+			logger.Info("Successfully sent MoveCommand", "From", moveCommand.From, "To", moveCommand.To, "Count", moveCommand.Count)
+		}
+	}
 
 	return ctrl.Result{}, nil
 }
