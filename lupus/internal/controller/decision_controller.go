@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"math"
+	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -33,6 +34,8 @@ import (
 type DecisionReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+
+	LastUpdated time.Time
 }
 
 // distributeLoad takes the Input struct and generates a list of MoveCommand
@@ -109,6 +112,8 @@ func distributeLoad(input lupusv1.Input) []lupusv1.MoveCommand {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
 func (r *DecisionReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
+	logger.Info("=================== START OF DECISION Reconciler")
+	println(r.LastUpdated.String())
 
 	// Fetch the Decision instance
 	var decision lupusv1.Decision
@@ -121,6 +126,18 @@ func (r *DecisionReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		logger.Error(err, "Failed to get Decision")
 		return ctrl.Result{}, err
 	}
+	// If the status of resourcew was not set in cluster, there is no need to reconcile
+	if decision.Status.LastUpdated.Time.IsZero() {
+		logger.Info("No need to reconcile DECISION")
+		return ctrl.Result{}, nil
+	}
+	// If the status last update time is not highger (not after) the time of last update, there no need to reconcile
+	if !r.LastUpdated.IsZero() && !decision.Status.LastUpdated.Time.After(r.LastUpdated) {
+		logger.Info("No need to reconcile DECISION")
+		return ctrl.Result{}, nil
+	}
+	// If we reconcile then set the controller's last updated time same as in the resource spec
+	r.LastUpdated = decision.Status.LastUpdated.Time
 
 	// Extract the Input field from Decision's status
 	input := decision.Status.Input
@@ -152,6 +169,7 @@ func (r *DecisionReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	execute.Status.Input = moveCommands
+	execute.Status.LastUpdated = decision.Status.LastUpdated
 
 	err = r.Status().Update(ctx, &execute)
 	if err != nil {

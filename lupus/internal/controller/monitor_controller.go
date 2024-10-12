@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -34,6 +35,8 @@ import (
 type MonitorReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+
+	LastUpdated time.Time
 }
 
 // +kubebuilder:rbac:groups=lupus.gawor.io,resources=monitors,verbs=get;list;watch;create;update;patch;delete
@@ -52,6 +55,8 @@ type MonitorReconciler struct {
 func (r *MonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	// Create a logger from the context
 	logger := log.FromContext(ctx)
+	logger.Info("=================== START OF MONITOR Reconciler: ")
+	println(r.LastUpdated.String())
 
 	// Fetch the Monitor instance
 	var monitor lupusv1.Monitor
@@ -63,6 +68,18 @@ func (r *MonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		logger.Error(err, "Failed to get Monitor resource.")
 		return ctrl.Result{}, err
 	}
+	// If the status of resourcew was not set in cluster, there is no need to reconcile
+	if monitor.Status.LastUpdated.Time.IsZero() {
+		logger.Info("No need to reconcile MONITOR")
+		return ctrl.Result{}, nil
+	}
+	// If the status last update time is not highger (not after) the time of last update, there no need to reconcile
+	if !r.LastUpdated.IsZero() && !monitor.Status.LastUpdated.Time.After(r.LastUpdated) {
+		logger.Info("No need to reconcile MONITOR")
+		return ctrl.Result{}, nil
+	}
+	// If we reconcile then set the controller's last updated time same as in the resource spec
+	r.LastUpdated = monitor.Status.LastUpdated.Time
 
 	// Extract Gdansk, Krakow, Poznan, and Warsaw values from the Monitor's status
 	gdansk := monitor.Status.Gdansk
@@ -100,6 +117,7 @@ func (r *MonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		Poznan: poznan,
 		Warsaw: warsaw,
 	}
+	decision.Status.LastUpdated = monitor.Status.LastUpdated
 
 	// Update or create the Decision resource
 	if err == nil && errors.IsNotFound(err) {

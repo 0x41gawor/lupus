@@ -59,8 +59,13 @@ spec:
                   - to
                   type: object
                 type: array
+              lastUpdated:
+                description: Timestamp of the last update
+                format: date-time
+                type: string
             required:
             - input
+            - lastUpdated
             type: object
         type: object
     served: true

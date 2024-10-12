@@ -146,7 +146,7 @@ func main() {
 	time.Now().UnixNano()
 
 	sessions := NodeSessions{
-		Counts: map[string]int{"Gdansk": 10, "Poznan": 12, "Warsaw": 18, "Krakow": 6},
+		Counts: map[string]int{"Gdansk": 10, "Poznan": 12, "Warsaw": 25, "Krakow": 4},
 	}
 
 	// HTTP Server for move commands

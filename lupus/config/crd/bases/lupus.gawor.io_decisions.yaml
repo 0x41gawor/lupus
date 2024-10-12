@@ -43,6 +43,7 @@ spec:
             description: DecisionStatus defines the observed state of Decision
             properties:
               decision:
+                description: List of MoveCommand objects
                 items:
                   description: MoveCommand represents a move command with source,
                     destination, and count
@@ -60,7 +61,7 @@ spec:
                   type: object
                 type: array
               input:
-                description: Input defines the 4 integer fields for different locations
+                description: Holds the input object with 4 city fields
                 properties:
                   gdansk:
                     type: integer
@@ -76,8 +77,13 @@ spec:
                 - poznan
                 - warsaw
                 type: object
+              lastUpdated:
+                description: Timestamp of the last update
+                format: date-time
+                type: string
             required:
             - input
+            - lastUpdated
             type: object
         type: object
     served: true

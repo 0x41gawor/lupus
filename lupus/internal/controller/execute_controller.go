@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -35,6 +36,8 @@ import (
 type ExecuteReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+
+	LastUpdated time.Time
 }
 
 // +kubebuilder:rbac:groups=lupus.gawor.io,resources=executes,verbs=get;list;watch;create;update;patch;delete
@@ -53,6 +56,8 @@ type ExecuteReconciler struct {
 
 func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
+	logger.Info("=================== START OF EXECUTE Reconciler: ")
+	println(r.LastUpdated.String())
 
 	// Fetch the Execute instance
 	var execute lupusv1.Execute
@@ -65,6 +70,22 @@ func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		logger.Error(err, "Failed to get Execute")
 		return ctrl.Result{}, err
 	}
+	// If the status of resourcew was not set in cluster, there is no need to reconcile
+	if execute.Status.LastUpdated.Time.IsZero() {
+		logger.Info("No need to reconcile EXECUTE")
+		return ctrl.Result{}, nil
+	}
+	// If the status last update time is not highger (not after) the time of last update, there no need to reconcile
+	if !r.LastUpdated.IsZero() && !execute.Status.LastUpdated.Time.After(r.LastUpdated) {
+		logger.Info("No need to reconcile EXECUTE")
+		return ctrl.Result{}, nil
+	}
+	// If this is the first run of controller without any real requests clear the command clear the status
+	if r.LastUpdated.IsZero() {
+		execute.Status.Input = []lupusv1.MoveCommand{}
+	}
+	// If we reconcile then set the controller's last updated time same as in the resource spec
+	r.LastUpdated = execute.Status.LastUpdated.Time
 
 	// Extract the input list of MoveCommand from Execute's status
 	inputCommands := execute.Status.Input

@@ -44,8 +44,12 @@ type MoveCommand struct {
 
 // DecisionStatus defines the observed state of Decision
 type DecisionStatus struct {
-	Input    Input         `json:"input"`              // Holds the input object with 4 city fields
-	Decision []MoveCommand `json:"decision,omitempty"` // List of MoveCommand objects
+	// Holds the input object with 4 city fields
+	Input Input `json:"input"`
+	// List of MoveCommand objects
+	Decision []MoveCommand `json:"decision,omitempty"`
+	// Timestamp of the last update
+	LastUpdated metav1.Time `json:"lastUpdated"`
 }
 
 // +kubebuilder:object:root=true

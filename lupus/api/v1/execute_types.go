@@ -30,6 +30,8 @@ type ExecuteSpec struct {
 // ExecuteStatus defines the observed state of Execute
 type ExecuteStatus struct {
 	Input []MoveCommand `json:"input"`
+	// Timestamp of the last update
+	LastUpdated metav1.Time `json:"lastUpdated"`
 }
 
 // +kubebuilder:object:root=true

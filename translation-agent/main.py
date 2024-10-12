@@ -23,6 +23,9 @@ logging.basicConfig(
     level=logging.INFO                  # Set the log level
 )
 
+from kubernetes import client
+from datetime import datetime
+
 def update_monitor_status(data):
     # Fetch the custom resource
     monitor = k8s_client.get_namespaced_custom_object(
@@ -33,14 +36,18 @@ def update_monitor_status(data):
         name='adam'
     )
 
+    # Safely fetch the status field (use an empty dict if not present)
+    monitor_status = monitor.get('status', {})
+    
     # Update the status fields with received data
-    monitor['status'] = {
-        'gdansk': data.get('Gdansk', monitor['status'].get('gdansk', 0)),
-        'krakow': data.get('Krakow', monitor['status'].get('krakow', 0)),
-        'poznan': data.get('Poznan', monitor['status'].get('poznan', 0)),
-        'warsaw': data.get('Warsaw', monitor['status'].get('warsaw', 0)),
-        'lastUpdated': datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-    }
+    monitor_status['gdansk'] = data.get('Gdansk', monitor_status.get('gdansk', 0))
+    monitor_status['krakow'] = data.get('Krakow', monitor_status.get('krakow', 0))
+    monitor_status['poznan'] = data.get('Poznan', monitor_status.get('poznan', 0))
+    monitor_status['warsaw'] = data.get('Warsaw', monitor_status.get('warsaw', 0))
+    monitor_status['lastUpdated'] = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    # Assign the updated status back to the monitor object
+    monitor['status'] = monitor_status
 
     # Update the custom resource status
     k8s_client.patch_namespaced_custom_object_status(
@@ -51,6 +58,7 @@ def update_monitor_status(data):
         name='adam',
         body=monitor
     )
+
 
 
 @app.route('/api/monitor', methods=['POST'])
