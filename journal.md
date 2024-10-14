@@ -137,6 +137,10 @@ Open 3 terminals, in each of the go to:
 3. `cd lupus`
 
 ### Steps
+All the steps have to be performed on clear minikube cluster.
+
+> If you were using it run `minikube delete` then `minikube start`).
+
 #### 1. Run Lupus
 In 3rd terminal
 ```sh
@@ -150,12 +154,35 @@ k apply -f config/samples/monitor-adam.yaml
 k apply -f config/samples/decision-piotrek.yaml
 k apply -f config/samples/execute-krzysiek.yaml
 ```
+#### 2. Run monitored-system
+In 1st terminal:
 
-
-### 1st terminal
-Run monitored system with
 ```sh
 go run main.go -interval 60
 ```
-60s interval will give enough time for observations
+> 60s interval will give enough time for observations
 
+### 3. Run translation-agent
+In 2nd terminal:
+
+```sh
+python3 main.py
+```
+
+### 4. Observe
+
+When the interval passes you will observer the action.
+
+![](img/6.png)
+
+After several rounds we will be able to see that `monitored-system` keep the even distribution.
+
+![](img/7.png)
+
+It is done by Lupus sending move commands
+
+![](img/8.png)
+
+Also let's take a look at Lupus's Custom Resources statuses during runtime:
+
+![](img/9.png)
