@@ -186,3 +186,70 @@ It is done by Lupus sending move commands
 Also let's take a look at Lupus's Custom Resources statuses during runtime:
 
 ![](img/9.png)
+
+## What to improve
+
+Recommendations for the next sprint/iteration/version.
+
+- Introduce Root CR 
+- One name for all object belonging to one loop
+- Get rid of translation agent
+- Monitored-System should rather be queried than pushing data itself
+- Fix names of loop elements
+- Abstract the data 
+- (last step) employ the OPA
+
+### Details
+
+- Introduce Root CR 
+	- Instead of manually applying all loop elements, let the Root CR instantiate and manage them
+	- User writes just `k apply -f config/sample/root-adam.yaml`
+	- Spec of Root CR includes spec of Loop Elements
+	- Controller of Root CR instantiates the loop elements
+- One name for all object belonging to one loop
+	- It will be obtained by root CR spec, each child element will inherit the name from loop name
+- Get rid of translation agent
+	- It just forwards what it gets, if any normalisation, extraction etc. has to take place, it should be in `Monitor CR`
+- Monitored-System should rather be queried than pushing data itself 
+	- It is more close-to-the-real-life approach, lots of network elements expose their api for OSS systems
+- Fix names of loop elements
+	- Now the names "Monitor", "Decision", "Execute" are noun-vs-verb non-consistent
+	- Names should be either verbs or nouns
+	- Also let's rethink if ODA should not be used here: Observe, Decide, Act
+- Abstract the data 
+	- Now the controllers are ready for single case, what if the second one arises?
+	- Create the second monitored system same as in https://github.com/dbursztynowski/cloopdemo1
+- (last step) employ the OPA
+	- Instead of the controller has the logic/function of reconcllation move it to the OPA
+	- Go to Notion->Magisterka->23-10-14
+
+
+# 2nd Sprint
+## Blueprints of what to improve
+### Abstract the data 
+- Now the controllers are ready for single case, what if the second one arises?
+- Create the second monitored system same as in https://github.com/dbursztynowski/cloopdemo1
+
+I don't see the application of the example given there. Need to come up with some new one. Maybe let's monitor some app. Tha app runs on some cloud server. It uses its resource as disk as cpu and ram. Since this is cloud server we can freely allocate as much resources as we are using. 
+
+Let the monitored system to report resources in use, and reserved capacity (license).
+```json
+{
+	"cpu": {
+		"in_use": 12,
+		"license": 20
+	}
+	"ram": {
+		"in_use": 8,
+		"license": 8
+	}
+}
+
+As you can see above. cpu is underused in contrast to bought license. We are overpaying much more that is needed. On the other hand, we are barely sticking with the ram. In case of accidental growth of client number, an inaccessibility can occur. 
+
+`in_use` part changes randomly, `license` is something that we, operators of the system have under control.
+
+Our loop will ensure that `license` has always a 20% cap above the `in_use`.
+
+`monitored-system` here is able to receive a command that sets a license for cpu or ram.
+
