@@ -68,7 +68,7 @@ func (r *MonitorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		logger.Error(err, "Failed to get Monitor resource.")
 		return ctrl.Result{}, err
 	}
-	// If the status of resourcew was not set in cluster, there is no need to reconcile
+	// If the status of resource was not set in cluster, there is no need to reconcile
 	if monitor.Status.LastUpdated.Time.IsZero() {
 		logger.Info("No need to reconcile MONITOR")
 		return ctrl.Result{}, nil
