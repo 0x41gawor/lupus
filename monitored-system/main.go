@@ -21,6 +21,11 @@ type MoveCommand struct {
 	To    string `json:"to"`
 }
 
+// MoveCommands wraps a slice of MoveCommand.
+type MoveCommands struct {
+	Commands []MoveCommand `json:"commands"`
+}
+
 // Override String for MoveCommand struct
 func (mc *MoveCommand) String() string {
 	return "{From: " + mc.From + ", To: " + mc.To + ", Count: " + fmt.Sprintf("%d", mc.Count) + "}"
@@ -73,29 +78,35 @@ func (ns *NodeSessions) ApplyRandomChange() {
 }
 
 // Handler of /api/move endpoint
-// This endpoits has to receive MoveCommand json
+// This endpoint now receives MoveCommands json
 func (ns *NodeSessions) MoveHandler(w http.ResponseWriter, r *http.Request) {
-	var cmd MoveCommand
-	if err := json.NewDecoder(r.Body).Decode(&cmd); err != nil {
+	var moveCommands MoveCommands
+	if err := json.NewDecoder(r.Body).Decode(&moveCommands); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Apply the move command if valid
-	if _, ok := ns.Counts[cmd.From]; ok && ns.Counts[cmd.From] >= cmd.Count {
-		ns.mu.Lock()
-		ns.Counts[cmd.From] -= cmd.Count
-		ns.Counts[cmd.To] += cmd.Count
-		ns.mu.Unlock()
-		log.Printf("Got move command: %+v", cmd.String())
-		log.Printf("%-10s %s", fmt.Sprintf("Round %d:", round), ns.String())
-		// Return success response
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Move command executed successfully")) // Optionally send a message
-	} else {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Move command cannot be executed")) // Optionally send a message
+	// Iterate over each MoveCommand in the slice
+	for _, cmd := range moveCommands.Commands {
+		if _, ok := ns.Counts[cmd.From]; ok && ns.Counts[cmd.From] >= cmd.Count {
+			ns.mu.Lock()
+			ns.Counts[cmd.From] -= cmd.Count
+			ns.Counts[cmd.To] += cmd.Count
+			ns.mu.Unlock()
+			log.Printf("Got move command: %+v", cmd.String())
+		} else {
+			log.Printf("Move command cannot be executed: %+v", cmd.String())
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(fmt.Sprintf("Move command cannot be executed: %+v", cmd.String())))
+			return
+		}
 	}
+
+	// Log the updated session counts
+	log.Printf("%-10s %s", fmt.Sprintf("Round %d:", round), ns.String())
+	// Return success response
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Move commands executed successfully")) // Optionally send a message
 }
 
 // ToJSON converts the Counts map to a JSON string
@@ -180,13 +191,8 @@ func main() {
 	for ; true; <-ticker.C {
 		// apply random change on nodes
 		sessions.ApplyRandomChange()
-		// incerement the round number
+		// increment the round number
 		round++
-		// // send the monitor data (node distribution)
-		// err := sessions.SendJSON("http://localhost:4141/api/monitor")
-		// if err != nil {
-		// 	// log.Printf("Error sending JSON: %v", err)
-		// }
 		// log out the current node distribution
 		log.Printf("%-10s %s", fmt.Sprintf("Round %d:", round), sessions.String())
 	}
