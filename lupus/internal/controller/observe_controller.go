@@ -18,12 +18,14 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -71,19 +73,41 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	resp, err := http.Get(url)
 	if err != nil {
 		logger.Info("Error fetching data", "err", err)
-		return ctrl.Result{}, err
+		return ctrl.Result{RequeueAfter: time.Second * time.Duration(observe.Spec.ReconcileTimeInterval)}, nil
 	}
 	defer resp.Body.Close()
 
 	// Step 3: Read and parse the response body into map[string]interface{}
-	var data map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		logger.Info("Error decoding response", "body", err)
-		return ctrl.Result{}, err
+	var data []byte
+	data, err = io.ReadAll(resp.Body)
+	if err != nil {
+		logger.Error(err, "Error decoding response body")
+		return ctrl.Result{RequeueAfter: time.Second * time.Duration(observe.Spec.ReconcileTimeInterval)}, nil
 	}
-	logger.Info(fmt.Sprintf("Data fetched successfully: %+v", data), "data", data)
+	logger.Info(fmt.Sprintf("Data fetched successfully: %s", data), "data", string(data))
 
-	// Step 4: Log success and requeue after 1 minute
+	// Step 4: Fetch nextElement resource
+	resourceName := observe.Spec.Name + "-" + observe.Spec.NextElement
+	resourceNamespace := "default"
+
+	var decide lupusv1.Decide
+	err = r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &decide)
+	if err != nil {
+		logger.Error(err, "Failed to get Decide resource")
+		return ctrl.Result{RequeueAfter: time.Second * time.Duration(observe.Spec.ReconcileTimeInterval)}, nil
+	}
+
+	// Step 5: Set the fields in nextElement resource
+	decide.Status.Input = runtime.RawExtension{Raw: data}
+	decide.Status.LastUpdated = metav1.Now()
+
+	// Step 6: Update the nextElement resource status
+	if err := r.Status().Update(ctx, &decide); err != nil {
+		logger.Error(err, "Failed to update Decide status")
+		return ctrl.Result{RequeueAfter: time.Second * time.Duration(observe.Spec.ReconcileTimeInterval)}, nil
+	}
+
+	// Step 7: Log success and requeue after specified time of seconds
 	logger.Info(fmt.Sprintf("Reconciliation success. Requeue after %d seconds", observe.Spec.ReconcileTimeInterval))
 	return ctrl.Result{RequeueAfter: time.Second * time.Duration(observe.Spec.ReconcileTimeInterval)}, nil
 }

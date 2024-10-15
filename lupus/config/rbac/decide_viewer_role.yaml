@@ -1,35 +1,23 @@
----
+# permissions for end users to view decides.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: manager-role
+  labels:
+    app.kubernetes.io/name: lupus
+    app.kubernetes.io/managed-by: kustomize
+  name: decide-viewer-role
 rules:
 - apiGroups:
   - lupus.gawor.io
   resources:
   - decides
-  - observes
   verbs:
-  - create
-  - delete
   - get
   - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - lupus.gawor.io
   resources:
-  - decides/finalizers
-  - observes/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - lupus.gawor.io
-  resources:
   - decides/status
-  - observes/status
   verbs:
   - get
-  - patch
-  - update
