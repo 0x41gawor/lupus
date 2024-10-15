@@ -135,6 +135,22 @@ func (ns *NodeSessions) SendJSON(url string) error {
 	return nil
 }
 
+// Handler for /api/data endpoint
+// This endpoint will return NodeSessions as JSON
+func (ns *NodeSessions) DataHandler(w http.ResponseWriter, r *http.Request) {
+	// Convert the Counts map to JSON
+	jsonData, err := ns.ToJSON()
+	if err != nil {
+		http.Error(w, "Failed to marshal data", http.StatusInternalServerError)
+		return
+	}
+
+	// Set response header to JSON content type
+	w.Header().Set("Content-Type", "application/json")
+	// Write the JSON response
+	w.Write(jsonData)
+}
+
 var round = 0
 
 func main() {
@@ -149,8 +165,10 @@ func main() {
 		Counts: map[string]int{"Gdansk": 10, "Poznan": 12, "Warsaw": 25, "Krakow": 4},
 	}
 
-	// HTTP Server for move commands
+	// HTTP Server for move commands and data retrieval
 	http.HandleFunc("/api/move", sessions.MoveHandler)
+	http.HandleFunc("/api/data", sessions.DataHandler)
+
 	go func() {
 		if err := http.ListenAndServe(":4040", nil); err != nil {
 			log.Fatalf("Failed to start server: %v", err)
@@ -164,11 +182,11 @@ func main() {
 		sessions.ApplyRandomChange()
 		// incerement the round number
 		round++
-		// send the monitor data (node distribution)
-		err := sessions.SendJSON("http://localhost:4141/api/monitor")
-		if err != nil {
-			// log.Printf("Error sending JSON: %v", err)
-		}
+		// // send the monitor data (node distribution)
+		// err := sessions.SendJSON("http://localhost:4141/api/monitor")
+		// if err != nil {
+		// 	// log.Printf("Error sending JSON: %v", err)
+		// }
 		// log out the current node distribution
 		log.Printf("%-10s %s", fmt.Sprintf("Round %d:", round), sessions.String())
 	}
