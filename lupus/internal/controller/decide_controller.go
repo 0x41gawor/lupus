@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -60,16 +61,38 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	logger.Info("Decide instance fetched successfully")
 	// Step 2: Check if status of Decide is empty, if yes it is the first run and reconciler shoudl return
 	if decide.Status.LastUpdated.IsZero() {
+		logger.Info("No need to reconcile")
 		return ctrl.Result{}, nil
 	}
-	// // Step 3: Pass data into OPA
-	// input := decide.Status.Input
-	// // here the call to OPA will occur
-	// output, err := opaSimulation(input)
-	// if err != nil {
-	// 	logger.Error(err, "Failed to distribute the load")
-	// }
+	// Step 3: Pass data into OPA
+	input := decide.Status.Input
+	// here the call to OPA will occur
+	output, err := opaSimulation(input)
+	if err != nil {
+		logger.Error(err, "Failed to distribute the load")
+	}
 
+	// Step 4: Fetch nextElement resource
+	resourceName := decide.Spec.Name + "-" + decide.Spec.NextElement
+	resourceNamespace := "default"
+
+	var execute lupusv1.Execute
+	err = r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &execute)
+	if err != nil {
+		logger.Error(err, "Failed to get Execute resource")
+		return ctrl.Result{}, nil
+	}
+	print(output.String())
+	// Step 5: Set the fields in nextElement resource
+	execute.Status.Input = output
+	execute.Status.LastUpdated = metav1.Now()
+
+	// Step 6: Update the nextElement resource status
+	if err := r.Status().Update(ctx, &execute); err != nil {
+		logger.Error(err, "Failed to update Execute status")
+
+	}
+	// Step 7: Next time reconcile when the status changes
 	return ctrl.Result{}, nil
 }
 

@@ -330,3 +330,8 @@ Make it the last step.
 12. [ ] Prepare OPA for second monitored system. Run second loop instance.
 
 Let's GO!
+
+## Problems
+
+You cannot use `map[string]interfface{}` in Kubebuilder. It prevents you from it.
+

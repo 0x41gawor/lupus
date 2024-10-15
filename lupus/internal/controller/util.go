@@ -23,6 +23,10 @@ type MoveCommand struct {
 	Count int    `json:"count"` // Number of items to move
 }
 
+type MoveCommands struct {
+	Commands []MoveCommand `json:"commands"`
+}
+
 // distributeLoad takes the Input struct and generates a list of MoveCommand
 func distributeLoad(input Input) []MoveCommand {
 	// List of MoveCommand that will store the result
@@ -96,12 +100,17 @@ func parseRawExtensionToInput(input runtime.RawExtension) (Input, error) {
 	return parsedInput, nil
 }
 
-// convertMoveCommandSliceToRawExtension converts a slice of MoveCommand into a runtime.RawExtension
+// convertMoveCommandSliceToRawExtension converts a slice of MoveCommand into a runtime.RawExtension encapsulated in MoveCommands
 func convertMoveCommandSliceToRawExtension(commands []MoveCommand) (runtime.RawExtension, error) {
-	// Marshal the slice of MoveCommand into JSON
-	rawData, err := json.Marshal(commands)
+	// Wrap the slice of MoveCommand in MoveCommands struct
+	moveCommands := MoveCommands{
+		Commands: commands,
+	}
+
+	// Marshal the MoveCommands struct into JSON
+	rawData, err := json.Marshal(moveCommands)
 	if err != nil {
-		return runtime.RawExtension{}, fmt.Errorf("failed to marshal []MoveCommand to JSON: %w", err)
+		return runtime.RawExtension{}, fmt.Errorf("failed to marshal MoveCommands to JSON: %w", err)
 	}
 
 	// Create a RawExtension and assign the raw JSON data

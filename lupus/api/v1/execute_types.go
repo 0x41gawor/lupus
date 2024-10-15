@@ -18,6 +18,7 @@ package v1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -37,8 +38,10 @@ type ExecuteSpec struct {
 
 // ExecuteStatus defines the observed state of Execute
 type ExecuteStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Input for the Decision
+	Input runtime.RawExtension `json:"input"`
+	// Timestamp of the last update
+	LastUpdated metav1.Time `json:"lastUpdated"`
 }
 
 // +kubebuilder:object:root=true

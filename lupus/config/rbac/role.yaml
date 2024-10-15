@@ -8,6 +8,7 @@ rules:
   - lupus.gawor.io
   resources:
   - decides
+  - executes
   - observes
   verbs:
   - create
@@ -21,6 +22,7 @@ rules:
   - lupus.gawor.io
   resources:
   - decides/finalizers
+  - executes/finalizers
   - observes/finalizers
   verbs:
   - update
@@ -28,6 +30,7 @@ rules:
   - lupus.gawor.io
   resources:
   - decides/status
+  - executes/status
   - observes/status
   verbs:
   - get
