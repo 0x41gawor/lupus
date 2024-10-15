@@ -47,9 +47,28 @@ type DecideReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
 func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
-
-	// TODO(user): your logic here
+	// Create a logger from the context
+	logger := log.FromContext(ctx)
+	logger.Info("=================== START OF DECIDE Reconciler: \n")
+	// Step 1: Fetch the Observe instance
+	var decide lupusv1.Decide
+	if err := r.Get(ctx, req.NamespacedName, &decide); err != nil {
+		logger.Info("Failed to fetch Decide instance", "error", err)
+		// If the resource is not found, we return and don't requeue
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+	logger.Info("Decide instance fetched successfully")
+	// Step 2: Check if status of Decide is empty, if yes it is the first run and reconciler shoudl return
+	if decide.Status.LastUpdated.IsZero() {
+		return ctrl.Result{}, nil
+	}
+	// // Step 3: Pass data into OPA
+	// input := decide.Status.Input
+	// // here the call to OPA will occur
+	// output, err := opaSimulation(input)
+	// if err != nil {
+	// 	logger.Error(err, "Failed to distribute the load")
+	// }
 
 	return ctrl.Result{}, nil
 }
