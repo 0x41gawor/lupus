@@ -18,8 +18,8 @@ package controller
 
 import (
 	"context"
+	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -32,6 +32,8 @@ import (
 type DecideReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+
+	LastUpdated time.Time
 }
 
 // +kubebuilder:rbac:groups=lupus.gawor.io,resources=decides,verbs=get;list;watch;create;update;patch;delete
@@ -64,6 +66,19 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		logger.Info("No need to reconcile")
 		return ctrl.Result{}, nil
 	}
+
+	// If the status last update time is not highger (not after) the time of last update, there no need to reconcile
+	if !r.LastUpdated.IsZero() && !decide.Status.LastUpdated.Time.After(r.LastUpdated) {
+		logger.Info("No need to reconcile DECISION")
+		return ctrl.Result{}, nil
+	}
+	// If this is the first run of controller without any real requests clear the command clear the status
+	if r.LastUpdated.IsZero() {
+		decide.Status.Input = runtime.RawExtension{}
+	}
+	// If we reconcile then set the controller's last updated time same as in the resource spec
+	r.LastUpdated = decide.Status.LastUpdated.Time
+
 	// Step 3: Pass data into OPA
 	input := decide.Status.Input
 	// here the call to OPA will occur
@@ -82,10 +97,9 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		logger.Error(err, "Failed to get Execute resource")
 		return ctrl.Result{}, nil
 	}
-	print(output.String())
 	// Step 5: Set the fields in nextElement resource
 	execute.Status.Input = output
-	execute.Status.LastUpdated = metav1.Now()
+	execute.Status.LastUpdated = decide.Status.LastUpdated
 
 	// Step 6: Update the nextElement resource status
 	if err := r.Status().Update(ctx, &execute); err != nil {
