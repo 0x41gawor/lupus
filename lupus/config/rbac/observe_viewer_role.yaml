@@ -1,27 +1,23 @@
-# permissions for end users to edit executes.
+# permissions for end users to view observes.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: lupus
     app.kubernetes.io/managed-by: kustomize
-  name: execute-editor-role
+  name: observe-viewer-role
 rules:
 - apiGroups:
   - lupus.gawor.io
   resources:
-  - executes
+  - observes
   verbs:
-  - create
-  - delete
   - get
   - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - lupus.gawor.io
   resources:
-  - executes/status
+  - observes/status
   verbs:
   - get

@@ -30,7 +30,7 @@ import (
 	lupusv1 "github.com/0x41gawor/lupus/api/v1"
 )
 
-var _ = Describe("Execute Controller", func() {
+var _ = Describe("Observe Controller", func() {
 	Context("When reconciling a resource", func() {
 		const resourceName = "test-resource"
 
@@ -40,13 +40,13 @@ var _ = Describe("Execute Controller", func() {
 			Name:      resourceName,
 			Namespace: "default", // TODO(user):Modify as needed
 		}
-		execute := &lupusv1.Execute{}
+		observe := &lupusv1.Observe{}
 
 		BeforeEach(func() {
-			By("creating the custom resource for the Kind Execute")
-			err := k8sClient.Get(ctx, typeNamespacedName, execute)
+			By("creating the custom resource for the Kind Observe")
+			err := k8sClient.Get(ctx, typeNamespacedName, observe)
 			if err != nil && errors.IsNotFound(err) {
-				resource := &lupusv1.Execute{
+				resource := &lupusv1.Observe{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      resourceName,
 						Namespace: "default",
@@ -59,16 +59,16 @@ var _ = Describe("Execute Controller", func() {
 
 		AfterEach(func() {
 			// TODO(user): Cleanup logic after each test, like removing the resource instance.
-			resource := &lupusv1.Execute{}
+			resource := &lupusv1.Observe{}
 			err := k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Cleanup the specific resource instance Execute")
+			By("Cleanup the specific resource instance Observe")
 			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
 		})
 		It("should successfully reconcile the resource", func() {
 			By("Reconciling the created resource")
-			controllerReconciler := &ExecuteReconciler{
+			controllerReconciler := &ObserveReconciler{
 				Client: k8sClient,
 				Scheme: k8sClient.Scheme(),
 			}

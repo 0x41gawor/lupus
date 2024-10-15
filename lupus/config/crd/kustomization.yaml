@@ -2,9 +2,7 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
-- bases/lupus.gawor.io_monitors.yaml
-- bases/lupus.gawor.io_decisions.yaml
-- bases/lupus.gawor.io_executes.yaml
+- bases/lupus.gawor.io_observes.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:
@@ -14,9 +12,7 @@ patches:
 
 # [CERTMANAGER] To enable cert-manager, uncomment all the sections with [CERTMANAGER] prefix.
 # patches here are for enabling the CA injection for each CRD
-#- path: patches/cainjection_in_monitors.yaml
-#- path: patches/cainjection_in_decisions.yaml
-#- path: patches/cainjection_in_executes.yaml
+#- path: patches/cainjection_in_observes.yaml
 # +kubebuilder:scaffold:crdkustomizecainjectionpatch
 
 # [WEBHOOK] To enable webhook, uncomment the following section

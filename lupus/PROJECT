@@ -14,25 +14,7 @@ resources:
   controller: true
   domain: gawor.io
   group: lupus
-  kind: Monitor
-  path: github.com/0x41gawor/lupus/api/v1
-  version: v1
-- api:
-    crdVersion: v1
-    namespaced: true
-  controller: true
-  domain: gawor.io
-  group: lupus
-  kind: Decision
-  path: github.com/0x41gawor/lupus/api/v1
-  version: v1
-- api:
-    crdVersion: v1
-    namespaced: true
-  controller: true
-  domain: gawor.io
-  group: lupus
-  kind: Execute
+  kind: Observe
   path: github.com/0x41gawor/lupus/api/v1
   version: v1
 version: "3"

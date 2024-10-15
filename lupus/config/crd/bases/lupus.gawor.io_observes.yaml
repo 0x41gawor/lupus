@@ -4,20 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.16.1
-  name: monitors.lupus.gawor.io
+  name: observes.lupus.gawor.io
 spec:
   group: lupus.gawor.io
   names:
-    kind: Monitor
-    listKind: MonitorList
-    plural: monitors
-    singular: monitor
+    kind: Observe
+    listKind: ObserveList
+    plural: observes
+    singular: observe
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: Monitor is the Schema for the monitors API
+        description: Observe is the Schema for the observes API
         properties:
           apiVersion:
             description: |-
@@ -37,32 +37,39 @@ spec:
           metadata:
             type: object
           spec:
-            description: MonitorSpec defines the desired state of Monitor
+            description: ObserveSpec defines the desired state of Observe
             properties:
-              foo:
-                description: Foo is an example field of Monitor. Edit monitor_types.go
-                  to remove/update
+              monitored_system_url:
+                description: MonitoredSystemURL contains URL details with path and
+                  method
+                properties:
+                  method:
+                    type: string
+                  path:
+                    type: string
+                required:
+                - method
+                - path
+                type: object
+              name:
+                description: Name is a string field
                 type: string
+              nextElement:
+                description: NextElement is a string field
+                type: string
+              reconcileTimeInterval:
+                description: ReconcileTimeInterval specifies the times between data
+                  fetches in seconds
+                format: int32
+                type: integer
+            required:
+            - monitored_system_url
+            - name
+            - nextElement
+            - reconcileTimeInterval
             type: object
           status:
-            description: MonitorStatus defines the observed state of Managed-System
-            properties:
-              gdansk:
-                description: Number of sessions in Gdansk node
-                type: integer
-              krakow:
-                description: Number of sessions in Krakow node
-                type: integer
-              lastUpdated:
-                description: Timestamp of the last update
-                format: date-time
-                type: string
-              poznan:
-                description: Number of sessions in Poznan node
-                type: integer
-              warsaw:
-                description: Number of sessions in Warsaw node
-                type: integer
+            description: ObserveStatus defines the observed state of Observe
             type: object
         type: object
     served: true

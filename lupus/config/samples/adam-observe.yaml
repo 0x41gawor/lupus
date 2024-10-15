@@ -1,0 +1,14 @@
+apiVersion: lupus.gawor.io/v1
+kind: Observe
+metadata:
+  labels:
+    app.kubernetes.io/name: lupus
+    app.kubernetes.io/managed-by: kustomize
+  name: adam
+spec:
+  name: "adam-observe"
+  nextElement: "adam-decide"
+  monitored_system_url:
+    path: "http://192.168.56.111:4040/api/data"
+    method: "GET"
+  reconcileTimeInterval: 60

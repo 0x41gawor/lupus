@@ -1,9 +1,0 @@
-apiVersion: lupus.gawor.io/v1
-kind: Monitor
-metadata:
-  labels:
-    app.kubernetes.io/name: lupus
-    app.kubernetes.io/managed-by: kustomize
-  name: adam
-spec:
-  # TODO(user): Add fields here

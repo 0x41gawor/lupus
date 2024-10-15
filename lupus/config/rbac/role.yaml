@@ -7,9 +7,7 @@ rules:
 - apiGroups:
   - lupus.gawor.io
   resources:
-  - decisions
-  - executes
-  - monitors
+  - observes
   verbs:
   - create
   - delete
@@ -21,17 +19,13 @@ rules:
 - apiGroups:
   - lupus.gawor.io
   resources:
-  - decisions/finalizers
-  - executes/finalizers
-  - monitors/finalizers
+  - observes/finalizers
   verbs:
   - update
 - apiGroups:
   - lupus.gawor.io
   resources:
-  - decisions/status
-  - executes/status
-  - monitors/status
+  - observes/status
   verbs:
   - get
   - patch
