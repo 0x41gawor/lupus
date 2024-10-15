@@ -244,7 +244,7 @@ Let the monitored system to report resources in use, and reserved capacity (lice
 		"license": 8
 	}
 }
-
+```
 As you can see above. cpu is underused in contrast to bought license. We are overpaying much more that is needed. On the other hand, we are barely sticking with the ram. In case of accidental growth of client number, an inaccessibility can occur. 
 
 `in_use` part changes randomly, `license` is something that we, operators of the system have under control.
@@ -253,3 +253,80 @@ Our loop will ensure that `license` has always a 20% cap above the `in_use`.
 
 `monitored-system` here is able to receive a command that sets a license for cpu or ram.
 
+### Fix names of loop elements
+- Now the names "Monitor", "Decision", "Execute" are noun-vs-verb non-consistent
+- Names should be either verbs or nouns
+- Also let's rethink if ODA should not be used here: Observe, Decide, Act
+
+Let's apply ODA naming (Observe, Decide, Act), but "Act" is to short in comparion to "Decide" and "Observe" so let's change it to "Execute".
+
+
+### Introduce Root CR && One name for all object belonging to one loop
+- Instead of manually applying all loop elements, let the Root CR instantiate and manage them
+- User writes just `k apply -f config/sample/root-adam.yaml`
+- Spec of Root CR includes spec of Loop Elements
+- Controller of Root CR instantiates the loop elements
+
+- One name for all object belonging to one loop
+	- It will be obtained by root CR spec, each child element will inherit the name from loop name
+
+Spec of Root is this:
+```go
+//all elements of loop and root itself will have this name
+Name string 
+// Loop elements (e.g. "Observe", "Decide", "Execute"). Root Controller will instantiate them one by one.
+// Sequence matters here as the each element will have reference to the next elements on the list as its nextElement.
+// Element is a struct that has two fields: Element kind and url that has to be written in spec.
+Elements []Element  
+// Active flag. If set to true, the loop elements are running, if not the controller will instantiate them
+IsActive bool
+```
+
+### Get rid of translation agent
+- It just forwards what it gets, if any normalisation, extraction etc. has to take place, it should be in `Observe CR`.
+
+Observe CR in its spec has to have url where to hit periodically to fetch the data.
+Also Execute CR in its spec has url where to send commands.
+
+### Abstract the data 
+- Now the controllers are ready for single case, what if the second one arises?
+- Create the second monitored system same as in https://github.com/dbursztynowski/cloopdemo1
+
+The Data field in Status should be of Go type:
+```go
+var data map[string]interface{}
+```
+
+Wait with creation of second monitored system as it can take a lot of time.
+
+Make it the last step.
+
+## New Architecture
+
+![](img/10.png)
+0. User applies Root CR and its controller instantiates all loop elements.
+1. Observe controller periodically fetches data from `monitored-system`. Its reconcillation function always returns "reconcile again in one minute". The endpoints that has to be hit is in Observe CR spec. Controller have to ready for any kind of json response. 
+2. Observe controller writes the response it got to Decide CR status as `input`. 
+3. Decide controller wakes up, it takes the input and sends it to `opa_url` endoint. 
+4. Decide controller receives response from opa and writes it to Execute CR status as `input`. 
+5. Execute controller wakes up
+6. Execute controller takes the input from status and sends it to `monitored-system`. The url is not the same as it was in Observe CR spec.
+
+> url has to be struct of url and http method
+
+## Steps in this sprint
+
+1. [ ] Make monitored-system to expose API for fetching data
+2. [ ] Prepare CRD of Observe CR.
+3. [ ] Write controller of Observe CR. Integrate it with monitored-system.
+4. [ ] Prepare CRD of Decide CR.
+5. [ ] Write controller of Decide Cr (Do not call OPA at this point). Integrate it with Observe CR.
+6. [ ] Prepare CRD of Execute CR.
+7. [ ] Write controller of Execute CR. Intergrate it with monitored-system.
+8. [ ] Prepare CRD of Root CR (name it Loop CR).
+9. [ ] Write controller of Loop CR. Make it possible to instantiate Loop with one kubectl apply.
+10. [ ] Integrate Loop with OPA.
+11. [ ] Prepare second monitored system.
+12. [ ] Prepare OPA for second monitored system. Run second loop instance.
+
+Let's GO!
