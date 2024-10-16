@@ -35,6 +35,11 @@ type LoopReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+// Helper function to set owner reference
+func setOwnerReference(owner, object metav1.Object, scheme *runtime.Scheme) error {
+	return ctrl.SetControllerReference(owner, object, scheme)
+}
+
 // +kubebuilder:rbac:groups=lupus.gawor.io,resources=loops,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=lupus.gawor.io,resources=loops/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=lupus.gawor.io,resources=loops/finalizers,verbs=update
@@ -93,6 +98,13 @@ func (r *LoopReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 					ReconcileTimeInterval: 60, // Add this only for Observe resources
 				},
 			}
+
+			// Set Loop as owner of Observe
+			if err := setOwnerReference(&loop, observe, r.Scheme); err != nil {
+				logger.Error(err, "Failed to set owner reference for Observe")
+				return ctrl.Result{}, err
+			}
+
 			if err := r.Create(ctx, observe); err != nil {
 				logger.Error(err, "Failed to create Observe resource", "name", elementName)
 				return ctrl.Result{}, err
@@ -112,6 +124,13 @@ func (r *LoopReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 					Url:         element.Url,
 				},
 			}
+
+			// Set Loop as owner of Decide
+			if err := setOwnerReference(&loop, decide, r.Scheme); err != nil {
+				logger.Error(err, "Failed to set owner reference for Decide")
+				return ctrl.Result{}, err
+			}
+
 			if err := r.Create(ctx, decide); err != nil {
 				logger.Error(err, "Failed to create Decide resource", "name", elementName)
 				return ctrl.Result{}, err
@@ -131,6 +150,13 @@ func (r *LoopReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 					Url:         element.Url,
 				},
 			}
+
+			// Set Loop as owner of Execute
+			if err := setOwnerReference(&loop, execute, r.Scheme); err != nil {
+				logger.Error(err, "Failed to set owner reference for Execute")
+				return ctrl.Result{}, err
+			}
+
 			if err := r.Create(ctx, execute); err != nil {
 				logger.Error(err, "Failed to create Execute resource", "name", elementName)
 				return ctrl.Result{}, err
