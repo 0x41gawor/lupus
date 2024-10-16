@@ -8,6 +8,6 @@ metadata:
 spec:
   name: "adam"
   nextElement: "execute"
-  opa_url:
+  url:
     path: "http://192.168.56.111:8181/v1/mmet"
     method: "POST"

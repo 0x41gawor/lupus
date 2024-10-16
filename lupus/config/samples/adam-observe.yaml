@@ -8,7 +8,7 @@ metadata:
 spec:
   name: "adam"
   nextElement: "decide"
-  monitored_system_url:
+  url:
     path: "http://192.168.56.111:4040/api/data"
     method: "GET"
   reconcileTimeInterval: 60

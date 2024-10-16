@@ -8,6 +8,6 @@ metadata:
 spec:
   name: "adam"
   nextElement: ""
-  monitored_system_url:
+  url:
     path: "http://192.168.56.111:4040/api/move"
     method: "POST" 

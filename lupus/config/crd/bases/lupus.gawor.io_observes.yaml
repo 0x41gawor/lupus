@@ -39,18 +39,6 @@ spec:
           spec:
             description: ObserveSpec defines the desired state of Observe
             properties:
-              monitored_system_url:
-                description: MonitoredSystemURL contains URL details with path and
-                  method
-                properties:
-                  method:
-                    type: string
-                  path:
-                    type: string
-                required:
-                - method
-                - path
-                type: object
               name:
                 description: Name is a string field
                 type: string
@@ -62,11 +50,22 @@ spec:
                   fetches in seconds
                 format: int32
                 type: integer
+              url:
+                description: Url contains URL details with path and method
+                properties:
+                  method:
+                    type: string
+                  path:
+                    type: string
+                required:
+                - method
+                - path
+                type: object
             required:
-            - monitored_system_url
             - name
             - nextElement
             - reconcileTimeInterval
+            - url
             type: object
           status:
             description: ObserveStatus defines the observed state of Observe

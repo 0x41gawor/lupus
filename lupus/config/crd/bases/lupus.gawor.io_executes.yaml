@@ -39,18 +39,6 @@ spec:
           spec:
             description: ExecuteSpec defines the desired state of Execute
             properties:
-              monitored_system_url:
-                description: MonitoredSystemURL contains URL details with path and
-                  method
-                properties:
-                  method:
-                    type: string
-                  path:
-                    type: string
-                required:
-                - method
-                - path
-                type: object
               name:
                 description: |-
                   INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
@@ -60,10 +48,21 @@ spec:
               nextElement:
                 description: NextElement
                 type: string
+              url:
+                description: Url contains URL details with path and method
+                properties:
+                  method:
+                    type: string
+                  path:
+                    type: string
+                required:
+                - method
+                - path
+                type: object
             required:
-            - monitored_system_url
             - name
             - nextElement
+            - url
             type: object
           status:
             description: ExecuteStatus defines the observed state of Execute

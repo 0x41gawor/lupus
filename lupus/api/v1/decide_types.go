@@ -33,7 +33,7 @@ type DecideSpec struct {
 	// NextElement
 	NextElement string `json:"nextElement"`
 	// Url contains URL details with path and method of Open Policy Agent endpoint to be hit by
-	OpaUrl URL `json:"opa_url"`
+	Url URL `json:"url"`
 }
 
 // DecideStatus defines the observed state of Decide

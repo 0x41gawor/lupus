@@ -88,7 +88,7 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	// Step 4: Fetch nextElement resource
-	resourceName := decide.Spec.Name + "-" + decide.Spec.NextElement
+	resourceName := decide.Spec.NextElement
 	resourceNamespace := "default"
 
 	var execute lupusv1.Execute

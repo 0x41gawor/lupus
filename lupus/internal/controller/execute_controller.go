@@ -86,8 +86,8 @@ func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// call http client and hit execute.Spec.MonitoredSystemUrl.Path with execute.Spec.MonitoredSystemUrl.Method and input as a json data in body
 
 	// Step 4: Call the HTTP client to hit the monitored system URL
-	url := execute.Spec.MonitoredSystemURL.Path // Assuming this holds the full URL
-	method := execute.Spec.MonitoredSystemURL.Method
+	url := execute.Spec.Url.Path // Assuming this holds the full URL
+	method := execute.Spec.Url.Method
 	logger.Info("Sending request to monitored system", "url", url, "method", method)
 
 	// Prepare the HTTP request

@@ -68,7 +68,7 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	logger.Info("Observe instance fetched successfully")
 
 	// Step 2: Fetch data from the URL in spec.monitored_system_url
-	url := observe.Spec.MonitoredSystemURL.Path
+	url := observe.Spec.Url.Path
 	logger.Info(fmt.Sprintf("Fetching data from: %s", url))
 	resp, err := http.Get(url)
 	if err != nil {
@@ -87,7 +87,7 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	logger.Info(fmt.Sprintf("Data fetched successfully: %s", data), "data", string(data))
 
 	// Step 4: Fetch nextElement resource
-	resourceName := observe.Spec.Name + "-" + observe.Spec.NextElement
+	resourceName := observe.Spec.NextElement
 	resourceNamespace := "default"
 
 	var decide lupusv1.Decide

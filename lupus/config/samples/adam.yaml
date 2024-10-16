@@ -1,0 +1,22 @@
+apiVersion: lupus.gawor.io/v1
+kind: Loop
+metadata:
+  labels:
+    app.kubernetes.io/name: lupus
+    app.kubernetes.io/managed-by: kustomize
+  name: adam
+spec:
+  name: adam
+  elements:
+    - name: observe
+      url:
+        path: "http://192.168.56.111:4040/api/data"
+        method: GET
+    - name: decide
+      url:
+        path: "http://192.168.56.111:8181/v1/mmet"
+        method: POST
+    - name: execute
+      url:
+        path: "http://192.168.56.111:4040/api/move"
+        method: POST

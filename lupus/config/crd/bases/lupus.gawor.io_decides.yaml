@@ -48,7 +48,7 @@ spec:
               nextElement:
                 description: NextElement
                 type: string
-              opa_url:
+              url:
                 description: Url contains URL details with path and method of Open
                   Policy Agent endpoint to be hit by
                 properties:
@@ -63,7 +63,7 @@ spec:
             required:
             - name
             - nextElement
-            - opa_url
+            - url
             type: object
           status:
             description: DecideStatus defines the observed state of Decide

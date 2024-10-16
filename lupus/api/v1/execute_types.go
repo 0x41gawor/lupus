@@ -32,8 +32,8 @@ type ExecuteSpec struct {
 	Name string `json:"name"`
 	// NextElement
 	NextElement string `json:"nextElement"`
-	// MonitoredSystemURL contains URL details with path and method
-	MonitoredSystemURL URL `json:"monitored_system_url"`
+	// Url contains URL details with path and method
+	Url URL `json:"url"`
 }
 
 // ExecuteStatus defines the observed state of Execute

@@ -37,8 +37,8 @@ type ObserveSpec struct {
 	// NextElement is a string field
 	NextElement string `json:"nextElement"`
 
-	// MonitoredSystemURL contains URL details with path and method
-	MonitoredSystemURL URL `json:"monitored_system_url"`
+	// Url contains URL details with path and method
+	Url URL `json:"url"`
 
 	// ReconcileTimeInterval specifies the times between data fetches in seconds
 	ReconcileTimeInterval int32 `json:"reconcileTimeInterval"`
