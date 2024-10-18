@@ -502,3 +502,13 @@ Remember that with Opa you can change the distribution:
 And observe the effects of such action 
 
 ![](img/12.png)
+
+
+To tidy up after the test do not forget about 
+
+```sh
+k delete loop adam
+``` 
+
+in 4th terminal.
+

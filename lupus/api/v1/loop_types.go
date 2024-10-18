@@ -38,6 +38,8 @@ type LoopSpec struct {
 	// Sequence matters here as the each element will have reference to the next elements on the list as its nextElement.
 	// Element is a struct that has two fields: Element kind and url that has to be written in spec.
 	Elements []Element `json:"elements"`
+	// ObservationTimeInterval specifies the times between data fetches from monitored-system [seconds]
+	ObservationTimeInterval int32 `json:"observationTimeInterval"`
 }
 
 // LoopStatus defines the observed state of Loop

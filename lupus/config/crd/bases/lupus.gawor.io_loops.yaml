@@ -72,9 +72,15 @@ spec:
               name:
                 description: Name of the loop e.g. "adam"
                 type: string
+              observationTimeInterval:
+                description: ObservationTimeInterval specifies the times between data
+                  fetches from monitored-system [seconds]
+                format: int32
+                type: integer
             required:
             - elements
             - name
+            - observationTimeInterval
             type: object
           status:
             description: LoopStatus defines the observed state of Loop

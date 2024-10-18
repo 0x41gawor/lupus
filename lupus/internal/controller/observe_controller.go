@@ -73,7 +73,7 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	resp, err := http.Get(url)
 	if err != nil {
 		logger.Info("Error fetching data", "err", err)
-		return ctrl.Result{RequeueAfter: time.Second * time.Duration(observe.Spec.ReconcileTimeInterval)}, nil
+		return ctrl.Result{RequeueAfter: time.Second * time.Duration(observe.Spec.ObservationTimeInterval)}, nil
 	}
 	defer resp.Body.Close()
 
@@ -82,7 +82,7 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	data, err = io.ReadAll(resp.Body)
 	if err != nil {
 		logger.Error(err, "Error decoding response body")
-		return ctrl.Result{RequeueAfter: time.Second * time.Duration(observe.Spec.ReconcileTimeInterval)}, nil
+		return ctrl.Result{RequeueAfter: time.Second * time.Duration(observe.Spec.ObservationTimeInterval)}, nil
 	}
 	logger.Info(fmt.Sprintf("Data fetched successfully: %s", data), "data", string(data))
 
@@ -94,7 +94,7 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	err = r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &decide)
 	if err != nil {
 		logger.Error(err, "Failed to get Decide resource")
-		return ctrl.Result{RequeueAfter: time.Second * time.Duration(observe.Spec.ReconcileTimeInterval)}, nil
+		return ctrl.Result{RequeueAfter: time.Second * time.Duration(observe.Spec.ObservationTimeInterval)}, nil
 	}
 
 	// Step 5: Set the fields in nextElement resource
@@ -104,12 +104,12 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Step 6: Update the nextElement resource status
 	if err := r.Status().Update(ctx, &decide); err != nil {
 		logger.Error(err, "Failed to update Decide status")
-		return ctrl.Result{RequeueAfter: time.Second * time.Duration(observe.Spec.ReconcileTimeInterval)}, nil
+		return ctrl.Result{RequeueAfter: time.Second * time.Duration(observe.Spec.ObservationTimeInterval)}, nil
 	}
 
 	// Step 7: Log success and requeue after specified time of seconds
-	logger.Info(fmt.Sprintf("Reconciliation success. Requeue after %d seconds", observe.Spec.ReconcileTimeInterval))
-	return ctrl.Result{RequeueAfter: time.Second * time.Duration(observe.Spec.ReconcileTimeInterval)}, nil
+	logger.Info(fmt.Sprintf("Reconciliation success. Requeue after %d seconds", observe.Spec.ObservationTimeInterval))
+	return ctrl.Result{RequeueAfter: time.Second * time.Duration(observe.Spec.ObservationTimeInterval)}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

@@ -45,8 +45,8 @@ spec:
               nextElement:
                 description: NextElement is a string field
                 type: string
-              reconcileTimeInterval:
-                description: ReconcileTimeInterval specifies the times between data
+              observationTimeInterval:
+                description: ObservationTimeInterval specifies the times between data
                   fetches in seconds
                 format: int32
                 type: integer
@@ -64,7 +64,7 @@ spec:
             required:
             - name
             - nextElement
-            - reconcileTimeInterval
+            - observationTimeInterval
             - url
             type: object
           status:

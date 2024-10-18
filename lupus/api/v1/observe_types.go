@@ -40,8 +40,8 @@ type ObserveSpec struct {
 	// Url contains URL details with path and method
 	Url URL `json:"url"`
 
-	// ReconcileTimeInterval specifies the times between data fetches in seconds
-	ReconcileTimeInterval int32 `json:"reconcileTimeInterval"`
+	// ObservationTimeInterval specifies the times between data fetches in seconds
+	ObservationTimeInterval int32 `json:"observationTimeInterval"`
 }
 
 // ObserveStatus defines the observed state of Observe

@@ -92,10 +92,10 @@ func (r *LoopReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 					Namespace: req.Namespace,
 				},
 				Spec: lupusv1.ObserveSpec{
-					Name:                  elementName,
-					NextElement:           nextElementName,
-					Url:                   element.Url,
-					ReconcileTimeInterval: 30, // Add this only for Observe resources
+					Name:                    elementName,
+					NextElement:             nextElementName,
+					Url:                     element.Url,
+					ObservationTimeInterval: loop.Spec.ObservationTimeInterval, // Add this only for Observe resources
 				},
 			}
 

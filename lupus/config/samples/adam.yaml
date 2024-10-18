@@ -7,6 +7,7 @@ metadata:
   name: adam
 spec:
   name: adam
+  observationTimeInterval: 10
   elements:
     - name: observe
       url:
