@@ -55,7 +55,7 @@ func setOwnerReference(owner, object metav1.Object, scheme *runtime.Scheme) erro
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
 func (r *LoopReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
-	logger.Info("Starting Loop reconciliation")
+	logger.Info("=================== START OF LOOP Reconciler: \n")
 
 	// Step 1: Fetch the Loop instance
 	var loop lupusv1.Loop
@@ -95,7 +95,7 @@ func (r *LoopReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 					Name:                  elementName,
 					NextElement:           nextElementName,
 					Url:                   element.Url,
-					ReconcileTimeInterval: 60, // Add this only for Observe resources
+					ReconcileTimeInterval: 30, // Add this only for Observe resources
 				},
 			}
 
