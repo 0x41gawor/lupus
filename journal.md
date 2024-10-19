@@ -525,9 +525,9 @@ After meeting with thesis supervisor (24-10-18).
 	- Keep in mind that in the future it would be good to plug in some real system into Lupus, not only emulators. E.g. Free5GC or Open5GS would be a good idea.
 	- Also every `monitored-system` has to have its architecture and short description. Lack of this failed my presentation for supervisior and made it difficult for him to understand my concept.
 - Ingress and Egress agent
-	- In 2nd Sprint I've got rid of Translation-Agent as this element seemed to be underutilized. But when the number of external system grows (need to come up with 3rd idea), we can observe the common part of Lupus. E.g. for Lupus to be data driven it needs certain criteria of Input or Output to be met. Now I need to adjust every system to meet them. But this should not be the case. The monitored system should not be modified in any way. This is the place for Ingress and Egress agents. On one side they have common, well-known Lupus-type interface, at second end they communicate with monitored-system with its specific. The user of Lupus need to develop Ingress and Egress agents on its own, with our guidelines and examples provided.
+	- In 2nd Sprint I've got rid of Translation-Agent as this element seemed to be underutilized. But when the number of external system grows (need to come up with 3rd idea btw), we can observe the common part of Lupus. E.g. for Lupus to be data driven it needs certain criteria of Input or Output to be met. Now I need to adjust every system to meet them. But this should not be the case. The monitored system should not be modified in any way. This is the place for Ingress and Egress agents. On one side they have common, well-known Lupus-specified interface, at second end they communicate with monitored-system with its specific API. The user of Lupus need to develop Ingress and Egress agents on its own, with our guidelines and examples provided.
 	> Change `monitored-system` to `managed-system`
-- Define the user of Lupus and his actions. Define the target audience etc. What user is able to do, what will have to do if want to use our platform etc.
+- Define the user of Lupus and his actions. Define the target audience etc. What user is able to do, what will have to do if want to use our platform etc. Especially we will give the client/user CRDs that he has to install in his K8s cluster and set of instructions which he has to follow to first develop and then use Lupus as the control/management center for his desired loop.
 - Support for non-linear loops.
 	- Current impementation lets the user to create linear loops. With one thread and no forks. We need to enchance this part of framework. Define what has to be done with input (what action) and define the destination of each action's output. Escpecially one output can go to multiple destinations. We need to allow for fork. E.g. the element "Decide" can send its output to element "Execute" but also to element "Learn", whose goal is to send executed actions to some storage.
 - Support of more complicated set of actions
@@ -537,3 +537,114 @@ After meeting with thesis supervisor (24-10-18).
 ## What to keep?
 - I want to preserve the data-driven approach. Lupus in only automata to smuggle data and is transparent to it, contains zero logic relating the data.
 - I want to preserve that everything can be defined in Master/Root/Loop CR YAML MANIFEST FILE.
+
+# 3rd Sprint
+## Blueprints of what to improve
+### Examples
+
+First, we change the name `monitored-system` to `managed-system`. 
+
+Second each we create directory managed-systems and here the subdirectory for each of them.
+
+Each subdir contains:
+- the Go program that emualtes the managed-system
+- readme with full description of managed system
+	- what it is (some drawings)
+	- the problem for the Lupus to solve
+	- the communication with Lupus in both directions
+- ingress-agent application (a python script)
+- egress-agent application (a python script)
+
+## Ingress and Egress agent
+
+Integration of each managed-system and Lupus requires pair of Ingress and Egress agents.
+
+![](img/14.png)
+
+Interfaces Lupin and Lupout are well defined and specified. This is the way to talk with Lupus elements.
+
+Lupin and Lupout are single-directed and have specific form of communication. They impose requirements on Ingress/Egress Agents which are developed by the Lupus client.
+
+We could saw the imposed requirements in 2nd Sprint as the both managed-systems had to expose their API in certain way.
+
+Lupin interface specifies that Ingress Agent has to update the `input` field of `status` of Lupus Observe CR. This will trigger the loop iteration.
+
+Lpuout interface specifies that Egress Agent has to accept a HTTP request with json body with root field `commands` being the array of commands understood by Lupus which managed-system has to perform. Egress Agent mission is to translate these commands to be understandable for managed-system API and execute them.
+
+## Define the user
+The target audicence is an organisation that has to manage lots of systems and thrives for a place where multiple loops can be defined, managed and have their runtime environment. 
+
+Each use of Lupus for management of some managed-system requires to:
+- develop the Ingress and Egress Agents, that will stick to Lupin and Lupout interfaces specification* 
+- design the loop workflow, prepare the loop elements
+- express the designed logic in Root/Master/Loop CR YAML Manifest File
+
+> *It could be done in any technology, but Lupus.io will use python for its examples as it has the easiest K8s client.
+
+So as you can see it requires some programmistic work for the development of Ingress/Egress Agents. The second part can be done in some external tool, whatever is more convenient for someone. 3rd part requires to get familiar with our syntax and to uderstand the syntax of YAML files.
+
+
+## Support for non-linear loops. 
+
+Our current loop implement is linear.
+![](img/15.png)
+
+We need to come up with an idea that our loop can be build of more complicated relationships between elements e.g.
+
+![](img/16.png)
+
+## More complex set of actions
+
+Currently our elements perform one single action with 4 steps:
+1. receive the input in form of Status update from previous element
+2. hit the HTTP endpoint specified by Spec with input as json body
+3. receive the reponse and save it as output
+4. update the Status.Input of next element
+
+How we can enhance that?
+1. This is untouchable, it has to work that way, we cannot enhance it
+2. Maybe add other protocols than HTTP. Maybe gRPC? Maybe GraphQL? Maybe local python file?
+2, 3, 4. This actions can be chained and output of one can be the input for another? Maybe we can tag output and in this way inform our Spec what has to be forwarded where? But this has to have single thread, cannot be divided (Division and pararellity will be the subject of design of elements).
+
+Single Action can have spec that says: "Your name is W (string). Take input with tag X (string), and send it to Y (external block spec), tag its output as Z (string)".
+
+Then at the end the json with all active tags (that were not used as input for any action) is created (by combining all active outputs) and states as the Ouput of this Element.
+
+> Go will handle this as `map[]interfaceP{}` to keep track of tags
+
+e.g.
+
+```yaml
+Root CR
+- elements
+...
+	- type: Decision
+	- actions:
+		- name: ram-handler
+		  input_tag: ram  # this will take the json object named "ram" from the json object where root elements are "ram" and "cpu"
+		  destination:
+		  	- type: HTTP
+		  	- path: http://192.168.56.111:8181/v1/data/netflix/new_license/ram
+			- method: POST
+		  output_tag: ram
+		- name: cpu-handler
+		  input_tag: cpu # anal. to above
+		  destiantion:
+		    - type: gRPC
+		  	- url: http://pcrf.mnonet.pl:8181/netflix/new_license
+		  output_tag: cpu
+	- next:
+		- name: execute # all tags will be sent as input
+		  tags: *
+		- name: learn
+		  tags: cpu # only cpu tag will be sent as input of this element
+```
+
+Decide controller will have to has the interpreter for such actions.
+
+## New Architecture
+
+//TODO
+
+
+
