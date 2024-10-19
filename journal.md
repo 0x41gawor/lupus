@@ -512,3 +512,28 @@ k delete loop adam
 
 in 4th terminal.
 
+# 2nd Sprint - Summary
+
+After meeting with thesis supervisor (24-10-18).
+
+## What to improve?
+
+- Example
+	- About mmet. Load balancing of MME is done at S1-MME interface between eNodeB and MME. The decision to be done here requires real-time action. Kubernetes is not applicable for real-time. It is too slow. In k8s we can do management with success - not control plane. For real-time some fast dedicated programs in C, C++, Rust. 
+	- So the topic of our management system has to be clearly of management. Especially it cannot be about deciding of serving MME for newly attached user to the network (it don't event work this way, specific gNodeB has specific MME assigned). 
+	- E.g. we can balance the loads on gateways (e.g. UPF (get rid o 4G, focus on 5G)) afterwards. We can observe the load on UPF elements and rearrange them if needed. But this is happening after the fact of assigning given UE to given UPF instance.
+	- Keep in mind that in the future it would be good to plug in some real system into Lupus, not only emulators. E.g. Free5GC or Open5GS would be a good idea.
+	- Also every `monitored-system` has to have its architecture and short description. Lack of this failed my presentation for supervisior and made it difficult for him to understand my concept.
+- Ingress and Egress agent
+	- In 2nd Sprint I've got rid of Translation-Agent as this element seemed to be underutilized. But when the number of external system grows (need to come up with 3rd idea), we can observe the common part of Lupus. E.g. for Lupus to be data driven it needs certain criteria of Input or Output to be met. Now I need to adjust every system to meet them. But this should not be the case. The monitored system should not be modified in any way. This is the place for Ingress and Egress agents. On one side they have common, well-known Lupus-type interface, at second end they communicate with monitored-system with its specific. The user of Lupus need to develop Ingress and Egress agents on its own, with our guidelines and examples provided.
+	> Change `monitored-system` to `managed-system`
+- Define the user of Lupus and his actions. Define the target audience etc. What user is able to do, what will have to do if want to use our platform etc.
+- Support for non-linear loops.
+	- Current impementation lets the user to create linear loops. With one thread and no forks. We need to enchance this part of framework. Define what has to be done with input (what action) and define the destination of each action's output. Escpecially one output can go to multiple destinations. We need to allow for fork. E.g. the element "Decide" can send its output to element "Execute" but also to element "Learn", whose goal is to send executed actions to some storage.
+- Support of more complicated set of actions
+	- Now the elements has one predefined (programmed into controller logic) action. The action is: read input from Status, send it to given enpoint, write output as Status of the next element,
+	- What if we enhance this part of framework also? What if the element "Decide" can receive set of actions in some our-defined language and interprete it? E.g. we can provide actions set in a file or directly in the CR YAML MANIFEST FILE.
+
+## What to keep?
+- I want to preserve the data-driven approach. Lupus in only automata to smuggle data and is transparent to it, contains zero logic relating the data.
+- I want to preserve that everything can be defined in Master/Root/Loop CR YAML MANIFEST FILE.
