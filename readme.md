@@ -1,7 +1,7 @@
 <h1 align="center">Lupus</h1>
 
 <p align="center">
-  <img src="img/logo.png"/>
+  <img src="_img/logo.png"/>
   <br>
   <i>Lupus - design and run loops in Kubernetes </i>
   <br>
@@ -20,7 +20,7 @@ The direct inpiration and driving factor into raising such project is a work don
 If you have any system that produces data that can be observed and some mangement actions can be taken based on it, you are in a perfect place. Lupus is a platform where your automation can start. 
 
 <p align="center">
-  <img src="img/readme/1.png"/>
+  <img src="_img/readme/1.png"/>
 </p>
 
 All you will need to do is:

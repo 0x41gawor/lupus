@@ -1,15 +1,15 @@
 # 1st Sprint
 ## Achitecture
-![](img/5.png)
+![](_img/5.png)
 
 ### Monitored-System
  - a go application, linux process that runs on the host, external to Lupus. It generates monitored data and pushes it periodically to `translation-agent`.
 
-![](img/1.png)
+![](_img/1.png)
 
 Also it has an endpoint that can move some load between the cities:
 
-![](img/2.png)
+![](_img/2.png)
 
 ### Tranlation-Agent
  - a pythhon application, linnx process that runs on the host, part of Lupus. It obtains monitored data and modifies status of `Monitor CR object` (which triggers the loop). 
@@ -173,19 +173,19 @@ python3 main.py
 
 When the interval passes you will observer the action.
 
-![](img/6.png)
+![](_img/6.png)
 
 After several rounds we will be able to see that `monitored-system` keep the even distribution.
 
-![](img/7.png)
+![](_img/7.png)
 
 It is done by Lupus sending move commands
 
-![](img/8.png)
+![](_img/8.png)
 
 Also let's take a look at Lupus's Custom Resources statuses during runtime:
 
-![](img/9.png)
+![](_img/9.png)
 
 ## What to improve
 
@@ -303,7 +303,7 @@ Make it the last step.
 
 ## New Architecture
 
-![](img/10.png)
+![](_img/10.png)
 0. User applies Root CR and its controller instantiates all loop elements.
 1. Observe controller periodically fetches data from `monitored-system`. Its reconcillation function always returns "reconcile again in one minute". The endpoints that has to be hit is in Observe CR spec. Controller have to ready for any kind of json response. 
 2. Observe controller writes the response it got to Decide CR status as `input`. 
@@ -493,15 +493,15 @@ Go to 4th terminal:
 
 After few loop iteration with errors in logs the states becomes "ustalony" and lupus starts to send move commands 
 
-![](img/11.png)
+![](_img/11.png)
 
 Remember that with Opa you can change the distribution:
 
-![](img/13.png)
+![](_img/13.png)
 
 And observe the effects of such action 
 
-![](img/12.png)
+![](_img/12.png)
 
 
 To tidy up after the test do not forget about 
@@ -559,7 +559,7 @@ Each subdir contains:
 
 Integration of each managed-system and Lupus requires pair of Ingress and Egress agents.
 
-![](img/14.png)
+![](_img/14.png)
 
 Interfaces Lupin and Lupout are well defined and specified. This is the way to talk with Lupus elements.
 
@@ -587,11 +587,11 @@ So as you can see it requires some programmistic work for the development of Ing
 ### Support for non-linear loops. 
 
 Our current loop implement is linear.
-![](img/15.png)
+![](_img/15.png)
 
 We need to come up with an idea that our loop can be build of more complicated relationships between elements e.g.
 
-![](img/16.png)
+![](_img/16.png)
 
 ### More complex set of actions
 
