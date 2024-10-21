@@ -3,7 +3,7 @@
 <p align="center">
   <img src="img/logo.png"/>
   <br>
-  <i>Lupus - design and run loop in Kubernetes </i>
+  <i>Lupus - design and run loops in Kubernetes </i>
   <br>
 </p>
 

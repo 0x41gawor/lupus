@@ -555,7 +555,7 @@ Each subdir contains:
 - ingress-agent application (a python script)
 - egress-agent application (a python script)
 
-## Ingress and Egress agent
+### Ingress and Egress agents
 
 Integration of each managed-system and Lupus requires pair of Ingress and Egress agents.
 
@@ -571,7 +571,7 @@ Lupin interface specifies that Ingress Agent has to update the `input` field of 
 
 Lpuout interface specifies that Egress Agent has to accept a HTTP request with json body with root field `commands` being the array of commands understood by Lupus which managed-system has to perform. Egress Agent mission is to translate these commands to be understandable for managed-system API and execute them.
 
-## Define the user
+### Define the user
 The target audicence is an organisation that has to manage lots of systems and thrives for a place where multiple loops can be defined, managed and have their runtime environment. 
 
 Each use of Lupus for management of some managed-system requires to:
@@ -584,7 +584,7 @@ Each use of Lupus for management of some managed-system requires to:
 So as you can see it requires some programmistic work for the development of Ingress/Egress Agents. The second part can be done in some external tool, whatever is more convenient for someone. 3rd part requires to get familiar with our syntax and to uderstand the syntax of YAML files.
 
 
-## Support for non-linear loops. 
+### Support for non-linear loops. 
 
 Our current loop implement is linear.
 ![](img/15.png)
@@ -593,7 +593,7 @@ We need to come up with an idea that our loop can be build of more complicated r
 
 ![](img/16.png)
 
-## More complex set of actions
+### More complex set of actions
 
 Currently our elements perform one single action with 4 steps:
 1. receive the input in form of Status update from previous element
@@ -644,7 +644,30 @@ Decide controller will have to has the interpreter for such actions.
 
 ## New Architecture
 
-//TODO
+<img src="img/3rd-arch.drawio.svg" style="zoom: 200%">
 
+## Steps in 3rd sprint
 
-
+- [ ] Prepare managed system directory (code them as the Lupus would not exist)
+	- [ ] Code the upf-net managed system
+	- [ ] Code the netflix-server managed system
+- [ ] Prepare Ingress/Egress agents for both managed systems
+	- [ ] Prepare specification for Lupin and Lupot interfaces (based on last sprint) (create docs/ dir)
+	- [ ] Code the Ingress/Egress agents for upf-net 
+	- [ ] Code the Ingress/Egress agents for netflix-server 
+- [ ] Learn Go and Kubebuilder code
+	- [ ] Analyze the code of controllers written so far
+	- [ ] Make docs of most popular used functionalities
+	- [ ] Rethink the idle run
+- [ ] Code the Lupus
+	- [ ] Prepare CRD of Observe CR, Decide CR, Learn CR and Execute CR
+	- [ ] Prepare CRD of Master CR
+	- [ ] Write controller of Master CR
+	- [ ] Write controller of Observe CR
+	- [ ] Write controller of Learn CR (let is save the input to the file)
+	- [ ] Research of gRPC communication, so you will have two types od `destination`, create gRPC bouncer, skip NoSQL and GraphQL as for now
+	- [ ] Write controller of Decide CR (along with actions interpreter)
+	- [ ] Write controller of Execute CR
+- [ ] Create User Guidelines (What user has to do to use our platform)
+	- [ ] Draft 
+	- [ ] Github docs
