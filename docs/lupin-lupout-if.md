@@ -39,4 +39,4 @@ At this point, Lupus, based on its input (feedback) on Lupin interface, has deci
 
 Lupus has prepared some set of commands that have to be executed on managed-system.
 
-Egress Agent implements the Lupout interface if it exposes a HTTP Server listening for these commands. Commands will arrive in body in json format with the root object named `commands`. The mission of Egress Agent is to translate this json into set of actions that can be performed with usage of managed-system exposed API.
+Egress Agent implements the Lupout interface if it exposes a HTTP Server listening for these commands. Commands will arrive in body in json format with the root object named `commands`. The mission of Egress Agent is to translate this json into set of actions that can be performed with usage of managed-system exposed API. Endpoint should have path `/api/commands` and method `POST`.
