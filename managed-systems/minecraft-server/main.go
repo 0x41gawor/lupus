@@ -126,7 +126,7 @@ func main() {
 	http.HandleFunc("/api/data", dataHandler)
 	http.HandleFunc("/api/set-license", setLicenseHandler)
 	go func() {
-		if err := http.ListenAndServe(":4343", nil); err != nil {
+		if err := http.ListenAndServe(":6000", nil); err != nil {
 			log.Fatalf("Failed to start HTTP server: %v", err)
 		}
 	}()

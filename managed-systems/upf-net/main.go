@@ -174,7 +174,7 @@ func main() {
 	http.HandleFunc("/api/data", sessions.DataHandler)
 
 	go func() {
-		if err := http.ListenAndServe(":4040", nil); err != nil {
+		if err := http.ListenAndServe(":5000", nil); err != nil {
 			log.Fatalf("Failed to start server: %v", err)
 		}
 	}()

@@ -1,4 +1,4 @@
-# Upf-net
+# upf-net
 ## Descr
 
 The managed system here, is a network of User Plane Function nodes of some 5G system.
