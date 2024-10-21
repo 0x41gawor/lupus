@@ -2,15 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
-	"os"
-	"os/signal"
-	"strconv"
 	"sync"
-	"syscall"
 	"time"
 )
 
@@ -18,11 +15,6 @@ import (
 type Command struct {
 	CPU *int `json:"cpu,omitempty"`
 	RAM *int `json:"ram,omitempty"`
-}
-
-// CommandsRequest represents the JSON structure with a set of commands
-type CommandsRequest struct {
-	Commands []Command `json:"commands"`
 }
 
 // ServerData holds the CPU and RAM usage information
@@ -66,14 +58,10 @@ func updateUsage() {
 	if data.RAM.InUse > data.RAM.License {
 		data.RAM.InUse = data.RAM.License
 	}
-
-	// Log current usage data to the screen
-	logUsage()
 }
 
 // Log current data to the screen in the specified format
 func logUsage() {
-	round++
 	dataJSON, err := json.Marshal(data)
 	if err != nil {
 		log.Println("Error marshaling JSON:", err)
@@ -95,9 +83,9 @@ func dataHandler(w http.ResponseWriter, r *http.Request) {
 
 // Handler for the `/api/set-license` endpoint
 func setLicenseHandler(w http.ResponseWriter, r *http.Request) {
-	var request CommandsRequest
+	var command Command
 
-	err := json.NewDecoder(r.Body).Decode(&request)
+	err := json.NewDecoder(r.Body).Decode(&command)
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -107,17 +95,15 @@ func setLicenseHandler(w http.ResponseWriter, r *http.Request) {
 	defer dataMutex.Unlock()
 
 	// Apply the commands and log the old and new values
-	for _, command := range request.Commands {
-		if command.CPU != nil {
-			oldCPU := data.CPU.License
-			data.CPU.License = *command.CPU
-			log.Printf("CPU License changed from: %d to: %d", oldCPU, data.CPU.License)
-		}
-		if command.RAM != nil {
-			oldRAM := data.RAM.License
-			data.RAM.License = *command.RAM
-			log.Printf("RAM License changed from: %d to:  %d", oldRAM, data.RAM.License)
-		}
+	if command.CPU != nil {
+		oldCPU := data.CPU.License
+		data.CPU.License = *command.CPU
+		log.Printf("CPU License changed from: %d to: %d", oldCPU, data.CPU.License)
+	}
+	if command.RAM != nil {
+		oldRAM := data.RAM.License
+		data.RAM.License = *command.RAM
+		log.Printf("RAM License changed from: %d to:  %d", oldRAM, data.RAM.License)
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -126,16 +112,9 @@ func setLicenseHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	// Parse the interval from command line arguments
-	intervalArg := "5" // default interval of 5 seconds
-	if len(os.Args) > 1 {
-		intervalArg = os.Args[1]
-	}
-
-	parsedInterval, err := strconv.Atoi(intervalArg)
-	if err != nil {
-		log.Fatal("Invalid interval argument:", err)
-	}
-	interval = time.Duration(parsedInterval) * time.Second
+	interval := flag.Int("interval", 5, "Interval in seconds for applying random changes")
+	flag.Parse()
+	log.Printf("Round interval time set as: %d seconds", *interval)
 
 	// Initialize the server data
 	data.CPU.License = 20
@@ -144,29 +123,22 @@ func main() {
 	data.RAM.InUse = 5  // Starting with 5% RAM usage
 
 	// Create a ticker to update server usage periodically
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-
-	// Handle graceful shutdown
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
-
+	http.HandleFunc("/api/data", dataHandler)
+	http.HandleFunc("/api/set-license", setLicenseHandler)
 	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				updateUsage()
-			case <-stop:
-				log.Println("Shutting down server...")
-				os.Exit(0)
-			}
+		if err := http.ListenAndServe(":4343", nil); err != nil {
+			log.Fatalf("Failed to start HTTP server: %v", err)
 		}
 	}()
 
-	// Set up the HTTP server and routes
-	http.HandleFunc("/api/data", dataHandler)
-	http.HandleFunc("/api/set-license", setLicenseHandler)
-
-	log.Println("Server is running...")
-	log.Fatal(http.ListenAndServe(":4242", nil))
+	// Main loop
+	ticker := time.NewTicker(1 * time.Second * time.Duration(*interval))
+	for ; true; <-ticker.C {
+		// apply random change on nodes
+		updateUsage()
+		// increment the round number
+		round++
+		// log out the current node distribution
+		logUsage()
+	}
 }
