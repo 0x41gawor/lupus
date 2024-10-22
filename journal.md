@@ -764,3 +764,51 @@ Then, in Contoller code
     }
 ```
 
+Sample Master CR spec:
+```yaml
+apiVersion: lupus.gawor.io/v1
+kind: Master
+metadata:
+  labels:
+    app.kubernetes.io/name: lupus
+    app.kubernetes.io/managed-by: kustomize
+  name: master-sample
+spec:
+  name: "example-master"
+  elements:
+    - name: "observe-1"
+      type: "Observe"
+      observeSpec:
+        next:
+          - name: "decide"
+            tags: ["*"]
+    - name: "decide-1"
+      type: "Decide"
+      decideSpec:
+        actions:
+          - name: "send-to-http"
+            input_tag: "*"
+            destination:
+              type: "HTTP"
+              http:
+                path: "/api/decision"
+                method: "POST"
+        next:
+          - name: "learn"
+            tags: ["*"]
+    - name: "learn-1"
+      type: "Learn"
+      learnSpec:
+        destination:
+          type: "FILE"
+          file:
+            path: "/data/output.json"
+    - name: "execute-1"
+      type: "Execute"
+      executeSpec:
+        destination:
+          type: "HTTP"
+          http:
+            path: "/api/execute"
+            method: "POST"
+```

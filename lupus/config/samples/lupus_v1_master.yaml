@@ -1,0 +1,46 @@
+apiVersion: lupus.gawor.io/v1
+kind: Master
+metadata:
+  labels:
+    app.kubernetes.io/name: lupus
+    app.kubernetes.io/managed-by: kustomize
+  name: adam
+spec:
+  name: "adam"
+  elements:
+    - name: "observe1"
+      type: "Observe"
+      observeSpec:
+        next:
+          - name: "decide"
+            tags: ["*"]
+          - name: "learn"
+            tags: ["*"]
+    - name: "decide1"
+      type: "Decide"
+      decideSpec:
+        actions:
+          - name: "send-to-opa"
+            input_tag: "*"
+            destination:
+              type: "Opa"
+              opa:
+                path: "http://192.168.56.111:8181/v1/data/mmet/move_commands"
+        next:
+          - name: "learn"
+            tags: ["*"]
+    - name: "learn1"
+      type: "Learn"
+      learnSpec:
+        destination:
+          type: "FILE"
+          file:
+            path: "/data/output.json"
+    - name: "execute1"
+      type: "Execute"
+      executeSpec:
+        destination:
+          type: "HTTP"
+          http:
+            path: "http://192.168.56.111:5001/api/commands"
+            method: "POST"

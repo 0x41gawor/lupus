@@ -65,3 +65,24 @@ type Action struct {
 	// Specifies Destination where the input has to be sent
 	Destination Destination `json:"destination"`
 }
+
+// Element is a polymorphic structure that can represent different types of specs
+type Element struct {
+	// Name is the name of the element
+	Name string `json:"name"`
+
+	// Type specifies the type of the element ("Observe", "Decide", "Learn", "Execute", etc.)
+	Type string `json:"type" kubebuilder:"validation:Enum=Observe;Decide;Learn;Execute"`
+
+	// ObserveSpec contains the spec if the type is "Observe"
+	ObserveSpec *ObserveSpec `json:"observeSpec,omitempty"`
+
+	// DecideSpec contains the spec if the type is "Decide"
+	DecideSpec *DecideSpec `json:"decideSpec,omitempty"`
+
+	// LearnSpec contains the spec if the type is "Learn"
+	LearnSpec *LearnSpec `json:"learnSpec,omitempty"`
+
+	// ExecuteSpec contains the spec if the type is "Execute"
+	ExecuteSpec *ExecuteSpec `json:"executeSpec,omitempty"`
+}

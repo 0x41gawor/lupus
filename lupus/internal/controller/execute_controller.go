@@ -18,6 +18,8 @@ package controller
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -25,12 +27,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	lupusv1 "github.com/0x41gawor/lupus/api/v1"
+	"github.com/go-logr/logr"
 )
 
 // ExecuteReconciler reconciles a Execute object
 type ExecuteReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+
+	Logger      logr.Logger
+	ElementType string
 }
 
 // +kubebuilder:rbac:groups=lupus.gawor.io,resources=executes,verbs=get;list;watch;create;update;patch;delete
@@ -47,8 +53,9 @@ type ExecuteReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
 func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
-
+	r.ElementType = "Execute"
+	r.Logger = log.FromContext(ctx)
+	r.Logger.Info(fmt.Sprintf("=================== START OF %s Reconciler: \n", strings.ToUpper(r.ElementType)))
 	// TODO(user): your logic here
 
 	return ctrl.Result{}, nil

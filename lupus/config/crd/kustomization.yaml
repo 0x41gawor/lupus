@@ -6,6 +6,7 @@ resources:
 - bases/lupus.gawor.io_decides.yaml
 - bases/lupus.gawor.io_learns.yaml
 - bases/lupus.gawor.io_executes.yaml
+- bases/lupus.gawor.io_masters.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:
@@ -19,6 +20,7 @@ patches:
 #- path: patches/cainjection_in_decides.yaml
 #- path: patches/cainjection_in_learns.yaml
 #- path: patches/cainjection_in_executes.yaml
+#- path: patches/cainjection_in_masters.yaml
 # +kubebuilder:scaffold:crdkustomizecainjectionpatch
 
 # [WEBHOOK] To enable webhook, uncomment the following section

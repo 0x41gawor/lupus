@@ -10,6 +10,7 @@ rules:
   - decides
   - executes
   - learns
+  - masters
   - observes
   verbs:
   - create
@@ -25,6 +26,7 @@ rules:
   - decides/finalizers
   - executes/finalizers
   - learns/finalizers
+  - masters/finalizers
   - observes/finalizers
   verbs:
   - update
@@ -34,6 +36,7 @@ rules:
   - decides/status
   - executes/status
   - learns/status
+  - masters/status
   - observes/status
   verbs:
   - get

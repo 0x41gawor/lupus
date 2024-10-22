@@ -1,0 +1,333 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.1
+  name: masters.lupus.gawor.io
+spec:
+  group: lupus.gawor.io
+  names:
+    kind: Master
+    listKind: MasterList
+    plural: masters
+    singular: master
+  scope: Namespaced
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: Master is the Schema for the masters API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: MasterSpec defines the desired state of Master
+            properties:
+              elements:
+                description: Elements is a list of elements, each with its name, type,
+                  and corresponding spec
+                items:
+                  description: Element is a polymorphic structure that can represent
+                    different types of specs
+                  properties:
+                    decideSpec:
+                      description: DecideSpec contains the spec if the type is "Decide"
+                      properties:
+                        actions:
+                          description: Actions is a list of Actions that Decide has
+                            to perform see Action in types.go
+                          items:
+                            description: |-
+                              Action is used in Decide spec
+                              It represents the Action that Decide has to perform on its input
+                              As for now only the Action of sending the Input somewhere (to HTTP server, Open Policy Agent, gRPC service) is supported
+                              Thus Action includes its name, input_tag (part of input that has to be sent) and destination
+                            properties:
+                              destination:
+                                description: Specifies Destination where the input
+                                  has to be sent
+                                properties:
+                                  file:
+                                    description: File-specific fields
+                                    properties:
+                                      path:
+                                        type: string
+                                    required:
+                                    - path
+                                    type: object
+                                  grpc:
+                                    description: gRPC-specific fields
+                                    properties:
+                                      host:
+                                        type: string
+                                      method:
+                                        type: string
+                                      service:
+                                        type: string
+                                    required:
+                                    - host
+                                    - method
+                                    - service
+                                    type: object
+                                  http:
+                                    description: HTTP-specific fields
+                                    properties:
+                                      method:
+                                        type: string
+                                      path:
+                                        type: string
+                                    required:
+                                    - method
+                                    - path
+                                    type: object
+                                  opa:
+                                    description: Opa-specific fields
+                                    properties:
+                                      path:
+                                        type: string
+                                    required:
+                                    - path
+                                    type: object
+                                  type:
+                                    description: 'Discriminator: "HTTP", "FILE", "gRPC",
+                                      etc.'
+                                    type: string
+                                required:
+                                - type
+                                type: object
+                              input_tag:
+                                description: Specifies the root field of input json
+                                  that will be send, pass * for whole input to be
+                                  sent
+                                type: string
+                              name:
+                                description: Name of the Action, it is for designer
+                                  to ease the management of the Loop
+                                type: string
+                            required:
+                            - destination
+                            - input_tag
+                            - name
+                            type: object
+                          type: array
+                        next:
+                          items:
+                            description: |-
+                              Next is used in Observe Spec
+                              It specifies to which element forward the input
+                              It allows not to forward the whole input, but also parts of it
+                            properties:
+                              name:
+                                description: |-
+                                  Kubernetes name of the API Object
+                                  This is the name that you give in Master CR spec
+                                type: string
+                              tags:
+                                description: |-
+                                  List of input tags (json root fields) that have to be forwarded
+                                  Pass array with single element '*' to forward the whole input
+                                items:
+                                  type: string
+                                type: array
+                            required:
+                            - name
+                            - tags
+                            type: object
+                          type: array
+                      type: object
+                    executeSpec:
+                      description: ExecuteSpec contains the spec if the type is "Execute"
+                      properties:
+                        destination:
+                          description: |-
+                            Destination specifies where the input of Execute has to be sent
+                            It will be always of type HTTP since this is what Lupout interface specifies it to be, but we will reuse the known
+                          properties:
+                            file:
+                              description: File-specific fields
+                              properties:
+                                path:
+                                  type: string
+                              required:
+                              - path
+                              type: object
+                            grpc:
+                              description: gRPC-specific fields
+                              properties:
+                                host:
+                                  type: string
+                                method:
+                                  type: string
+                                service:
+                                  type: string
+                              required:
+                              - host
+                              - method
+                              - service
+                              type: object
+                            http:
+                              description: HTTP-specific fields
+                              properties:
+                                method:
+                                  type: string
+                                path:
+                                  type: string
+                              required:
+                              - method
+                              - path
+                              type: object
+                            opa:
+                              description: Opa-specific fields
+                              properties:
+                                path:
+                                  type: string
+                              required:
+                              - path
+                              type: object
+                            type:
+                              description: 'Discriminator: "HTTP", "FILE", "gRPC",
+                                etc.'
+                              type: string
+                          required:
+                          - type
+                          type: object
+                      required:
+                      - destination
+                      type: object
+                    learnSpec:
+                      description: LearnSpec contains the spec if the type is "Learn"
+                      properties:
+                        destination:
+                          description: This is the Destination in which Learn will
+                            store its Input
+                          properties:
+                            file:
+                              description: File-specific fields
+                              properties:
+                                path:
+                                  type: string
+                              required:
+                              - path
+                              type: object
+                            grpc:
+                              description: gRPC-specific fields
+                              properties:
+                                host:
+                                  type: string
+                                method:
+                                  type: string
+                                service:
+                                  type: string
+                              required:
+                              - host
+                              - method
+                              - service
+                              type: object
+                            http:
+                              description: HTTP-specific fields
+                              properties:
+                                method:
+                                  type: string
+                                path:
+                                  type: string
+                              required:
+                              - method
+                              - path
+                              type: object
+                            opa:
+                              description: Opa-specific fields
+                              properties:
+                                path:
+                                  type: string
+                              required:
+                              - path
+                              type: object
+                            type:
+                              description: 'Discriminator: "HTTP", "FILE", "gRPC",
+                                etc.'
+                              type: string
+                          required:
+                          - type
+                          type: object
+                      required:
+                      - destination
+                      type: object
+                    name:
+                      description: Name is the name of the element
+                      type: string
+                    observeSpec:
+                      description: ObserveSpec contains the spec if the type is "Observe"
+                      properties:
+                        next:
+                          description: List of elements of to which forward the input
+                          items:
+                            description: |-
+                              Next is used in Observe Spec
+                              It specifies to which element forward the input
+                              It allows not to forward the whole input, but also parts of it
+                            properties:
+                              name:
+                                description: |-
+                                  Kubernetes name of the API Object
+                                  This is the name that you give in Master CR spec
+                                type: string
+                              tags:
+                                description: |-
+                                  List of input tags (json root fields) that have to be forwarded
+                                  Pass array with single element '*' to forward the whole input
+                                items:
+                                  type: string
+                                type: array
+                            required:
+                            - name
+                            - tags
+                            type: object
+                          type: array
+                      type: object
+                    type:
+                      description: Type specifies the type of the element ("Observe",
+                        "Decide", "Learn", "Execute", etc.)
+                      type: string
+                  required:
+                  - name
+                  - type
+                  type: object
+                type: array
+              name:
+                description: Name of the Master CR
+                type: string
+            required:
+            - elements
+            - name
+            type: object
+          status:
+            description: MasterStatus defines the observed state of Master
+            properties:
+              isActive:
+                description: Active flag. If set to true, the loop elements are running,
+                  if not the controller will instantiate them
+                type: boolean
+            required:
+            - isActive
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
