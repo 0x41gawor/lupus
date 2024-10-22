@@ -20,7 +20,9 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,9 +36,12 @@ import (
 type ObserveReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
-
+	// Static fields of Reconciler
 	Logger      logr.Logger
 	ElementType string
+	// Dynamic fields of Reconciler
+	IsAfterDryRun bool
+	LastUpdated   time.Time
 }
 
 // +kubebuilder:rbac:groups=lupus.gawor.io,resources=observes,verbs=get;list;watch;create;update;patch;delete
@@ -56,7 +61,70 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	r.ElementType = "Observe"
 	r.Logger = log.FromContext(ctx)
 	r.Logger.Info(fmt.Sprintf("=================== START OF %s Reconciler: \n", strings.ToUpper(r.ElementType)))
-	// TODO(user): your logic here
+
+	// Step 1 - Fetch the reconciled resource
+	var element lupusv1.Observe
+	if err := r.Get(ctx, req.NamespacedName, &element); err != nil {
+		r.Logger.Info("Failed to fetch Observe instance", "error", err)
+		// If the resource is not found, we return and don't requeue
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	// Step 2 - Checks
+	if !r.IsAfterDryRun {
+		// clear status as it can contain some garbage
+		element.Status.Input = runtime.RawExtension{}
+		element.Status.LastUpdated = metav1.Time{}
+		// set the flag
+		r.IsAfterDryRun = true
+		r.Logger.Info("This is the dry run, no need to reconcile.")
+		return ctrl.Result{}, nil
+	}
+	// Check for double update in single loop iteration. If r.LastUpdated time is zero it means it is the 2nd run (so double update can't happen)
+	// If the Status.LastUpdated time is non-zero we have to check if its not the same as the previous one
+	if !r.LastUpdated.IsZero() && !element.Status.LastUpdated.Time.After(r.LastUpdated) {
+		// If this condition is true it means we are reconciling again in the same iteration
+		r.Logger.Info("Already reconciled in this loop iteration, no need to reconcile")
+	}
+
+	// Step 3 - We reconcile, so let's begin the process with variable settings
+	var input runtime.RawExtension = element.Status.Input
+	r.LastUpdated = time.Now()
+
+	// Step 4 - Unmarshall input into map[string]interface{} so you can easily access its root elements
+	inputMap, err := extractRawExtension(input)
+	if err != nil {
+		r.Logger.Error(err, "Cannot unmarshall the input")
+		return ctrl.Result{}, nil
+	}
+	print(inputMap)
+
+	//
+	for _, nextElement := range element.Spec.Next {
+		// Access the fields of each Next object
+		fmt.Printf("Processing Next element with Name: %s\n", nextElement.Name)
+		fmt.Printf("Tags to forward: %v\n", nextElement.Tags)
+
+		// // You can add additional logic here to process each Next element
+		// for _, outputTag := range nextElement.Tags {
+		// 	var output runtime.RawExtension
+		// 	// derive the output based on tag
+		// 	if outputTag == "*" {
+		// 		output, err = mapToRawExtension(inputMap)
+		// 		if err != nil {
+		// 			r.Logger.Error(err, "Cannot convert map[string]interface{} to RawExtension")
+		// 		}
+		// 		break
+		// 	} else {
+		// 		output, err := interfaceToRawExtension(inputMap[outputTag])
+		// 		if err != nil {
+		// 			r.Logger.Error(err, "Cannot convert interface{} to RawExtension")
+		// 		}
+		// 	}
+		// 	// fetch the nextElement
+		// 	// Here you need to adjust code based on nextElement type
+		// }
+	}
 
 	return ctrl.Result{}, nil
 }
