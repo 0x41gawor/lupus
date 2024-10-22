@@ -30,7 +30,7 @@ import (
 	lupusv1 "github.com/0x41gawor/lupus/api/v1"
 )
 
-var _ = Describe("Loop Controller", func() {
+var _ = Describe("Learn Controller", func() {
 	Context("When reconciling a resource", func() {
 		const resourceName = "test-resource"
 
@@ -40,13 +40,13 @@ var _ = Describe("Loop Controller", func() {
 			Name:      resourceName,
 			Namespace: "default", // TODO(user):Modify as needed
 		}
-		loop := &lupusv1.Loop{}
+		learn := &lupusv1.Learn{}
 
 		BeforeEach(func() {
-			By("creating the custom resource for the Kind Loop")
-			err := k8sClient.Get(ctx, typeNamespacedName, loop)
+			By("creating the custom resource for the Kind Learn")
+			err := k8sClient.Get(ctx, typeNamespacedName, learn)
 			if err != nil && errors.IsNotFound(err) {
-				resource := &lupusv1.Loop{
+				resource := &lupusv1.Learn{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      resourceName,
 						Namespace: "default",
@@ -59,16 +59,16 @@ var _ = Describe("Loop Controller", func() {
 
 		AfterEach(func() {
 			// TODO(user): Cleanup logic after each test, like removing the resource instance.
-			resource := &lupusv1.Loop{}
+			resource := &lupusv1.Learn{}
 			err := k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Cleanup the specific resource instance Loop")
+			By("Cleanup the specific resource instance Learn")
 			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
 		})
 		It("should successfully reconcile the resource", func() {
 			By("Reconciling the created resource")
-			controllerReconciler := &LoopReconciler{
+			controllerReconciler := &LearnReconciler{
 				Client: k8sClient,
 				Scheme: k8sClient.Scheme(),
 			}

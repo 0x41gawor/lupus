@@ -1,3 +1,13 @@
+# Journal.md
+
+Step by step description of my accomplishements.
+
+Toc:
+- [Sprint 1](#1st-sprint)
+- [Sprint 2](#2nd-sprint)
+- [Sprint 3](#3rd-sprint)
+- [Commands for the start of new sprint](#worth--to-add)
+
 # 1st Sprint
 ## Achitecture
 ![](_img/5.png)
@@ -644,7 +654,7 @@ Decide controller will have to has the interpreter for such actions.
 
 ## New Architecture
 
-<img src="img/3rd-arch.drawio.svg" style="zoom: 200%">
+<img src="_img/3rd-arch.drawio.svg" style="zoom: 200%">
 
 ## Steps in 3rd sprint
 
@@ -671,3 +681,86 @@ Decide controller will have to has the interpreter for such actions.
 - [ ] Create User Guidelines (What user has to do to use our platform)
 	- [ ] Draft 
 	- [ ] Github docs
+
+### Worth  to add
+	In step 4 (Code the Lupus) as in every preeceding sprint I like to start with a greenfield project. I am deleting the whole kubebuilder project and creating a plain one:
+
+	```sh
+	# When in lupus main dir
+	rm -rf lupus
+	mkdir lupus
+	cd lupus
+	kubebuilder init --domain gawor.com --repo github.com/0x41gawor/lupus
+	# then create apis with 
+	kubebuilder create api --group lupus --version v1 --kind Execute
+	```
+
+### Let's go
+
+Sample observe spec:
+```yaml
+spec:
+  next:
+    - name: decide
+      tags: ["*"]
+    - name: learn
+      tags: ["*"]
+```
+
+Destination in yaml
+```yaml
+destination:
+    type: "HTTP"
+    http:
+      path: "/api/v1/resource"
+      method: "POST"
+```
+```yaml
+destination:
+    type: "FILE"
+    file:
+      path: "/tmp/output.txt"
+```
+```yaml
+destination:
+    type: "gRPC"
+    grpc:
+      host: "localhost:50051"
+      service: "UserService"
+      method: "GetUser"
+```
+
+Then, in Contoller code
+```yaml
+ dest := resource.Spec.Destination
+
+    switch dest.Type {
+    case "HTTP":
+        if dest.HTTP == nil {
+            return ctrl.Result{}, fmt.Errorf("HTTP destination type selected but HTTP fields are not set")
+        }
+        // Process HTTP Destination
+        fmt.Printf("Processing HTTP Destination: Path=%s, Method=%s\n", dest.HTTP.Path, dest.HTTP.Method)
+        // Add your HTTP processing logic here
+
+    case "FILE":
+        if dest.File == nil {
+            return ctrl.Result{}, fmt.Errorf("FILE destination type selected but File fields are not set")
+        }
+        // Process File Destination
+        fmt.Printf("Processing File Destination: Path=%s\n", dest.File.Path)
+        // Add your File processing logic here
+
+    case "gRPC":
+        if dest.GRPC == nil {
+            return ctrl.Result{}, fmt.Errorf("gRPC destination type selected but gRPC fields are not set")
+        }
+        // Process gRPC Destination
+        fmt.Printf("Processing gRPC Destination: Host=%s, Service=%s, Method=%s\n", dest.GRPC.Host, dest.GRPC.Service, dest.GRPC.Method)
+        // Add your gRPC processing logic here
+
+    default:
+        return ctrl.Result{}, fmt.Errorf("unknown destination type: %s", dest.Type)
+    }
+```
+

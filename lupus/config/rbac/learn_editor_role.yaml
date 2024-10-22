@@ -1,23 +1,27 @@
-# permissions for end users to view loops.
+# permissions for end users to edit learns.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: lupus
     app.kubernetes.io/managed-by: kustomize
-  name: loop-viewer-role
+  name: learn-editor-role
 rules:
 - apiGroups:
   - lupus.gawor.io
   resources:
-  - loops
+  - learns
   verbs:
+  - create
+  - delete
   - get
   - list
+  - patch
+  - update
   - watch
 - apiGroups:
   - lupus.gawor.io
   resources:
-  - loops/status
+  - learns/status
   verbs:
   - get

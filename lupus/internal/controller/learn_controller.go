@@ -27,26 +27,26 @@ import (
 	lupusv1 "github.com/0x41gawor/lupus/api/v1"
 )
 
-// ExecuteReconciler reconciles a Execute object
-type ExecuteReconciler struct {
+// LearnReconciler reconciles a Learn object
+type LearnReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=lupus.gawor.io,resources=executes,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=lupus.gawor.io,resources=executes/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=lupus.gawor.io,resources=executes/finalizers,verbs=update
+// +kubebuilder:rbac:groups=lupus.gawor.io,resources=learns,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=lupus.gawor.io,resources=learns/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=lupus.gawor.io,resources=learns/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(user): Modify the Reconcile function to compare the state specified by
-// the Execute object against the actual cluster state, and then
+// the Learn object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
-func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *LearnReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
 	// TODO(user): your logic here
@@ -55,8 +55,8 @@ func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *ExecuteReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *LearnReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&lupusv1.Execute{}).
+		For(&lupusv1.Learn{}).
 		Complete(r)
 }

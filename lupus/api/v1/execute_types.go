@@ -18,7 +18,7 @@ package v1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -26,19 +26,15 @@ import (
 
 // ExecuteSpec defines the desired state of Execute
 type ExecuteSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-	// Name is a string field
-	Name string `json:"name"`
-	// NextElement
-	NextElement string `json:"nextElement"`
-	// Url contains URL details with path and method
-	Url URL `json:"url"`
+	// Destination specifies where the input of Execute has to be sent
+	// It will be always of type HTTP since this is what Lupout interface specifies it to be, but we will reuse the known
+	// +kubebuilder:validation:Required
+	Destination Destination `json:"destination,omitempty"`
 }
 
 // ExecuteStatus defines the observed state of Execute
 type ExecuteStatus struct {
-	// Input for the Decision
+	// Input contains operational data
 	Input runtime.RawExtension `json:"input"`
 	// Timestamp of the last update
 	LastUpdated metav1.Time `json:"lastUpdated"`

@@ -39,37 +39,111 @@ spec:
           spec:
             description: DecideSpec defines the desired state of Decide
             properties:
-              name:
-                description: |-
-                  INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-                  Important: Run "make" to regenerate code after modifying this file
-                  Name is a string field
-                type: string
-              nextElement:
-                description: NextElement
-                type: string
-              url:
-                description: Url contains URL details with path and method of Open
-                  Policy Agent endpoint to be hit by
-                properties:
-                  method:
-                    type: string
-                  path:
-                    type: string
-                required:
-                - method
-                - path
-                type: object
-            required:
-            - name
-            - nextElement
-            - url
+              actions:
+                description: Actions is a list of Actions that Decide has to perform
+                  see Action in types.go
+                items:
+                  description: |-
+                    Action is used in Decide spec
+                    It represents the Action that Decide has to perform on its input
+                    As for now only the Action of sending the Input somewhere (to HTTP server, Open Policy Agent, gRPC service) is supported
+                    Thus Action includes its name, input_tag (part of input that has to be sent) and destination
+                  properties:
+                    destination:
+                      description: Specifies Destination where the input has to be
+                        sent
+                      properties:
+                        file:
+                          description: File-specific fields
+                          properties:
+                            path:
+                              type: string
+                          required:
+                          - path
+                          type: object
+                        grpc:
+                          description: gRPC-specific fields
+                          properties:
+                            host:
+                              type: string
+                            method:
+                              type: string
+                            service:
+                              type: string
+                          required:
+                          - host
+                          - method
+                          - service
+                          type: object
+                        http:
+                          description: HTTP-specific fields
+                          properties:
+                            method:
+                              type: string
+                            path:
+                              type: string
+                          required:
+                          - method
+                          - path
+                          type: object
+                        opa:
+                          description: Opa-specific fields
+                          properties:
+                            path:
+                              type: string
+                          required:
+                          - path
+                          type: object
+                        type:
+                          description: 'Discriminator: "HTTP", "FILE", "gRPC", etc.'
+                          type: string
+                      required:
+                      - type
+                      type: object
+                    input_tag:
+                      description: Specifies the root field of input json that will
+                        be send, pass * for whole input to be sent
+                      type: string
+                    name:
+                      description: Name of the Action, it is for designer to ease
+                        the management of the Loop
+                      type: string
+                  required:
+                  - destination
+                  - input_tag
+                  - name
+                  type: object
+                type: array
+              next:
+                items:
+                  description: |-
+                    Next is used in Observe Spec
+                    It specifies to which element forward the input
+                    It allows not to forward the whole input, but also parts of it
+                  properties:
+                    name:
+                      description: |-
+                        Kubernetes name of the API Object
+                        This is the name that you give in Master CR spec
+                      type: string
+                    tags:
+                      description: |-
+                        List of input tags (json root fields) that have to be forwarded
+                        Pass array with single element '*' to forward the whole input
+                      items:
+                        type: string
+                      type: array
+                  required:
+                  - name
+                  - tags
+                  type: object
+                type: array
             type: object
           status:
             description: DecideStatus defines the observed state of Decide
             properties:
               input:
-                description: Input for the Decision
+                description: Input contains operational data
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               lastUpdated:

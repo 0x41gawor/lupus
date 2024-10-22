@@ -9,7 +9,7 @@ rules:
   resources:
   - decides
   - executes
-  - loops
+  - learns
   - observes
   verbs:
   - create
@@ -24,7 +24,7 @@ rules:
   resources:
   - decides/finalizers
   - executes/finalizers
-  - loops/finalizers
+  - learns/finalizers
   - observes/finalizers
   verbs:
   - update
@@ -33,7 +33,7 @@ rules:
   resources:
   - decides/status
   - executes/status
-  - loops/status
+  - learns/status
   - observes/status
   verbs:
   - get

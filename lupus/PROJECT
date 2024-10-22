@@ -32,7 +32,7 @@ resources:
   controller: true
   domain: gawor.io
   group: lupus
-  kind: Execute
+  kind: Learn
   path: github.com/0x41gawor/lupus/api/v1
   version: v1
 - api:
@@ -41,7 +41,7 @@ resources:
   controller: true
   domain: gawor.io
   group: lupus
-  kind: Loop
+  kind: Execute
   path: github.com/0x41gawor/lupus/api/v1
   version: v1
 version: "3"

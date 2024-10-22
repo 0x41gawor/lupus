@@ -18,36 +18,24 @@ package v1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// URL defines the structure for monitored_system_url with path and method
-type URL struct {
-	Path   string `json:"path"`   // URL path
-	Method string `json:"method"` // HTTP method (GET, POST, etc.)
-}
-
 // ObserveSpec defines the desired state of Observe
 type ObserveSpec struct {
-	// Name is a string field
-	Name string `json:"name"`
-
-	// NextElement is a string field
-	NextElement string `json:"nextElement"`
-
-	// Url contains URL details with path and method
-	Url URL `json:"url"`
-
-	// ObservationTimeInterval specifies the times between data fetches in seconds
-	ObservationTimeInterval int32 `json:"observationTimeInterval"`
+	// List of elements of to which forward the input
+	Next []Next `json:"next,omitempty"`
 }
 
 // ObserveStatus defines the observed state of Observe
 type ObserveStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Input contains operational data
+	Input runtime.RawExtension `json:"input"`
+	// Timestamp of the last update
+	LastUpdated metav1.Time `json:"lastUpdated"`
 }
 
 // +kubebuilder:object:root=true

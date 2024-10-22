@@ -22,10 +22,10 @@ resources:
 # default, aiding admins in cluster management. Those roles are
 # not used by the Project itself. You can comment the following lines
 # if you do not want those helpers be installed with your Project.
-- loop_editor_role.yaml
-- loop_viewer_role.yaml
 - execute_editor_role.yaml
 - execute_viewer_role.yaml
+- learn_editor_role.yaml
+- learn_viewer_role.yaml
 - decide_editor_role.yaml
 - decide_viewer_role.yaml
 - observe_editor_role.yaml

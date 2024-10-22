@@ -39,36 +39,46 @@ spec:
           spec:
             description: ObserveSpec defines the desired state of Observe
             properties:
-              name:
-                description: Name is a string field
-                type: string
-              nextElement:
-                description: NextElement is a string field
-                type: string
-              observationTimeInterval:
-                description: ObservationTimeInterval specifies the times between data
-                  fetches in seconds
-                format: int32
-                type: integer
-              url:
-                description: Url contains URL details with path and method
-                properties:
-                  method:
-                    type: string
-                  path:
-                    type: string
-                required:
-                - method
-                - path
-                type: object
-            required:
-            - name
-            - nextElement
-            - observationTimeInterval
-            - url
+              next:
+                description: List of elements of to which forward the input
+                items:
+                  description: |-
+                    Next is used in Observe Spec
+                    It specifies to which element forward the input
+                    It allows not to forward the whole input, but also parts of it
+                  properties:
+                    name:
+                      description: |-
+                        Kubernetes name of the API Object
+                        This is the name that you give in Master CR spec
+                      type: string
+                    tags:
+                      description: |-
+                        List of input tags (json root fields) that have to be forwarded
+                        Pass array with single element '*' to forward the whole input
+                      items:
+                        type: string
+                      type: array
+                  required:
+                  - name
+                  - tags
+                  type: object
+                type: array
             type: object
           status:
             description: ObserveStatus defines the observed state of Observe
+            properties:
+              input:
+                description: Input contains operational data
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
+              lastUpdated:
+                description: Timestamp of the last update
+                format: date-time
+                type: string
+            required:
+            - input
+            - lastUpdated
             type: object
         type: object
     served: true

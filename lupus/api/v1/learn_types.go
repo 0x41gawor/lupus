@@ -24,15 +24,15 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// DecideSpec defines the desired state of Decide
-type DecideSpec struct {
-	// Actions is a list of Actions that Decide has to perform see Action in types.go
-	Actions []Action `json:"actions,omitempty"`
-	Next    []Next   `json:"next,omitempty"`
+// LearnSpec defines the desired state of Learn
+type LearnSpec struct {
+	// This is the Destination in which Learn will store its Input
+	// +kubebuilder:validation:Required
+	Destination Destination `json:"destination,omitempty"`
 }
 
-// DecideStatus defines the observed state of Decide
-type DecideStatus struct {
+// LearnStatus defines the observed state of Learn
+type LearnStatus struct {
 	// Input contains operational data
 	Input runtime.RawExtension `json:"input"`
 	// Timestamp of the last update
@@ -42,24 +42,24 @@ type DecideStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 
-// Decide is the Schema for the decides API
-type Decide struct {
+// Learn is the Schema for the learns API
+type Learn struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   DecideSpec   `json:"spec,omitempty"`
-	Status DecideStatus `json:"status,omitempty"`
+	Spec   LearnSpec   `json:"spec,omitempty"`
+	Status LearnStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// DecideList contains a list of Decide
-type DecideList struct {
+// LearnList contains a list of Learn
+type LearnList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Decide `json:"items"`
+	Items           []Learn `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Decide{}, &DecideList{})
+	SchemeBuilder.Register(&Learn{}, &LearnList{})
 }
