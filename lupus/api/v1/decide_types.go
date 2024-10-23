@@ -28,7 +28,10 @@ import (
 type DecideSpec struct {
 	// Actions is a list of Actions that Decide has to perform see Action in types.go
 	Actions []Action `json:"actions,omitempty"`
-	Next    []Next   `json:"next,omitempty"`
+	// Next is a list of elements to which send the output
+	Next []Next `json:"next,omitempty"`
+	// Name of master element
+	Master string `json:"master,omitempty"`
 }
 
 // DecideStatus defines the observed state of Decide

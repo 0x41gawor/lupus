@@ -114,7 +114,11 @@ spec:
                   - name
                   type: object
                 type: array
+              master:
+                description: Name of master element
+                type: string
               next:
+                description: Next is a list of elements to which send the output
                 items:
                   description: |-
                     Next is used in Observe Spec
@@ -133,9 +137,14 @@ spec:
                       items:
                         type: string
                       type: array
+                    type:
+                      description: Type specifies the type of the element ("Observe",
+                        "Decide", "Learn", "Execute", etc.)
+                      type: string
                   required:
                   - name
                   - tags
+                  - type
                   type: object
                 type: array
             type: object

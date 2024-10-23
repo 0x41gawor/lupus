@@ -24,12 +24,16 @@ def periodic_task(interval, k8s_client):
                     version="v1",
                     namespace='default',
                     plural="observes",
-                    name='adam-observe'
+                    name='adam-observe1'
                 )
                 
                 # Update the `status.input` field with the state
-                monitor = observe
-                monitor['status']['input'] = state
+                observe_status = observe.get('status', {})
+                observe_status['input'] = state
+
+                observe['status'] = observe_status
+                print(observe['status'])
+                
 
                 # Patch the custom resource status
                 k8s_client.patch_namespaced_custom_object_status(
@@ -37,8 +41,8 @@ def periodic_task(interval, k8s_client):
                     version="v1",
                     namespace='default',
                     plural="observes",
-                    name='adam-observe',
-                    body=monitor
+                    name='adam-observe1',
+                    body=observe
                 )
                 print("Updated Kubernetes custom resource status successfully.")
             else:

@@ -30,6 +30,8 @@ type ExecuteSpec struct {
 	// It will be always of type HTTP since this is what Lupout interface specifies it to be, but we will reuse the known
 	// +kubebuilder:validation:Required
 	Destination Destination `json:"destination,omitempty"`
+	// Name of master element
+	Master string `json:"master,omitempty"`
 }
 
 // ExecuteStatus defines the observed state of Execute

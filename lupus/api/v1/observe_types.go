@@ -28,6 +28,8 @@ import (
 type ObserveSpec struct {
 	// List of elements of to which forward the input
 	Next []Next `json:"next,omitempty"`
+	// Name of master element
+	Master string `json:"master,omitempty"`
 }
 
 // ObserveStatus defines the observed state of Observe
@@ -35,7 +37,7 @@ type ObserveStatus struct {
 	// Input contains operational data
 	Input runtime.RawExtension `json:"input"`
 	// Timestamp of the last update
-	LastUpdated metav1.Time `json:"lastUpdated"`
+	LastUpdated metav1.Time `json:"lastUpdated,omitempty"`
 }
 
 // +kubebuilder:object:root=true

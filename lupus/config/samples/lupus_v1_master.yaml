@@ -12,9 +12,11 @@ spec:
       type: "Observe"
       observeSpec:
         next:
-          - name: "decide1"
+          - type: "Decide"
+            name: "decide1"
             tags: ["*"]
-          - name: "learn1"
+          - type: "Learn"
+            name: "learn1"
             tags: ["*"]
     - name: "decide1"
       type: "Decide"
@@ -27,7 +29,8 @@ spec:
               opa:
                 path: "http://192.168.56.111:8181/v1/data/mmet/move_commands"
         next:
-          - name: "execute1"
+          - type: "Execute"
+            name: "execute1"
             tags: ["*"]
     - name: "learn1"
       type: "Learn"

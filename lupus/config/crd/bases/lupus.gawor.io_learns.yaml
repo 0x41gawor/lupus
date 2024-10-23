@@ -90,6 +90,9 @@ spec:
                 required:
                 - type
                 type: object
+              master:
+                description: Name of master element
+                type: string
             required:
             - destination
             type: object

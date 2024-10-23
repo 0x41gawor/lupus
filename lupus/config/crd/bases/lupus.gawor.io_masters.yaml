@@ -126,7 +126,12 @@ spec:
                             - name
                             type: object
                           type: array
+                        master:
+                          description: Name of master element
+                          type: string
                         next:
+                          description: Next is a list of elements to which send the
+                            output
                           items:
                             description: |-
                               Next is used in Observe Spec
@@ -145,9 +150,14 @@ spec:
                                 items:
                                   type: string
                                 type: array
+                              type:
+                                description: Type specifies the type of the element
+                                  ("Observe", "Decide", "Learn", "Execute", etc.)
+                                type: string
                             required:
                             - name
                             - tags
+                            - type
                             type: object
                           type: array
                       type: object
@@ -207,6 +217,9 @@ spec:
                           required:
                           - type
                           type: object
+                        master:
+                          description: Name of master element
+                          type: string
                       required:
                       - destination
                       type: object
@@ -265,6 +278,9 @@ spec:
                           required:
                           - type
                           type: object
+                        master:
+                          description: Name of master element
+                          type: string
                       required:
                       - destination
                       type: object
@@ -274,6 +290,9 @@ spec:
                     observeSpec:
                       description: ObserveSpec contains the spec if the type is "Observe"
                       properties:
+                        master:
+                          description: Name of master element
+                          type: string
                         next:
                           description: List of elements of to which forward the input
                           items:
@@ -294,9 +313,14 @@ spec:
                                 items:
                                   type: string
                                 type: array
+                              type:
+                                description: Type specifies the type of the element
+                                  ("Observe", "Decide", "Learn", "Execute", etc.)
+                                type: string
                             required:
                             - name
                             - tags
+                            - type
                             type: object
                           type: array
                       type: object

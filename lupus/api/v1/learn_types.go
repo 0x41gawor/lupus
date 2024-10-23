@@ -29,6 +29,8 @@ type LearnSpec struct {
 	// This is the Destination in which Learn will store its Input
 	// +kubebuilder:validation:Required
 	Destination Destination `json:"destination,omitempty"`
+	// Name of master element
+	Master string `json:"master,omitempty"`
 }
 
 // LearnStatus defines the observed state of Learn

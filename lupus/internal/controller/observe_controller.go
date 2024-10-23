@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -29,6 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	lupusv1 "github.com/0x41gawor/lupus/api/v1"
+	v1 "github.com/0x41gawor/lupus/api/v1"
 	"github.com/go-logr/logr"
 )
 
@@ -97,7 +99,6 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		r.Logger.Error(err, "Cannot unmarshall the input")
 		return ctrl.Result{}, nil
 	}
-	print(inputMap)
 
 	//
 	for _, nextElement := range element.Spec.Next {
@@ -105,27 +106,57 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		fmt.Printf("Processing Next element with Name: %s\n", nextElement.Name)
 		fmt.Printf("Tags to forward: %v\n", nextElement.Tags)
 
-		// // You can add additional logic here to process each Next element
-		// for _, outputTag := range nextElement.Tags {
-		// 	var output runtime.RawExtension
-		// 	// derive the output based on tag
-		// 	if outputTag == "*" {
-		// 		output, err = mapToRawExtension(inputMap)
-		// 		if err != nil {
-		// 			r.Logger.Error(err, "Cannot convert map[string]interface{} to RawExtension")
-		// 		}
-		// 		break
-		// 	} else {
-		// 		output, err := interfaceToRawExtension(inputMap[outputTag])
-		// 		if err != nil {
-		// 			r.Logger.Error(err, "Cannot convert interface{} to RawExtension")
-		// 		}
-		// 	}
-		// 	// fetch the nextElement
-		// 	// Here you need to adjust code based on nextElement type
-		// }
-	}
+		// Iterate over the array of next elements
+		for _, outputTag := range nextElement.Tags {
+			var output runtime.RawExtension
+			// derive the output based on tag
+			if outputTag == "*" {
+				output, err = mapToRawExtension(inputMap)
+				if err != nil {
+					r.Logger.Error(err, "Cannot convert map[string]interface{} to RawExtension")
+				}
+				break
+			} else {
+				output, err = interfaceToRawExtension(inputMap[outputTag])
+				if err != nil {
+					r.Logger.Error(err, "Cannot convert interface{} to RawExtension")
+				}
+			}
+			print(output.String())
+			// fetch the nextElement
+			switch nextElement.Type {
+			case "Learn":
+				resourceName := element.Spec.Master + "-" + nextElement.Name
+				resourceNamespace := "deafault"
 
+				var nextElement v1.Learn
+				err := r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &nextElement)
+				if err != nil {
+					r.Logger.Error(err, "Failed to get next element: learn")
+				}
+				nextElement.Status.Input = output
+				if err := r.Status().Update(ctx, &nextElement); err != nil {
+					r.Logger.Error(err, "Failed to update next element (Learn) status")
+				}
+			case "Decide":
+				resourceName := element.Spec.Master + "-" + nextElement.Name
+				resourceNamespace := "deafault"
+
+				var nextElement v1.Decide
+				err := r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &nextElement)
+				if err != nil {
+					r.Logger.Error(err, "Failed to get next element: learn")
+				}
+				nextElement.Status.Input = output
+				if err := r.Status().Update(ctx, &nextElement); err != nil {
+					r.Logger.Error(err, "Failed to update next element (Decide) status")
+				}
+			default:
+				r.Logger.Error(errors.New("cannot pass input to any other element type than Lean or Decide"), "Unrecognized element type")
+			}
+		}
+	}
+	r.Logger.Info("Observe sucessfully reconciled", "name", req.Name)
 	return ctrl.Result{}, nil
 }
 

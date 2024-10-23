@@ -4,6 +4,8 @@ package v1
 // It specifies to which element forward the input
 // It allows not to forward the whole input, but also parts of it
 type Next struct {
+	// Type specifies the type of the element ("Observe", "Decide", "Learn", "Execute", etc.)
+	Type string `json:"type" kubebuilder:"validation:Enum=Observe;Decide;Learn;Execute"`
 	// Kubernetes name of the API Object
 	// This is the name that you give in Master CR spec
 	Name string `json:"name"`

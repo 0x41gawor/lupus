@@ -124,6 +124,7 @@ func (r *MasterReconciler) createObserveResource(ctx context.Context, element v1
 		},
 		Spec: *element.ObserveSpec,
 	}
+	observe.Spec.Master = r.NamePrefix
 	// Set Master as owner of Observe
 	if err := setOwnerReference(master, observe, r.Scheme); err != nil {
 		r.Logger.Error(err, "Failed to set owner reference for Observe")
@@ -143,6 +144,7 @@ func (r *MasterReconciler) createDecideResource(ctx context.Context, element v1.
 		},
 		Spec: *element.DecideSpec,
 	}
+	decide.Spec.Master = r.NamePrefix
 	// Set Master as owner of Decide
 	if err := setOwnerReference(master, decide, r.Scheme); err != nil {
 		r.Logger.Error(err, "Failed to set owner reference for Decide")
@@ -162,7 +164,7 @@ func (r *MasterReconciler) createLearnResource(ctx context.Context, element v1.E
 		},
 		Spec: *element.LearnSpec,
 	}
-
+	learn.Spec.Master = r.NamePrefix
 	// Set Master as owner of Learn
 	if err := setOwnerReference(master, learn, r.Scheme); err != nil {
 		r.Logger.Error(err, "Failed to set owner reference for Learn")
@@ -182,7 +184,7 @@ func (r *MasterReconciler) createExecuteResource(ctx context.Context, element v1
 		},
 		Spec: *element.ExecuteSpec,
 	}
-
+	execute.Spec.Master = r.NamePrefix
 	// Set Master as owner of Execute
 	if err := setOwnerReference(master, execute, r.Scheme); err != nil {
 		r.Logger.Error(err, "Failed to set owner reference for Execute")

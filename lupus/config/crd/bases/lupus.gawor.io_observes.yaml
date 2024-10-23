@@ -39,6 +39,9 @@ spec:
           spec:
             description: ObserveSpec defines the desired state of Observe
             properties:
+              master:
+                description: Name of master element
+                type: string
               next:
                 description: List of elements of to which forward the input
                 items:
@@ -59,9 +62,14 @@ spec:
                       items:
                         type: string
                       type: array
+                    type:
+                      description: Type specifies the type of the element ("Observe",
+                        "Decide", "Learn", "Execute", etc.)
+                      type: string
                   required:
                   - name
                   - tags
+                  - type
                   type: object
                 type: array
             type: object
@@ -78,7 +86,6 @@ spec:
                 type: string
             required:
             - input
-            - lastUpdated
             type: object
         type: object
     served: true
