@@ -29,7 +29,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	lupusv1 "github.com/0x41gawor/lupus/api/v1"
 	v1 "github.com/0x41gawor/lupus/api/v1"
 	"github.com/go-logr/logr"
 )
@@ -65,7 +64,7 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	r.Logger.Info(fmt.Sprintf("=================== START OF %s Reconciler: \n", strings.ToUpper(r.ElementType)))
 
 	// Step 1 - Fetch the reconciled resource
-	var element lupusv1.Observe
+	var element v1.Observe
 	if err := r.Get(ctx, req.NamespacedName, &element); err != nil {
 		r.Logger.Info("Failed to fetch Observe instance", "error", err)
 		// If the resource is not found, we return and don't requeue
@@ -92,7 +91,6 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Step 3 - We reconcile, so let's begin the process with variable settings
 	var input runtime.RawExtension = element.Status.Input
 	r.LastUpdated = time.Now()
-
 	// Step 4 - Unmarshall input into map[string]interface{} so you can easily access its root elements
 	inputMap, err := extractRawExtension(input)
 	if err != nil {
@@ -102,10 +100,6 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	//
 	for _, nextElement := range element.Spec.Next {
-		// Access the fields of each Next object
-		fmt.Printf("Processing Next element with Name: %s\n", nextElement.Name)
-		fmt.Printf("Tags to forward: %v\n", nextElement.Tags)
-
 		// Iterate over the array of next elements
 		for _, outputTag := range nextElement.Tags {
 			var output runtime.RawExtension
@@ -115,19 +109,17 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 				if err != nil {
 					r.Logger.Error(err, "Cannot convert map[string]interface{} to RawExtension")
 				}
-				break
 			} else {
 				output, err = interfaceToRawExtension(inputMap[outputTag])
 				if err != nil {
 					r.Logger.Error(err, "Cannot convert interface{} to RawExtension")
 				}
 			}
-			print(output.String())
 			// fetch the nextElement
 			switch nextElement.Type {
 			case "Learn":
 				resourceName := element.Spec.Master + "-" + nextElement.Name
-				resourceNamespace := "deafault"
+				resourceNamespace := "default"
 
 				var nextElement v1.Learn
 				err := r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &nextElement)
@@ -135,19 +127,21 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 					r.Logger.Error(err, "Failed to get next element: learn")
 				}
 				nextElement.Status.Input = output
+				nextElement.Status.LastUpdated = metav1.Time{Time: r.LastUpdated}
 				if err := r.Status().Update(ctx, &nextElement); err != nil {
 					r.Logger.Error(err, "Failed to update next element (Learn) status")
 				}
 			case "Decide":
 				resourceName := element.Spec.Master + "-" + nextElement.Name
-				resourceNamespace := "deafault"
+				resourceNamespace := "default"
 
 				var nextElement v1.Decide
 				err := r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &nextElement)
 				if err != nil {
-					r.Logger.Error(err, "Failed to get next element: learn")
+					r.Logger.Error(err, "Failed to get next element: decide")
 				}
 				nextElement.Status.Input = output
+				nextElement.Status.LastUpdated = metav1.Time{Time: r.LastUpdated}
 				if err := r.Status().Update(ctx, &nextElement); err != nil {
 					r.Logger.Error(err, "Failed to update next element (Decide) status")
 				}
@@ -163,6 +157,6 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 // SetupWithManager sets up the controller with the Manager.
 func (r *ObserveReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&lupusv1.Observe{}).
+		For(&v1.Observe{}).
 		Complete(r)
 }
