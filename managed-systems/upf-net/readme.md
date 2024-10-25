@@ -9,7 +9,7 @@ The nodes are present in 4 cities, hence the node names.
 
 Program emulates the number  of PDN sessions handled by each node (in milions). 
 
-Each round the distribution of load (a number of sessions handled) changes randomly. For each node a number between -2 and 2 is added no the number of handled sessions.
+Each round the distribution of load (a number of sessions handled) changes randomly. For each node a number between -2 and 2 is added. 
 
 ![](_img/2.png)
 

@@ -22,6 +22,13 @@ spec:
       type: "Decide"
       decideSpec:
         actions:
+          - name: "bounce"
+            input_tag: "*"
+            destination:
+              type: http
+              http:
+                path: "http://192.168.56.111:7000/api/bounce"
+                method: "POST"
           - name: "send-to-opa"
             input_tag: "*"
             destination:
