@@ -105,7 +105,7 @@ func (r *LearnReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrl.Result{}, nil
 		}
 		// Append JSON data to the specified file
-		err = appendToFile(filePath, inputJSON)
+		err = r.appendToFile(filePath, inputJSON)
 		if err != nil {
 			r.Logger.Error(err, "Failed to append to a file")
 			return ctrl.Result{}, nil
@@ -119,16 +119,16 @@ func (r *LearnReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 }
 
 // Helper function to append JSON data to a file
-func appendToFile(filePath, data string) error {
+func (r *LearnReconciler) appendToFile(filePath, data string) error {
 	// Open the file in append mode, create it if it doesn't exist
 	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open file: %v", err)
 	}
 	defer file.Close()
-
+	timeString := r.LastUpdated.Format("2006/01/02 15:04:05")
 	// Write the JSON data followed by a newline
-	if _, err := file.WriteString(data + "\n"); err != nil {
+	if _, err := file.WriteString(timeString + " " + data + "\n"); err != nil {
 		return fmt.Errorf("failed to write data to file: %v", err)
 	}
 

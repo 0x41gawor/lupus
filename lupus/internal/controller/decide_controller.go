@@ -181,6 +181,22 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			if err := r.Status().Update(ctx, &nextElement); err != nil {
 				r.Logger.Error(err, "Failed to update next element (Decide) status")
 			}
+		case "Learn":
+			// fetch the next element
+			resourceName := element.Spec.Master + "-" + next.Name
+			resourceNamespace := "default"
+			var nextElement v1.Learn
+			err := r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &nextElement)
+			if err != nil {
+				r.Logger.Error(err, "Failed to get next element: Learn")
+			}
+			// set fields of next element
+			nextElement.Status.Input = outputRaw
+			nextElement.Status.LastUpdated = metav1.Time{Time: r.LastUpdated}
+			// update next element via kube-api-server
+			if err := r.Status().Update(ctx, &nextElement); err != nil {
+				r.Logger.Error(err, "Failed to update next element (Learn) status")
+			}
 		case "Execute":
 			// fetch the next element
 			resourceName := element.Spec.Master + "-" + next.Name

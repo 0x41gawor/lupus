@@ -41,7 +41,17 @@ spec:
           - type: "Execute"
             name: "execute1"
             tags: ["*"]
+          - type: "Learn"
+            name: "learn2"
+            tags: ["*"]
     - name: "learn1"
+      type: "Learn"
+      learnSpec:
+        destination:
+          type: "FILE"
+          file:
+            path: "elo.txt"
+    - name: "learn2"
       type: "Learn"
       learnSpec:
         destination:
