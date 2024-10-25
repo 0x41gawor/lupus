@@ -59,11 +59,12 @@ type ObserveReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
 func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	// Set up logging context
 	r.ElementType = "Observe"
 	r.Logger = log.FromContext(ctx)
 	r.Logger.Info(fmt.Sprintf("=================== START OF %s Reconciler: \n", strings.ToUpper(r.ElementType)))
 
-	// Step 1 - Fetch the reconciled resource
+	// Step 1 - Fetch the reconciled resource instance
 	var element v1.Observe
 	if err := r.Get(ctx, req.NamespacedName, &element); err != nil {
 		r.Logger.Info("Failed to fetch Observe instance", "error", err)
@@ -92,16 +93,18 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	var input runtime.RawExtension = element.Status.Input
 	r.LastUpdated = time.Now()
 	// Step 4 - Unmarshall input into map[string]interface{} so you can easily access its root elements
-	inputMap, err := extractRawExtension(input)
+	inputMap, err := rawExtensionToMap(input)
 	if err != nil {
 		r.Logger.Error(err, "Cannot unmarshall the input")
 		return ctrl.Result{}, nil
 	}
 
-	//
+	// Step 5 - Send input to the next elements
+	// Iterate over the array of next elements
 	for _, nextElement := range element.Spec.Next {
-		// Iterate over the array of next elements
+		// Iterate over the array of tags of this element
 		for _, outputTag := range nextElement.Tags {
+			// Prepare placeholder for output
 			var output runtime.RawExtension
 			// derive the output based on tag
 			if outputTag == "*" {

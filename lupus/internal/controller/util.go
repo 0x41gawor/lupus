@@ -8,7 +8,7 @@ import (
 )
 
 // Function to extract and unmarshal the runtime.RawExtension into a map
-func extractRawExtension(rawExt runtime.RawExtension) (map[string]interface{}, error) {
+func rawExtensionToMap(rawExt runtime.RawExtension) (map[string]interface{}, error) {
 	// Initialize an empty map to hold the unmarshaled data
 	var result map[string]interface{}
 
@@ -48,4 +48,20 @@ func interfaceToRawExtension(value interface{}) (runtime.RawExtension, error) {
 	return runtime.RawExtension{
 		Raw: rawBytes,
 	}, nil
+}
+
+// Helper function to convert runtime.RawExtension to a JSON string
+func rawExtensionToString(rawExt runtime.RawExtension) (string, error) {
+	var jsonData map[string]interface{}
+	if err := json.Unmarshal(rawExt.Raw, &jsonData); err != nil {
+		return "", fmt.Errorf("failed to unmarshal RawExtension: %v", err)
+	}
+
+	// Marshal it back into a JSON string for writing to file
+	jsonBytes, err := json.Marshal(jsonData)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal JSON data: %v", err)
+	}
+
+	return string(jsonBytes), nil
 }

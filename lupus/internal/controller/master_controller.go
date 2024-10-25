@@ -35,8 +35,10 @@ type MasterReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 
+	// Prefix that will be added to the k8s object names of loop elements, it's simply the name of Loop
 	NamePrefix string
-	Logger     logr.Logger
+	// Util
+	Logger logr.Logger
 }
 
 // +kubebuilder:rbac:groups=lupus.gawor.io,resources=masters,verbs=get;list;watch;create;update;patch;delete
@@ -57,7 +59,7 @@ func (r *MasterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	r.Logger = log.FromContext(ctx)
 	r.Logger.Info("Reconciling Master resource")
 
-	// Fetch the Master instance
+	// Step 1 - Fetch the reconciled resource instance
 	var master v1.Master
 	if err := r.Get(ctx, req.NamespacedName, &master); err != nil {
 		if errors.IsNotFound(err) {
@@ -68,11 +70,12 @@ func (r *MasterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return ctrl.Result{}, err
 	}
 
+	// Step 2 - Checks
 	if master.Status.IsActive {
 		r.Logger.Info("Status is active no need to reconcile")
 		return ctrl.Result{}, nil
 	}
-
+	// Step 3 - We reconcile so let's create loop elements
 	r.NamePrefix = master.Spec.Name
 	// Loop through each element in the Master spec
 	for _, element := range master.Spec.Elements {
@@ -106,12 +109,13 @@ func (r *MasterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			r.Logger.Info("Unknown element type, skipping", "ElementName", element.Name)
 		}
 	}
+	// Set Master status as active
 	master.Status.IsActive = true
+	// Step 4 - Update the reconciled resource instance
 	if err := r.Status().Update(ctx, &master); err != nil {
 		r.Logger.Error(err, "Failed to update Master resource")
 		return ctrl.Result{}, nil
 	}
-	// Reconciliation successful
 	return ctrl.Result{}, nil
 }
 

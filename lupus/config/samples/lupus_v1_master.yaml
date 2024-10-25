@@ -38,7 +38,7 @@ spec:
         destination:
           type: "FILE"
           file:
-            path: "/data/output.json"
+            path: "elo.txt"
     - name: "execute1"
       type: "Execute"
       executeSpec:
