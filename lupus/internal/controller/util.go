@@ -2,7 +2,9 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"reflect"
 
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -64,4 +66,29 @@ func rawExtensionToString(rawExt runtime.RawExtension) (string, error) {
 	}
 
 	return string(jsonBytes), nil
+}
+
+// interfaceToMap tries to convert any interface{} to map[string]interface{}
+func interfaceToMap(data interface{}) (map[string]interface{}, error) {
+	// Check if data is already a map[string]interface{}
+	if result, ok := data.(map[string]interface{}); ok {
+		return result, nil
+	}
+
+	// Use reflection to inspect and handle other possible structures
+	val := reflect.ValueOf(data)
+	if val.Kind() == reflect.Map {
+		converted := make(map[string]interface{})
+		for _, key := range val.MapKeys() {
+			// Ensure the key is a string
+			if key.Kind() != reflect.String {
+				return nil, errors.New("non-string key encountered in map")
+			}
+			// Set the key and value in the new map
+			converted[key.String()] = val.MapIndex(key).Interface()
+		}
+		return converted, nil
+	}
+
+	return nil, errors.New("data is not convertible to map[string]interface{}")
 }

@@ -111,7 +111,7 @@ spec:
                                 required:
                                 - type
                                 type: object
-                              input_tag:
+                              inputTag:
                                 description: Specifies the root field of input json
                                   that will be send, pass * for whole input to be
                                   sent
@@ -120,10 +120,15 @@ spec:
                                 description: Name of the Action, it is for designer
                                   to ease the management of the Loop
                                 type: string
+                              outputTag:
+                                description: OutputTag specifies json field in which
+                                  the response from Destination will be saved
+                                type: string
                             required:
                             - destination
-                            - input_tag
+                            - inputTag
                             - name
+                            - outputTag
                             type: object
                           type: array
                         master:

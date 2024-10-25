@@ -93,7 +93,7 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	var input runtime.RawExtension = element.Status.Input
 	r.LastUpdated = time.Now()
 	// Step 4 - Unmarshall input into map[string]interface{} so you can easily access its root elements
-	inputMap, err := rawExtensionToMap(input)
+	data, err := rawExtensionToMap(input)
 	if err != nil {
 		r.Logger.Error(err, "Cannot unmarshall the input")
 		return ctrl.Result{}, nil
@@ -101,56 +101,55 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	// Step 5 - Send input to the next elements
 	// Iterate over the array of next elements
-	for _, nextElement := range element.Spec.Next {
-		// Iterate over the array of tags of this element
-		for _, outputTag := range nextElement.Tags {
-			// Prepare placeholder for output
-			var output runtime.RawExtension
-			// derive the output based on tag
-			if outputTag == "*" {
-				output, err = mapToRawExtension(inputMap)
-				if err != nil {
-					r.Logger.Error(err, "Cannot convert map[string]interface{} to RawExtension")
-				}
-			} else {
-				output, err = interfaceToRawExtension(inputMap[outputTag])
-				if err != nil {
-					r.Logger.Error(err, "Cannot convert interface{} to RawExtension")
+	for _, next := range element.Spec.Next {
+		// prepare placeholder for output
+		outputMap := make(map[string]interface{})
+		if len(next.Tags) == 1 && next.Tags[0] == "*" {
+			outputMap = data
+		} else {
+			for _, tag := range next.Tags {
+				if value, exists := data[tag]; exists {
+					outputMap[tag] = value
 				}
 			}
-			// fetch the nextElement
-			switch nextElement.Type {
-			case "Learn":
-				resourceName := element.Spec.Master + "-" + nextElement.Name
-				resourceNamespace := "default"
+		}
 
-				var nextElement v1.Learn
-				err := r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &nextElement)
-				if err != nil {
-					r.Logger.Error(err, "Failed to get next element: learn")
-				}
-				nextElement.Status.Input = output
-				nextElement.Status.LastUpdated = metav1.Time{Time: r.LastUpdated}
-				if err := r.Status().Update(ctx, &nextElement); err != nil {
-					r.Logger.Error(err, "Failed to update next element (Learn) status")
-				}
-			case "Decide":
-				resourceName := element.Spec.Master + "-" + nextElement.Name
-				resourceNamespace := "default"
+		outputRaw, err := mapToRawExtension(outputMap)
+		if err != nil {
+			r.Logger.Error(err, "Cannot convert map to RawExtension")
+		}
+		// fetch the nextElement
+		switch next.Type {
+		case "Learn":
+			resourceName := element.Spec.Master + "-" + next.Name
+			resourceNamespace := "default"
 
-				var nextElement v1.Decide
-				err := r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &nextElement)
-				if err != nil {
-					r.Logger.Error(err, "Failed to get next element: decide")
-				}
-				nextElement.Status.Input = output
-				nextElement.Status.LastUpdated = metav1.Time{Time: r.LastUpdated}
-				if err := r.Status().Update(ctx, &nextElement); err != nil {
-					r.Logger.Error(err, "Failed to update next element (Decide) status")
-				}
-			default:
-				r.Logger.Error(errors.New("cannot pass input to any other element type than Lean or Decide"), "Unrecognized element type")
+			var nextElement v1.Learn
+			err := r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &nextElement)
+			if err != nil {
+				r.Logger.Error(err, "Failed to get next element: Learn")
 			}
+			nextElement.Status.Input = outputRaw
+			nextElement.Status.LastUpdated = metav1.Time{Time: r.LastUpdated}
+			if err := r.Status().Update(ctx, &nextElement); err != nil {
+				r.Logger.Error(err, "Failed to update next element (Learn) status")
+			}
+		case "Decide":
+			resourceName := element.Spec.Master + "-" + next.Name
+			resourceNamespace := "default"
+
+			var nextElement v1.Decide
+			err := r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &nextElement)
+			if err != nil {
+				r.Logger.Error(err, "Failed to get next element: Decide")
+			}
+			nextElement.Status.Input = outputRaw
+			nextElement.Status.LastUpdated = metav1.Time{Time: r.LastUpdated}
+			if err := r.Status().Update(ctx, &nextElement); err != nil {
+				r.Logger.Error(err, "Failed to update next element (Decide) status")
+			}
+		default:
+			r.Logger.Error(errors.New("cannot pass input to any other element type than Lean or Decide"), "Unrecognized element type")
 		}
 	}
 	r.Logger.Info("Observe sucessfully reconciled", "name", req.Name)
