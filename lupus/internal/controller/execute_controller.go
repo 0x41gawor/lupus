@@ -39,7 +39,7 @@ type ExecuteReconciler struct {
 	// Static fields of Reconciler
 	Logger      logr.Logger
 	ElementType string
-	// map that holds of reconciler state for each element
+	// Map that holds of reconciler state for each element
 	instanceState map[types.NamespacedName]*ElementInstanceState
 }
 
@@ -95,6 +95,7 @@ func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Step 3 - We reconcile, so let's begin the process with variable settings
 	var input runtime.RawExtension = element.Status.Input
 	r.instanceState[req.NamespacedName].LastUpdated = element.Status.LastUpdated.Time
+
 	// Step 4 - Unmarshall input into map[string]interface{} called `output`. This is the struct that we will work on. The central point of Execute Element.
 	output, err := rawExtensionToMap(input)
 	if err != nil {

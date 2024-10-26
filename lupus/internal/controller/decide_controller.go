@@ -25,10 +25,10 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -44,9 +44,8 @@ type DecideReconciler struct {
 	// Static fields of Reconciler
 	Logger      logr.Logger
 	ElementType string
-	// Dynamic fields of Reconciler
-	IsAfterDryRun bool
-	LastUpdated   time.Time
+	// Map that holds of reconciler state for each element
+	instanceState map[types.NamespacedName]*ElementInstanceState
 }
 
 // +kubebuilder:rbac:groups=lupus.gawor.io,resources=decides,verbs=get;list;watch;create;update;patch;delete
@@ -77,18 +76,22 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	// Step 2 - Checks
-	if !r.IsAfterDryRun {
+	// check if we have such element in our state map
+	_, exists := r.instanceState[req.NamespacedName]
+	if !exists {
+		// Initialize instance data if it doesn't exist
+		r.instanceState[req.NamespacedName] = &ElementInstanceState{}
 		// clear status as it can contain some garbage
 		element.Status.Input = runtime.RawExtension{}
 		element.Status.LastUpdated = metav1.Time{}
 		// set the flag
-		r.IsAfterDryRun = true
-		r.Logger.Info("This is the dry run, no need to reconcile.")
+		r.instanceState[req.NamespacedName].IsAfterDryRun = true
+		r.Logger.Info("This is the dry run, no need to reconcile")
 		return ctrl.Result{}, nil
 	}
 	// Check for double update in single loop iteration. If r.LastUpdated time is zero it means it is the 2nd run (so double update can't happen)
 	// If the Status.LastUpdated time is non-zero we have to check if its not the same as the previous one
-	if !r.LastUpdated.IsZero() && !element.Status.LastUpdated.Time.After(r.LastUpdated) {
+	if !r.instanceState[req.NamespacedName].LastUpdated.IsZero() && !element.Status.LastUpdated.Time.After(r.instanceState[req.NamespacedName].LastUpdated) {
 		// If this condition is true it means we are reconciling again in the same iteration
 		r.Logger.Info("Already reconciled in this loop iteration, no need to reconcile")
 		return ctrl.Result{}, nil
@@ -96,7 +99,8 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	// Step 3 - We reconcile, so let's begin the process with variable settings
 	var input runtime.RawExtension = element.Status.Input
-	r.LastUpdated = element.Status.LastUpdated.Time
+	r.instanceState[req.NamespacedName].LastUpdated = element.Status.LastUpdated.Time
+
 	// Step 4 - Unmarshall input into map[string]interface{} called `data`. This is the struct that we will work on. The central point of Decide Element.
 	data, err := rawExtensionToMap(input)
 	if err != nil {
@@ -177,7 +181,7 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			}
 			// set fields of next element
 			nextElement.Status.Input = outputRaw
-			nextElement.Status.LastUpdated = metav1.Time{Time: r.LastUpdated}
+			nextElement.Status.LastUpdated = metav1.Time{Time: r.instanceState[req.NamespacedName].LastUpdated}
 			// update next element via kube-api-server
 			if err := r.Status().Update(ctx, &nextElement); err != nil {
 				r.Logger.Error(err, "Failed to update next element (Decide) status")
@@ -193,7 +197,7 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			}
 			// set fields of next element
 			nextElement.Status.Input = outputRaw
-			nextElement.Status.LastUpdated = metav1.Time{Time: r.LastUpdated}
+			nextElement.Status.LastUpdated = metav1.Time{Time: r.instanceState[req.NamespacedName].LastUpdated}
 			// update next element via kube-api-server
 			if err := r.Status().Update(ctx, &nextElement); err != nil {
 				r.Logger.Error(err, "Failed to update next element (Learn) status")
@@ -209,7 +213,7 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			}
 			// set fields of next element
 			nextElement.Status.Input = outputRaw
-			nextElement.Status.LastUpdated = metav1.Time{Time: r.LastUpdated}
+			nextElement.Status.LastUpdated = metav1.Time{Time: r.instanceState[req.NamespacedName].LastUpdated}
 			// update next element via kube-api-server
 			if err := r.Status().Update(ctx, &nextElement); err != nil {
 				r.Logger.Error(err, "Failed to update next element (Decide) status")
@@ -273,6 +277,10 @@ func sendToHTTP(path string, method string, body map[string]interface{}) (map[st
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *DecideReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// Initialize instanceState map if it's nil
+	if r.instanceState == nil {
+		r.instanceState = make(map[types.NamespacedName]*ElementInstanceState)
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1.Decide{}).
 		Complete(r)

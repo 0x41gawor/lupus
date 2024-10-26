@@ -21,10 +21,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -40,9 +40,8 @@ type LearnReconciler struct {
 	// Static fields of Reconciler
 	Logger      logr.Logger
 	ElementType string
-	// Dynamic fields of Reconciler
-	IsAfterDryRun bool
-	LastUpdated   time.Time
+	// Map that holds of reconciler state for each element
+	instanceState map[types.NamespacedName]*ElementInstanceState
 }
 
 // +kubebuilder:rbac:groups=lupus.gawor.io,resources=learns,verbs=get;list;watch;create;update;patch;delete
@@ -72,18 +71,22 @@ func (r *LearnReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 	// Step 2 - Checks
-	if !r.IsAfterDryRun {
+	// check if we have such element in our state map
+	_, exists := r.instanceState[req.NamespacedName]
+	if !exists {
+		// Initialize instance data if it doesn't exist
+		r.instanceState[req.NamespacedName] = &ElementInstanceState{}
 		// clear status as it can contain some garbage
 		element.Status.Input = runtime.RawExtension{}
 		element.Status.LastUpdated = metav1.Time{}
 		// set the flag
-		r.IsAfterDryRun = true
-		r.Logger.Info("This is the dry run, no need to reconcile.")
+		r.instanceState[req.NamespacedName].IsAfterDryRun = true
+		r.Logger.Info("This is the dry run, no need to reconcile")
 		return ctrl.Result{}, nil
 	}
 	// Check for double update in single loop iteration. If r.LastUpdated time is zero it means it is the 2nd run (so double update can't happen)
 	// If the Status.LastUpdated time is non-zero we have to check if its not the same as the previous one
-	if !r.LastUpdated.IsZero() && !element.Status.LastUpdated.Time.After(r.LastUpdated) {
+	if !r.instanceState[req.NamespacedName].LastUpdated.IsZero() && !element.Status.LastUpdated.Time.After(r.instanceState[req.NamespacedName].LastUpdated) {
 		// If this condition is true it means we are reconciling again in the same iteration
 		r.Logger.Info("Already reconciled in this loop iteration, no need to reconcile")
 		return ctrl.Result{}, nil
@@ -91,7 +94,7 @@ func (r *LearnReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	// Step 3 - We reconcile, so let's begin the process with variable settings
 	var input runtime.RawExtension = element.Status.Input
-	r.LastUpdated = element.Status.LastUpdated.Time
+	r.instanceState[req.NamespacedName].LastUpdated = element.Status.LastUpdated.Time
 
 	// Step 4 Send input to destination
 	switch element.Spec.Destination.Type {
@@ -105,7 +108,7 @@ func (r *LearnReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrl.Result{}, nil
 		}
 		// Append JSON data to the specified file
-		err = r.appendToFile(filePath, inputJSON)
+		err = r.appendToFile(filePath, inputJSON, req)
 		if err != nil {
 			r.Logger.Error(err, "Failed to append to a file")
 			return ctrl.Result{}, nil
@@ -119,14 +122,14 @@ func (r *LearnReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 }
 
 // Helper function to append JSON data to a file
-func (r *LearnReconciler) appendToFile(filePath, data string) error {
+func (r *LearnReconciler) appendToFile(filePath, data string, req ctrl.Request) error {
 	// Open the file in append mode, create it if it doesn't exist
 	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open file: %v", err)
 	}
 	defer file.Close()
-	timeString := r.LastUpdated.Format("2006/01/02 15:04:05")
+	timeString := r.instanceState[req.NamespacedName].LastUpdated.Format("2006/01/02 15:04:05")
 	// Write the JSON data followed by a newline
 	if _, err := file.WriteString(timeString + " " + data + "\n"); err != nil {
 		return fmt.Errorf("failed to write data to file: %v", err)
@@ -137,6 +140,10 @@ func (r *LearnReconciler) appendToFile(filePath, data string) error {
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *LearnReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// Initialize instanceState map if it's nil
+	if r.instanceState == nil {
+		r.instanceState = make(map[types.NamespacedName]*ElementInstanceState)
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1.Learn{}).
 		Complete(r)
