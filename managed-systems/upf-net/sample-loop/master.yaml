@@ -1,0 +1,68 @@
+apiVersion: lupus.gawor.io/v1
+kind: Master
+metadata:
+  labels:
+    app.kubernetes.io/name: lupus
+    app.kubernetes.io/managed-by: kustomize
+  name: adam
+spec:
+  name: "adam"
+  elements:
+    - name: "observe1"
+      type: "Observe"
+      observeSpec:
+        next:
+          - type: "Decide"
+            name: "decide1"
+            tags: ["*"]
+          - type: "Learn"
+            name: "learn1"
+            tags: ["*"]
+    - name: "decide1"
+      type: "Decide"
+      decideSpec:
+        actions:
+          - name: "bounce"
+            inputTag: "*"
+            destination:
+              type: http
+              http:
+                path: "http://192.168.56.111:7000/api/bounce"
+                method: "POST"
+            outputTag: "*"
+          - name: "send-to-opa"
+            inputTag: "*"
+            destination:
+              type: "Opa"
+              opa:
+                path: "http://192.168.56.111:8181/v1/data/mmet/move_commands"
+            outputTag: "*"
+        next:
+          - type: "Execute"
+            name: "execute1"
+            tags: ["*"]
+          - type: "Learn"
+            name: "learn2"
+            tags: ["*"]
+    - name: "learn1"
+      type: "Learn"
+      learnSpec:
+        destination:
+          type: "FILE"
+          file:
+            path: "trace.txt"
+    - name: "learn2"
+      type: "Learn"
+      learnSpec:
+        destination:
+          type: "FILE"
+          file:
+            path: "trace.txt"
+    - name: "execute1"
+      type: "Execute"
+      executeSpec:
+        destination:
+          type: "HTTP"
+          http:
+            path: "http://192.168.56.111:5001/api/commands"
+            method: "POST"
