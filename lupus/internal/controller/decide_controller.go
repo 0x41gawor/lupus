@@ -91,6 +91,7 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	if !r.LastUpdated.IsZero() && !element.Status.LastUpdated.Time.After(r.LastUpdated) {
 		// If this condition is true it means we are reconciling again in the same iteration
 		r.Logger.Info("Already reconciled in this loop iteration, no need to reconcile")
+		return ctrl.Result{}, nil
 	}
 
 	// Step 3 - We reconcile, so let's begin the process with variable settings

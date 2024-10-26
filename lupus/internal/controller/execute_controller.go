@@ -21,12 +21,14 @@ import (
 	"fmt"
 	"strings"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	lupusv1 "github.com/0x41gawor/lupus/api/v1"
+	v1 "github.com/0x41gawor/lupus/api/v1"
 	"github.com/go-logr/logr"
 )
 
@@ -34,9 +36,11 @@ import (
 type ExecuteReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
-
+	// Static fields of Reconciler
 	Logger      logr.Logger
 	ElementType string
+	// map that holds of reconciler state for each element
+	instanceState map[types.NamespacedName]*ElementInstanceState
 }
 
 // +kubebuilder:rbac:groups=lupus.gawor.io,resources=executes,verbs=get;list;watch;create;update;patch;delete
@@ -53,17 +57,77 @@ type ExecuteReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
 func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	// Set up logging context
 	r.ElementType = "Execute"
 	r.Logger = log.FromContext(ctx)
 	r.Logger.Info(fmt.Sprintf("=================== START OF %s Reconciler: \n", strings.ToUpper(r.ElementType)))
-	// TODO(user): your logic here
+	// Step 1 - Fetch the reconciled resource instance (Controller-Runtime nomenclature)
+	// Step 1 - Fetch reconciled element 	(Lupus nomenclature)
+	var element v1.Execute
+	if err := r.Get(ctx, req.NamespacedName, &element); err != nil {
+		r.Logger.Info(fmt.Sprintf("Failed to fetch %s instance", r.ElementType), "error", err)
+		// If the resource is not found, we return and don't requeue
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	// Step 2 - Checks
+	// check if we have such element in our state map
+	_, exists := r.instanceState[req.NamespacedName]
+	if !exists {
+		// Initialize instance data if it doesn't exist
+		r.instanceState[req.NamespacedName] = &ElementInstanceState{}
+		// clear status as it can contain some garbage
+		element.Status.Input = runtime.RawExtension{}
+		element.Status.LastUpdated = metav1.Time{}
+		// set the flag
+		r.instanceState[req.NamespacedName].IsAfterDryRun = true
+		r.Logger.Info("This is the dry run, no need to reconcile")
+		return ctrl.Result{}, nil
+	}
+	// Check for double update in single loop iteration. If r.LastUpdated time is zero it means it is the 2nd run (so double update can't happen)
+	// If the Status.LastUpdated time is non-zero we have to check if its not the same as the previous one
+	if !r.instanceState[req.NamespacedName].LastUpdated.IsZero() && !element.Status.LastUpdated.Time.After(r.instanceState[req.NamespacedName].LastUpdated) {
+		// If this condition is true it means we are reconciling again in the same iteration
+		r.Logger.Info("Already reconciled in this loop iteration, no need to reconcile")
+		return ctrl.Result{}, nil
+	}
+
+	// Step 3 - We reconcile, so let's begin the process with variable settings
+	var input runtime.RawExtension = element.Status.Input
+	r.instanceState[req.NamespacedName].LastUpdated = element.Status.LastUpdated.Time
+	// Step 4 - Unmarshall input into map[string]interface{} called `output`. This is the struct that we will work on. The central point of Execute Element.
+	output, err := rawExtensionToMap(input)
+	if err != nil {
+		r.Logger.Error(err, "Cannot unmarshall the input")
+		return ctrl.Result{}, nil
+	}
+	// Step 5 - Perfom sending to destination
+	destination := element.Spec.Destination
+	switch destination.Type {
+	case "HTTP":
+		// implement
+		res, err := sendToHTTP(destination.HTTP.Path, destination.HTTP.Method, output)
+		if err != nil {
+			r.Logger.Error(err, "Cannot get response from external HTTP element")
+			return ctrl.Result{}, nil
+		} else {
+			resStr, _ := mapToString(res)
+			r.Logger.Info("Sent properly", "res", resStr)
+		}
+	default:
+		r.Logger.Info(fmt.Sprintf("Destination %s not yet implemented in Decide", destination.Type))
+	}
 
 	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *ExecuteReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// Initialize instanceState map if it's nil
+	if r.instanceState == nil {
+		r.instanceState = make(map[types.NamespacedName]*ElementInstanceState)
+	}
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&lupusv1.Execute{}).
+		For(&v1.Execute{}).
 		Complete(r)
 }

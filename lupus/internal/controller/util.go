@@ -5,9 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 )
+
+type ElementInstanceState struct {
+	IsAfterDryRun bool
+	LastUpdated   time.Time
+}
 
 // Function to extract and unmarshal the runtime.RawExtension into a map
 func rawExtensionToMap(rawExt runtime.RawExtension) (map[string]interface{}, error) {
@@ -91,4 +97,16 @@ func interfaceToMap(data interface{}) (map[string]interface{}, error) {
 	}
 
 	return nil, errors.New("data is not convertible to map[string]interface{}")
+}
+
+// Function to convert a map[string]interface{} to a JSON string
+func mapToString(data map[string]interface{}) (string, error) {
+	// Marshal the map into a JSON byte slice
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal map to JSON string: %v", err)
+	}
+
+	// Convert JSON bytes to a string and return
+	return string(jsonBytes), nil
 }
