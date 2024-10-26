@@ -44,20 +44,6 @@ func mapToRawExtension(data map[string]interface{}) (runtime.RawExtension, error
 	}, nil
 }
 
-// Function to convert an interface{} (extracted from map) to RawExtension
-func interfaceToRawExtension(value interface{}) (runtime.RawExtension, error) {
-	// Marshal the interface{} into a JSON byte slice
-	rawBytes, err := json.Marshal(value)
-	if err != nil {
-		return runtime.RawExtension{}, fmt.Errorf("failed to marshal interface{} to JSON: %v", err)
-	}
-
-	// Create a new runtime.RawExtension and assign the marshaled JSON byte slice
-	return runtime.RawExtension{
-		Raw: rawBytes,
-	}, nil
-}
-
 // Helper function to convert runtime.RawExtension to a JSON string
 func rawExtensionToString(rawExt runtime.RawExtension) (string, error) {
 	var jsonData map[string]interface{}
