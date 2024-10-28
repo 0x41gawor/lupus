@@ -116,7 +116,7 @@ func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			r.Logger.Info("Sent properly", "res", resStr)
 		}
 	default:
-		r.Logger.Info(fmt.Sprintf("Destination %s not yet implemented in Decide", destination.Type))
+		r.Logger.Info(fmt.Sprintf("Destination %s not yet implemented in Execute", destination.Type))
 	}
 
 	return ctrl.Result{}, nil

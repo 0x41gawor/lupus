@@ -1,4 +1,4 @@
-# minecraft-server
+# mc-server
 ## Descr
 The managed system here, is a single application server deployed as a virtual machine in a cloud environment.
 
