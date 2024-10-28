@@ -96,3 +96,38 @@ func mapToString(data map[string]interface{}) (string, error) {
 	// Convert JSON bytes to a string and return
 	return string(jsonBytes), nil
 }
+
+type Data struct {
+	Body map[string]interface{}
+}
+
+func (d *Data) Get(field string) (interface{}, error) {
+	if field == "*" {
+		result := d.Body
+		d.Body = make(map[string]interface{}) // delete all root fields
+		return result, nil
+	} else {
+		result := d.Body[field]
+		delete(d.Body, field) // delete this one root field
+		return result, nil
+	}
+}
+
+func (d *Data) Set(field string, value interface{}) error {
+	if field == "*" {
+		newBody, err := interfaceToMap(value)
+		if err != nil {
+			return err
+		}
+		d.Body = newBody
+		return nil
+	} else {
+		d.Body[field] = value
+		return nil
+	}
+}
+
+func (d *Data) String() string {
+	str, _ := mapToString(d.Body)
+	return str
+}

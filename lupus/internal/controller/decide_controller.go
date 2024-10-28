@@ -101,8 +101,9 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	var input runtime.RawExtension = element.Status.Input
 	r.instanceState[req.NamespacedName].LastUpdated = element.Status.LastUpdated.Time
 
-	// Step 4 - Unmarshall input into map[string]interface{} called `data`. This is the struct that we will work on. The central point of Decide Element.
-	data, err := rawExtensionToMap(input)
+	// Step 4 - Unmarshall input into map[string]interface{} called `dataMap`. This is the struct that we will work on. The central point of Decide Element.
+	dataMap, err := rawExtensionToMap(input)
+	var data = Data{Body: dataMap}
 	if err != nil {
 		r.Logger.Error(err, "Cannot unmarshall the input")
 		return ctrl.Result{}, nil
@@ -111,43 +112,22 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	// Step 5 - Perform actions
 	// Loop over the actions
 	for _, action := range element.Spec.Actions {
-		// Prepare placeholder for output
-		var output map[string]interface{}
-		// derive the output based on tag
-		inputTag := action.InputTag
-		if inputTag == "*" {
-			output = data
-		} else {
-			output, err = interfaceToMap(data[inputTag])
-			if err != nil {
-				r.Logger.Error(err, "Cannot convert data filed into map[string]intreface{}")
-			}
+		input, err := data.Get(action.InputField)
+		if err != nil {
+			r.Logger.Error(err, "Cannot get Data inputField object")
+			return ctrl.Result{}, nil
 		}
+		output, err := sendToDestination(input, action.Destination)
+		if err != nil {
+			r.Logger.Error(err, "Cannot send to destination")
+			return ctrl.Result{}, nil
+		}
+		println("-------------OUTPUT------------------")
+		println(fmt.Sprintf("%v", output))
 
-		switch action.Destination.Type {
-		case "HTTP":
-			res, err := sendToHTTP(action.Destination.HTTP.Path, action.Destination.HTTP.Method, output)
-			if err != nil {
-				r.Logger.Error(err, "Cannot get response from external HTTP element")
-				return ctrl.Result{}, nil
-			}
-			if action.OutputTag == "*" {
-				data = res
-			} else {
-				data[action.OutputTag] = res
-			}
-		case "Opa":
-			res, err := sendToOpa(action.Destination.Opa.Path, output)
-			if err != nil {
-				r.Logger.Error(err, "Cannot get response from external Opa element")
-			}
-			if action.OutputTag == "*" {
-				data = res
-			} else {
-				data[action.OutputTag] = res
-			}
-		default:
-			r.Logger.Info(fmt.Sprintf("Destination %s not yet implemented in Decide", action.Destination.Type))
+		if err = data.Set(action.OutputField, output); err != nil {
+			r.Logger.Error(err, "cannot set data field")
+			return ctrl.Result{}, nil
 		}
 	}
 	// Step 6 - Send data output to the next elements
@@ -155,10 +135,10 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		// prepare placeholder for output
 		outputMap := make(map[string]interface{})
 		if len(next.Tags) == 1 && next.Tags[0] == "*" {
-			outputMap = data
+			outputMap = data.Body
 		} else {
 			for _, tag := range next.Tags {
-				if value, exists := data[tag]; exists {
+				if value, exists := data.Body[tag]; exists {
 					outputMap[tag] = value
 				}
 			}
@@ -226,23 +206,51 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	return ctrl.Result{}, nil
 }
 
-func sendToOpa(path string, body map[string]interface{}) (map[string]interface{}, error) {
-	wrappedBody := map[string]interface{}{
-		"input": body,
+func sendToDestination(input interface{}, dest v1.Destination) (interface{}, error) {
+	print("----------------------")
+	print(dest.Type)
+	print("======================")
+	switch dest.Type {
+	case "HTTP":
+		res, err := sendToHTTP(dest.HTTP.Path, dest.HTTP.Method, input)
+		if err != nil {
+			return nil, err
+		}
+		return res, nil
+	case "Opa":
+		res, err := sendToOpa(dest.Opa.Path, input)
+		if err != nil {
+			return nil, err
+		}
+		return res, nil
+	default:
+		return nil, fmt.Errorf("no such destination type implemented yet")
 	}
+}
+
+func sendToOpa(path string, reqBody interface{}) (interface{}, error) {
+	wrappedBody := map[string]interface{}{
+		"input": reqBody,
+	}
+
+	// Call sendToHTTP to get the response
 	res, err := sendToHTTP(path, "POST", wrappedBody)
 	if err != nil {
 		return nil, err
 	}
-	// Rename the "result" key to "commands"
-	if result, ok := res["result"]; ok {
-		res["commands"] = result
-		delete(res, "result")
+
+	// Ensure res is a map and check for the "result" field
+	if resMap, ok := res.(map[string]interface{}); ok {
+		if result, ok := resMap["result"]; ok {
+			return result, nil // Return only the content of "result"
+		}
+		return nil, fmt.Errorf("no 'result' field in response")
 	}
-	return res, nil
+
+	return nil, fmt.Errorf("unexpected response format")
 }
 
-func sendToHTTP(path string, method string, body map[string]interface{}) (map[string]interface{}, error) {
+func sendToHTTP(path string, method string, body interface{}) (interface{}, error) {
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
 		return nil, err

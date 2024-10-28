@@ -112,8 +112,7 @@ func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			r.Logger.Error(err, "Cannot get response from external HTTP element")
 			return ctrl.Result{}, nil
 		} else {
-			resStr, _ := mapToString(res)
-			r.Logger.Info("Sent properly", "res", resStr)
+			r.Logger.Info("Sent properly", "res", res)
 		}
 	default:
 		r.Logger.Info(fmt.Sprintf("Destination %s not yet implemented in Execute", destination.Type))

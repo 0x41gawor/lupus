@@ -23,20 +23,20 @@ spec:
       decideSpec:
         actions:
           - name: "bounce"
-            inputTag: "*"
+            inputField: "*"
             destination:
-              type: http
+              type: HTTP
               http:
                 path: "http://192.168.56.111:7000/api/bounce"
                 method: "POST"
-            outputTag: "*"
+            outputField: "*"
           - name: "send-to-opa"
-            inputTag: "*"
+            inputField: "*"
             destination:
               type: "Opa"
               opa:
                 path: "http://192.168.56.111:8181/v1/data/mmet/move_commands"
-            outputTag: "*"
+            outputField: "commands"
         next:
           - type: "Execute"
             name: "execute1"

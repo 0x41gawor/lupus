@@ -63,11 +63,11 @@ type Action struct {
 	// Name of the Action, it is for designer to ease the management of the Loop
 	Name string `json:"name"`
 	// Specifies the root field of input json that will be send, pass * for whole input to be sent
-	InputTag string `json:"inputTag"`
+	InputField string `json:"inputField"`
 	// Specifies Destination where the input has to be sent
 	Destination Destination `json:"destination"`
-	// OutputTag specifies json field in which the response from Destination will be saved
-	OutputTag string `json:"outputTag"`
+	// OutputField specifies json field in which the response from Destination will be saved
+	OutputField string `json:"outputField"`
 }
 
 // Element is a polymorphic structure that can represent different types of specs

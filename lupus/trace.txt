@@ -1,0 +1,12 @@
+2024/10/28 22:00:14 {"Gdansk":11,"Krakow":7,"Poznan":15,"Warsaw":28}
+2024/10/28 22:03:32 {"Gdansk":10,"Krakow":2,"Poznan":16,"Warsaw":31}
+2024/10/28 22:04:32 {"Gdansk":12,"Krakow":3,"Poznan":18,"Warsaw":31}
+2024/10/28 22:06:32 {"Gdansk":17,"Krakow":5,"Poznan":15,"Warsaw":38}
+2024/10/28 22:08:38 {"Gdansk":15,"Krakow":6,"Poznan":17,"Warsaw":32}
+2024/10/28 22:11:04 {"Gdansk":15,"Krakow":0,"Poznan":17,"Warsaw":39}
+2024/10/28 22:12:20 {"Gdansk":15,"Krakow":4,"Poznan":19,"Warsaw":39}
+2024/10/28 22:14:36 {"Gdansk":15,"Krakow":0,"Poznan":17,"Warsaw":42}
+2024/10/28 22:24:41 {"Gdansk":14,"Krakow":3,"Poznan":24,"Warsaw":42}
+2024/10/28 22:24:41 {"commands":[{"Count":1,"From":"Warsaw","To":"Poznan"},{"Count":11,"From":"Warsaw","To":"Gdansk"},{"Count":22,"From":"Warsaw","To":"Krakow"}]}
+2024/10/28 22:29:58 {"Gdansk":23,"Krakow":21,"Poznan":22,"Warsaw":15}
+2024/10/28 22:29:58 {"commands":[{"Count":1,"From":"Krakow","To":"Warsaw"},{"Count":2,"From":"Poznan","To":"Warsaw"},{"Count":3,"From":"Gdansk","To":"Warsaw"}]}
