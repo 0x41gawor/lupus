@@ -82,13 +82,15 @@ As for now we will distinghush 4 types of actions:
 - send
 - concat
 - remove
-- rename 
+- rename
+- duplicate
 
-Every action has an InputField. Then every Action performs something on this InputField.
-- send - send it as input to some external block (HTTP or Opa) and save the response in OutputField (with flat or nested strategy)
-- concat - join them to form one OutputField 
-- remove - remove them
-- rename - rename them
+Every action has an InputField and performs something on that InputField, typically resulting in some outputField. Each takes its inputField and:
+- send - sends it as input to some external block (HTTP or Opa) and save the response in OutputField
+- remove - removes it
+- concat - here we have list of InputFields instead of one. Action makes one OutputField by concatenating them
+- rename - renames it
+- duplicate - duplicates with new name
 
 ### Send
 ![](../_img/21.png)
@@ -103,8 +105,13 @@ Every action has an InputField. Then every Action performs something on this Inp
 
 # Rules for loop design regarding to the Data
 
-- When using send Action. Response needs to be convertible to `interface{}` so it can be anything. It will be simply placed in a field specified by `outputField`. But, the problems can occur when you use "*" as outputField. In this case response needs to be convertible to `map[string]interface{}` so it cannot be a single value or json array. 
+- When using send Action. Response needs to be convertible to `interface{}` so it can be anything. It will be simply placed in a field specified by `outputField`. But, the problems can occur when you use "*" as outputField. In this case response needs to be convertible to `map[string]interface{}` so it cannot be a single value or json array.* 
 - In the final form of Data a field called "commands" must be present. It is required by the lupout interface. Other fields can be present there, e.g. Decide can send them to some Learn/Store element. But Decide needs to push "commands" to the Execute element. 
 
-In general:
+*In general:
 ![](../_img/26.png)
+
+
+Let's junxtapose each type of action:
+
+![](../_img/27.png)

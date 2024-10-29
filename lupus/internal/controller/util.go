@@ -101,20 +101,20 @@ type Data struct {
 	Body map[string]interface{}
 }
 
-func (d *Data) Get(field string) (interface{}, error) {
-	if field == "*" {
-		result := d.Body
+func (d *Data) Get(key string) (interface{}, error) {
+	if key == "*" {
+		value := d.Body
 		d.Body = make(map[string]interface{}) // delete all root fields
-		return result, nil
+		return value, nil
 	} else {
-		result := d.Body[field]
-		delete(d.Body, field) // delete this one root field
-		return result, nil
+		value := d.Body[key]
+		delete(d.Body, key) // delete this one root field
+		return value, nil
 	}
 }
 
-func (d *Data) Set(field string, value interface{}) error {
-	if field == "*" {
+func (d *Data) Set(key string, value interface{}) error {
+	if key == "*" {
 		newBody, err := interfaceToMap(value)
 		if err != nil {
 			return err
@@ -122,7 +122,7 @@ func (d *Data) Set(field string, value interface{}) error {
 		d.Body = newBody
 		return nil
 	} else {
-		d.Body[field] = value
+		d.Body[key] = value
 		return nil
 	}
 }
@@ -130,4 +130,76 @@ func (d *Data) Set(field string, value interface{}) error {
 func (d *Data) String() string {
 	str, _ := mapToString(d.Body)
 	return str
+}
+
+// Concat creates a combined field with all inputKeys in it and names it outputKey
+func (d *Data) Concat(inputKeys []string, outputKey string) error {
+	if outputKey == "*" {
+		return fmt.Errorf("`*` is not allowed as a key name for Concat")
+	}
+	// Initialize a map to hold the combined fields
+	combinedMap := make(map[string]interface{})
+	// Iterate over each field in the inputFields slice
+	for _, key := range inputKeys {
+		if key == "*" {
+			return fmt.Errorf("`*` is not allowed as a key name for Remove")
+		}
+		// Retrieve the value for the field
+		value, exists := d.Body[key]
+		if !exists {
+			return fmt.Errorf("field not found in body: %s", key)
+		}
+		// Add the field to the combined map
+		combinedMap[key] = value
+		// Remove the field from the original map to "move" it
+		delete(d.Body, key)
+	}
+	// Set the combined map as the value of outputField
+	d.Body[outputKey] = combinedMap
+	return nil
+}
+
+// Remove removes fields with given keys in inputKeys
+func (d *Data) Remove(inputKeys []string) error {
+	for _, key := range inputKeys {
+		if key == "*" {
+			return fmt.Errorf("`*` is not allowed as a key name for Remove")
+		}
+		delete(d.Body, key)
+	}
+	return nil
+}
+
+// Rename changes name from inputKey to outputKey
+func (d *Data) Rename(inputKey string, outputKey string) error {
+	if inputKey == "*" || outputKey == "*" {
+		return fmt.Errorf("'*' is not allowed as a key name for Rename")
+	}
+	// Check if inputKey exists in the map
+	value, exists := d.Body[inputKey]
+	if !exists {
+		return fmt.Errorf("key %s not found in body", inputKey)
+	}
+	// Set the value of outputKey to the value of inputKey
+	d.Body[outputKey] = value
+	// Delete the inputKey to complete the "rename"
+	delete(d.Body, inputKey)
+	return nil
+}
+
+// Duplicate function, copies  the value associated with inputKey in d.Body to a new key named outputKey, without removing the original key.
+func (d *Data) Duplicate(inputKey string, outputKey string) error {
+	if inputKey == "*" || outputKey == "*" {
+		return fmt.Errorf("'*' is not allowed as a key name for Duplicate")
+	}
+	// Check if inputKey exists in the map
+	value, exists := d.Body[inputKey]
+	if !exists {
+		return fmt.Errorf("key %s not found in body", inputKey)
+	}
+
+	// Set the value of outputKey to the value of inputKey
+	d.Body[outputKey] = value
+
+	return nil
 }
