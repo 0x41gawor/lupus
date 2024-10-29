@@ -56,37 +56,54 @@ type OpaDestination struct {
 }
 
 // Action is used in Decide spec
-// It represents the Action that Decide has to perform on its input
-// As for now only the Action of sending the Input somewhere (to HTTP server, Open Policy Agent, gRPC service) is supported
-// Thus Action includes its name, input_tag (part of input that has to be sent) and destination
+// It represents the Action that Decide has to perform on Data
 type Action struct {
 	// Name of the Action, it is for designer to ease the management of the Loop
 	Name string `json:"name"`
-	// Specifies the root field of input json that will be send, pass * for whole input to be sent
-	InputField string `json:"inputField"`
-	// Specifies Destination where the input has to be sent
+	// Type of Action one of send;concat,remove,rename,duplicate
+	Type string `json:"type" kubebuilder:"validation:Enum=send;concat,remove,rename,duplicate"`
+	// One of these fields is not null depending on a Type.
+	Send      *SendAction      `json:"send,omitempty" kubebuilder:"validation:Optional"`
+	Concat    *ConcatAction    `json:"concat,omitempty" kubebuilder:"validation:Optional"`
+	Remove    *RemoveAction    `json:"remove,omitempty" kubebuilder:"validation:Optional"`
+	Rename    *RenameAction    `json:"rename,omitempty" kubebuilder:"validation:Optional"`
+	Duplicate *DuplicateAction `json:"duplicate,omitempty" kubebuilder:"validation:Optional"`
+}
+
+type SendAction struct {
+	InputKey    string      `json:"inputKey"`
 	Destination Destination `json:"destination"`
-	// OutputField specifies json field in which the response from Destination will be saved
-	OutputField string `json:"outputField"`
+	OutputKey   string      `json:"outputKey"`
+}
+
+type ConcatAction struct {
+	InputKeys []string `json:"inputKeys"`
+	OutputKey string   `json:"outputKey"`
+}
+
+type RemoveAction struct {
+	InputKeys []string `json:"inputKeys"`
+}
+
+type RenameAction struct {
+	InputKey  string `json:"inputKey"`
+	OutputKey string `json:"outputKey"`
+}
+
+type DuplicateAction struct {
+	InputKey  string `json:"inputKey"`
+	OutputKey string `json:"outputKey"`
 }
 
 // Element is a polymorphic structure that can represent different types of specs
 type Element struct {
 	// Name is the name of the element
 	Name string `json:"name"`
-
 	// Type specifies the type of the element ("Observe", "Decide", "Learn", "Execute", etc.)
 	Type string `json:"type" kubebuilder:"validation:Enum=Observe;Decide;Learn;Execute"`
 
-	// ObserveSpec contains the spec if the type is "Observe"
 	ObserveSpec *ObserveSpec `json:"observeSpec,omitempty"`
-
-	// DecideSpec contains the spec if the type is "Decide"
-	DecideSpec *DecideSpec `json:"decideSpec,omitempty"`
-
-	// LearnSpec contains the spec if the type is "Learn"
-	LearnSpec *LearnSpec `json:"learnSpec,omitempty"`
-
-	// ExecuteSpec contains the spec if the type is "Execute"
+	DecideSpec  *DecideSpec  `json:"decideSpec,omitempty"`
+	LearnSpec   *LearnSpec   `json:"learnSpec,omitempty"`
 	ExecuteSpec *ExecuteSpec `json:"executeSpec,omitempty"`
 }

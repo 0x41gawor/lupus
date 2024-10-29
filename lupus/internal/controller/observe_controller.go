@@ -88,6 +88,12 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 	// Check for double update in single loop iteration. If r.LastUpdated time is zero it means it is the 2nd run (so double update can't happen)
 	// If the Status.LastUpdated time is non-zero we have to check if its not the same as the previous one
+	println("=+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=")
+	println("controller last updated of this element")
+	println(r.instanceState[req.NamespacedName].LastUpdated.String())
+	println("element last updated")
+	println(element.Status.LastUpdated.Time.String())
+
 	if !r.instanceState[req.NamespacedName].LastUpdated.IsZero() && !element.Status.LastUpdated.Time.After(r.instanceState[req.NamespacedName].LastUpdated) {
 		// If this condition is true it means we are reconciling again in the same iteration
 		r.Logger.Info("Already reconciled in this loop iteration, no need to reconcile")

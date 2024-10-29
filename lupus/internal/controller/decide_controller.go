@@ -112,22 +112,45 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	// Step 5 - Perform actions
 	// Loop over the actions
 	for _, action := range element.Spec.Actions {
-		input, err := data.Get(action.InputField)
-		if err != nil {
-			r.Logger.Error(err, "Cannot get Data inputField object")
-			return ctrl.Result{}, nil
-		}
-		output, err := sendToDestination(input, action.Destination)
-		if err != nil {
-			r.Logger.Error(err, "Cannot send to destination")
-			return ctrl.Result{}, nil
-		}
-		println("-------------OUTPUT------------------")
-		println(fmt.Sprintf("%v", output))
-
-		if err = data.Set(action.OutputField, output); err != nil {
-			r.Logger.Error(err, "cannot set data field")
-			return ctrl.Result{}, nil
+		switch action.Type {
+		case "send":
+			input, err := data.Get(action.Send.InputKey)
+			if err != nil {
+				r.Logger.Error(err, "cannot get Data inputKey object")
+				return ctrl.Result{}, nil
+			}
+			output, err := sendToDestination(input, action.Send.Destination)
+			if err != nil {
+				r.Logger.Error(err, "cannot get Data inputKey object")
+				return ctrl.Result{}, nil
+			}
+			if err = data.Set(action.Send.OutputKey, output); err != nil {
+				r.Logger.Error(err, "cannot set data field")
+			}
+		case "concat":
+			err := data.Concat(action.Concat.InputKeys, action.Concat.OutputKey)
+			if err != nil {
+				r.Logger.Error(err, "cannot concat data field")
+				return ctrl.Result{}, nil
+			}
+		case "remove":
+			err := data.Remove(action.Remove.InputKeys)
+			if err != nil {
+				r.Logger.Error(err, "cannot remove data field")
+				return ctrl.Result{}, nil
+			}
+		case "rename":
+			err := data.Rename(action.Rename.InputKey, action.Rename.OutputKey)
+			if err != nil {
+				r.Logger.Error(err, "cannot rename data field")
+				return ctrl.Result{}, nil
+			}
+		case "duplicate":
+			err := data.Duplicate(action.Duplicate.InputKey, action.Duplicate.OutputKey)
+			if err != nil {
+				r.Logger.Error(err, "cannot duplicate data field")
+				return ctrl.Result{}, nil
+			}
 		}
 	}
 	// Step 6 - Send data output to the next elements

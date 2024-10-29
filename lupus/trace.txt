@@ -10,3 +10,15 @@
 2024/10/28 22:24:41 {"commands":[{"Count":1,"From":"Warsaw","To":"Poznan"},{"Count":11,"From":"Warsaw","To":"Gdansk"},{"Count":22,"From":"Warsaw","To":"Krakow"}]}
 2024/10/28 22:29:58 {"Gdansk":23,"Krakow":21,"Poznan":22,"Warsaw":15}
 2024/10/28 22:29:58 {"commands":[{"Count":1,"From":"Krakow","To":"Warsaw"},{"Count":2,"From":"Poznan","To":"Warsaw"},{"Count":3,"From":"Gdansk","To":"Warsaw"}]}
+2024/10/29 22:31:17 {"Gdansk":11,"Krakow":3,"Poznan":11,"Warsaw":26}
+2024/10/29 22:31:17 {"commands":[{"Count":2,"From":"Warsaw","To":"Gdansk"},{"Count":2,"From":"Warsaw","To":"Poznan"},{"Count":10,"From":"Warsaw","To":"Krakow"}]}
+2024/10/29 22:37:27 {"Gdansk":8,"Krakow":4,"Poznan":14,"Warsaw":18}
+2024/10/29 22:37:27 {"commands":[{"Count":3,"From":"Poznan","To":"Gdansk"},{"Count":3,"From":"Poznan","To":"Krakow"},{"Count":3,"From":"Warsaw","To":"Gdansk"},{"Count":7,"From":"Warsaw","To":"Krakow"}]}
+2024/10/29 22:42:48 {"Gdansk":21,"Krakow":7,"Poznan":2,"Warsaw":9}
+2024/10/29 22:42:48 {"commands":[{"Count":1,"From":"Gdansk","To":"Warsaw"},{"Count":3,"From":"Gdansk","To":"Krakow"},{"Count":8,"From":"Gdansk","To":"Poznan"}]}
+2024/10/29 22:43:18 {"Gdansk":11,"Krakow":8,"Poznan":12,"Warsaw":11}
+2024/10/29 22:43:18 {"commands":[{"Count":1,"From":"Gdansk","To":"Krakow"},{"Count":1,"From":"Warsaw","To":"Krakow"},{"Count":2,"From":"Poznan","To":"Krakow"}]}
+2024/10/29 22:43:48 {"Gdansk":8,"Krakow":12,"Poznan":9,"Warsaw":9}
+2024/10/29 22:43:48 {"commands":[{"Count":1,"From":"Krakow","To":"Poznan"},{"Count":1,"From":"Krakow","To":"Warsaw"},{"Count":2,"From":"Krakow","To":"Gdansk"}]}
+2024/10/29 22:44:18 {"Gdansk":12,"Krakow":7,"Poznan":11,"Warsaw":10}
+2024/10/29 22:44:18 {"commands":[{"Count":1,"From":"Poznan","To":"Krakow"},{"Count":2,"From":"Gdansk","To":"Krakow"}]}

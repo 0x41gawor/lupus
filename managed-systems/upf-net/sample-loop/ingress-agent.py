@@ -2,6 +2,7 @@
 import requests
 import time
 from kubernetes import client, config
+from datetime import datetime
 import argparse
 
 # Global state shared across threads
@@ -30,10 +31,9 @@ def periodic_task(interval, k8s_client):
                 # Update the `status.input` field with the state
                 observe_status = observe.get('status', {})
                 observe_status['input'] = state
+                observe_status['lastUpdated'] = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
 
                 observe['status'] = observe_status
-                print(observe['status'])
-                
 
                 # Patch the custom resource status
                 k8s_client.patch_namespaced_custom_object_status(

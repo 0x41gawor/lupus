@@ -47,7 +47,7 @@ spec:
                     different types of specs
                   properties:
                     decideSpec:
-                      description: DecideSpec contains the spec if the type is "Decide"
+                      description: DecideSpec defines the desired state of Decide
                       properties:
                         actions:
                           description: Actions is a list of Actions that Decide has
@@ -55,80 +55,125 @@ spec:
                           items:
                             description: |-
                               Action is used in Decide spec
-                              It represents the Action that Decide has to perform on its input
-                              As for now only the Action of sending the Input somewhere (to HTTP server, Open Policy Agent, gRPC service) is supported
-                              Thus Action includes its name, input_tag (part of input that has to be sent) and destination
+                              It represents the Action that Decide has to perform on Data
                             properties:
-                              destination:
-                                description: Specifies Destination where the input
-                                  has to be sent
+                              concat:
                                 properties:
-                                  file:
-                                    description: File-specific fields
-                                    properties:
-                                      path:
-                                        type: string
-                                    required:
-                                    - path
-                                    type: object
-                                  grpc:
-                                    description: gRPC-specific fields
-                                    properties:
-                                      host:
-                                        type: string
-                                      method:
-                                        type: string
-                                      service:
-                                        type: string
-                                    required:
-                                    - host
-                                    - method
-                                    - service
-                                    type: object
-                                  http:
-                                    description: HTTP-specific fields
-                                    properties:
-                                      method:
-                                        type: string
-                                      path:
-                                        type: string
-                                    required:
-                                    - method
-                                    - path
-                                    type: object
-                                  opa:
-                                    description: Opa-specific fields
-                                    properties:
-                                      path:
-                                        type: string
-                                    required:
-                                    - path
-                                    type: object
-                                  type:
-                                    description: 'Discriminator: "HTTP", "FILE", "gRPC",
-                                      etc.'
+                                  inputKeys:
+                                    items:
+                                      type: string
+                                    type: array
+                                  outputKey:
                                     type: string
                                 required:
-                                - type
+                                - inputKeys
+                                - outputKey
                                 type: object
-                              inputField:
-                                description: Specifies the root field of input json
-                                  that will be send, pass * for whole input to be
-                                  sent
-                                type: string
+                              duplicate:
+                                properties:
+                                  inputKey:
+                                    type: string
+                                  outputKey:
+                                    type: string
+                                required:
+                                - inputKey
+                                - outputKey
+                                type: object
                               name:
                                 description: Name of the Action, it is for designer
                                   to ease the management of the Loop
                                 type: string
-                              outputField:
-                                description: OutputField specifies json field in which
-                                  the response from Destination will be saved
+                              remove:
+                                properties:
+                                  inputKeys:
+                                    items:
+                                      type: string
+                                    type: array
+                                required:
+                                - inputKeys
+                                type: object
+                              rename:
+                                properties:
+                                  inputKey:
+                                    type: string
+                                  outputKey:
+                                    type: string
+                                required:
+                                - inputKey
+                                - outputKey
+                                type: object
+                              send:
+                                description: One of these fields is not null depending
+                                  on a Type.
+                                properties:
+                                  destination:
+                                    description: |-
+                                      Destination in Action type and in Learn Spec
+                                      Destination is a polymorphic field that can represent different types
+                                    properties:
+                                      file:
+                                        description: File-specific fields
+                                        properties:
+                                          path:
+                                            type: string
+                                        required:
+                                        - path
+                                        type: object
+                                      grpc:
+                                        description: gRPC-specific fields
+                                        properties:
+                                          host:
+                                            type: string
+                                          method:
+                                            type: string
+                                          service:
+                                            type: string
+                                        required:
+                                        - host
+                                        - method
+                                        - service
+                                        type: object
+                                      http:
+                                        description: HTTP-specific fields
+                                        properties:
+                                          method:
+                                            type: string
+                                          path:
+                                            type: string
+                                        required:
+                                        - method
+                                        - path
+                                        type: object
+                                      opa:
+                                        description: Opa-specific fields
+                                        properties:
+                                          path:
+                                            type: string
+                                        required:
+                                        - path
+                                        type: object
+                                      type:
+                                        description: 'Discriminator: "HTTP", "FILE",
+                                          "gRPC", etc.'
+                                        type: string
+                                    required:
+                                    - type
+                                    type: object
+                                  inputKey:
+                                    type: string
+                                  outputKey:
+                                    type: string
+                                required:
+                                - destination
+                                - inputKey
+                                - outputKey
+                                type: object
+                              type:
+                                description: Type of Action one of send;concat,remove,rename,duplicate
                                 type: string
                             required:
-                            - destination
-                            - inputField
                             - name
-                            - outputField
+                            - type
                             type: object
                           type: array
                         master:
@@ -167,7 +212,7 @@ spec:
                           type: array
                       type: object
                     executeSpec:
-                      description: ExecuteSpec contains the spec if the type is "Execute"
+                      description: ExecuteSpec defines the desired state of Execute
                       properties:
                         destination:
                           description: |-
@@ -229,7 +274,7 @@ spec:
                       - destination
                       type: object
                     learnSpec:
-                      description: LearnSpec contains the spec if the type is "Learn"
+                      description: LearnSpec defines the desired state of Learn
                       properties:
                         destination:
                           description: This is the Destination in which Learn will
@@ -293,7 +338,7 @@ spec:
                       description: Name is the name of the element
                       type: string
                     observeSpec:
-                      description: ObserveSpec contains the spec if the type is "Observe"
+                      description: ObserveSpec defines the desired state of Observe
                       properties:
                         master:
                           description: Name of master element
