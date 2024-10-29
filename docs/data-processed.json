@@ -1,0 +1,24 @@
+{
+    "field1": "amaretto",
+    "color": "amaretto",
+    "license": {
+        "ram": {
+            "in_use": 11,
+            "license": 12
+        },
+        "cpu": {
+            "in_use": 11,
+            "license": 12
+        }
+    },
+    "cities": {
+        "Gdansk": 10,
+        "Krakow": 12,
+        "Poznan": 12,
+        "Warsaw": 15
+    }
+}
+
+
+
+

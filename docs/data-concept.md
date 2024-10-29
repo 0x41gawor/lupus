@@ -75,3 +75,36 @@ In the future a more complicated engine for json Data can be developed. Where e.
 
 ![](../_img/20.png)
 
+
+## Actions
+
+As for now we will distinghush 4 types of actions:
+- send
+- concat
+- remove
+- rename 
+
+Every action has an InputField. Then every Action performs something on this InputField.
+- send - send it as input to some external block (HTTP or Opa) and save the response in OutputField (with flat or nested strategy)
+- concat - join them to form one OutputField 
+- remove - remove them
+- rename - rename them
+
+### Send
+![](../_img/21.png)
+### Concat
+![](../_img/22.png)
+### Remove
+![](../_img/23.png)
+### Rename
+![](../_img/24.png)
+### Duplicate 
+![](../_img/24.png)
+
+# Rules for loop design regarding to the Data
+
+- When using send Action. Response needs to be convertible to `interface{}` so it can be anything. It will be simply placed in a field specified by `outputField`. But, the problems can occur when you use "*" as outputField. In this case response needs to be convertible to `map[string]interface{}` so it cannot be a single value or json array. 
+- In the final form of Data a field called "commands" must be present. It is required by the lupout interface. Other fields can be present there, e.g. Decide can send them to some Learn/Store element. But Decide needs to push "commands" to the Execute element. 
+
+In general:
+![](../_img/26.png)s
