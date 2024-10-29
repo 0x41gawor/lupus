@@ -107,4 +107,4 @@ Every action has an InputField. Then every Action performs something on this Inp
 - In the final form of Data a field called "commands" must be present. It is required by the lupout interface. Other fields can be present there, e.g. Decide can send them to some Learn/Store element. But Decide needs to push "commands" to the Execute element. 
 
 In general:
-![](../_img/26.png)s
+![](../_img/26.png)
