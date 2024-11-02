@@ -5,7 +5,6 @@ Our Lupus loop is assumed to be data-driven. No logic realted to reconcillation 
 When input comes to Lupus in a form of json object, it has various root fields. We would like to provide a mechanisms to manipulate on this json. Let's call this json a `Data` (since we want to have "data-driven kręciołek").
 
 
-
 For such cause a concept of "Action" had risen up. Action is something that can take some root field of Data, send it somewhere as input, receive the response and save it in `Data` root object with the same name as the input was, or rename it or create additional field.
 
 Let's take such managed-system state json as example:
@@ -92,6 +91,10 @@ Every action has an InputField and performs something on that InputField, typica
 - rename - renames it
 - duplicate - duplicates with new name
 
+> At first actions were a bit more complex. Eg. Send had inputField strategies and user could choose if to keep the inputField or delete it. 
+> But then these atomic funcionalties were simply derived to other actions, so at the end of the day same set of functionalities is delivered and user can obtain the same effects.
+> additionaly with more atomicity it is ever better.
+
 ### Send
 ![](../_img/21.png)
 ### Concat
@@ -105,7 +108,7 @@ Every action has an InputField and performs something on that InputField, typica
 
 # Rules for loop design regarding to the Data
 
-- When using send Action. Response needs to be convertible to `interface{}` so it can be anything. It will be simply placed in a field specified by `outputField`. But, the problems can occur when you use "*" as outputField. In this case response needs to be convertible to `map[string]interface{}` so it cannot be a single value or json array.* 
+- When using send Action. Response needs to be convertible to `interface{}` so it can be anything. It will be simply placed in a field specified by `outputField`. But, the problems can occur when you use `"*"` as outputField. In this case response needs to be convertible to `map[string]interface{}` so it cannot be a single value or json array.* 
 - In the final form of Data a field called "commands" must be present. It is required by the lupout interface. Other fields can be present there, e.g. Decide can send them to some Learn/Store element. But Decide needs to push "commands" to the Execute element. 
 
 *In general:
@@ -115,3 +118,5 @@ Every action has an InputField and performs something on that InputField, typica
 Let's junxtapose each type of action:
 
 ![](../_img/27.png)
+
+> `Field` was renamed to `key` as it better reflects the map[string]interface{} shape of Data.

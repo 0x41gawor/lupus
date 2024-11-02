@@ -101,6 +101,15 @@ type Data struct {
 	Body map[string]interface{}
 }
 
+func NewData(input runtime.RawExtension) (*Data, error) {
+	dataMap, err := rawExtensionToMap(input)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Data{Body: dataMap}, nil
+}
+
 func (d *Data) Get(key string) (interface{}, error) {
 	if key == "*" {
 		value := d.Body
@@ -111,6 +120,27 @@ func (d *Data) Get(key string) (interface{}, error) {
 		delete(d.Body, key) // delete this one root field
 		return value, nil
 	}
+}
+
+func (d *Data) GetKeys(keys []string) (*runtime.RawExtension, error) {
+	// prepare placeholder for output
+	outputMap := make(map[string]interface{})
+	// cut data parts based on next.Keys
+	if len(keys) == 1 && keys[0] == "*" {
+		outputMap = d.Body
+	} else {
+		for _, tag := range keys {
+			if value, exists := d.Body[tag]; exists {
+				outputMap[tag] = value
+			}
+		}
+	}
+	outputRaw, err := mapToRawExtension(outputMap)
+	if err != nil {
+		return nil, err
+	}
+	return &outputRaw, nil
+
 }
 
 func (d *Data) Set(key string, value interface{}) error {

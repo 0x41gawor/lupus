@@ -61,8 +61,9 @@ func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	r.ElementType = "Execute"
 	r.Logger = log.FromContext(ctx)
 	r.Logger.Info(fmt.Sprintf("=================== START OF %s Reconciler: \n", strings.ToUpper(r.ElementType)))
-	// Step 1 - Fetch the reconciled resource instance (Controller-Runtime nomenclature)
-	// Step 1 - Fetch reconciled element 	(Lupus nomenclature)
+
+	// Step 1 - (k8s) Fetch reconciled resource instance
+	// Step 1 - (lupus) Fetch element
 	var element v1.Execute
 	if err := r.Get(ctx, req.NamespacedName, &element); err != nil {
 		r.Logger.Info(fmt.Sprintf("Failed to fetch %s instance", r.ElementType), "error", err)
@@ -102,11 +103,11 @@ func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		r.Logger.Error(err, "Cannot unmarshall the input")
 		return ctrl.Result{}, nil
 	}
-	// Step 5 - Perfom sending to destination
+
+	// Step 5 - Send input to destianation
 	destination := element.Spec.Destination
 	switch destination.Type {
 	case "HTTP":
-		// implement
 		res, err := sendToHTTP(destination.HTTP.Path, destination.HTTP.Method, output)
 		if err != nil {
 			r.Logger.Error(err, "Cannot get response from external HTTP element")

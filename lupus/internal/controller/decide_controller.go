@@ -66,8 +66,8 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	r.Logger = log.FromContext(ctx)
 	r.Logger.Info(fmt.Sprintf("=================== START OF %s Reconciler: \n", strings.ToUpper(r.ElementType)))
 
-	// Step 1 - Fetch the reconciled resource instance (Controller-Runtime nomenclature)
-	// Step 1 - Fetch reconciled element 	(Lupus nomenclature)
+	// Step 1 - (k8s) Fetch reconciled resource instance
+	// Step 1 - (lupus) Fetch element
 	var element v1.Decide
 	if err := r.Get(ctx, req.NamespacedName, &element); err != nil {
 		r.Logger.Info(fmt.Sprintf("Failed to fetch %s instance", r.ElementType), "error", err)
@@ -101,16 +101,15 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	var input runtime.RawExtension = element.Status.Input
 	r.instanceState[req.NamespacedName].LastUpdated = element.Status.LastUpdated.Time
 
-	// Step 4 - Unmarshall input into map[string]interface{} called `dataMap`. This is the struct that we will work on. The central point of Decide Element.
-	dataMap, err := rawExtensionToMap(input)
-	var data = Data{Body: dataMap}
+	// Step 4 - (Go) Unmarshall input into map[string]interface{}
+	// Step 4 - (Lupus) Create Data object
+	data, err := NewData(input)
 	if err != nil {
 		r.Logger.Error(err, "Cannot unmarshall the input")
 		return ctrl.Result{}, nil
 	}
 
 	// Step 5 - Perform actions
-	// Loop over the actions
 	for _, action := range element.Spec.Actions {
 		switch action.Type {
 		case "send":
@@ -155,74 +154,18 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 	// Step 6 - Send data output to the next elements
 	for _, next := range element.Spec.Next {
-		// prepare placeholder for output
-		outputMap := make(map[string]interface{})
-		if len(next.Tags) == 1 && next.Tags[0] == "*" {
-			outputMap = data.Body
-		} else {
-			for _, tag := range next.Tags {
-				if value, exists := data.Body[tag]; exists {
-					outputMap[tag] = value
-				}
-			}
-		}
-
-		outputRaw, err := mapToRawExtension(outputMap)
+		// prepare output based on keys
+		output, err := data.GetKeys(next.Keys)
 		if err != nil {
-			r.Logger.Error(err, "Cannot convert map to RawExtension")
+			r.Logger.Error(err, "Cannot retrieve keys from data")
+			return ctrl.Result{}, nil
 		}
-
-		switch next.Type {
-		case "Decide":
-			// fetch the next element
-			resourceName := element.Spec.Master + "-" + next.Name
-			resourceNamespace := "default"
-			var nextElement v1.Decide
-			err := r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &nextElement)
-			if err != nil {
-				r.Logger.Error(err, "Failed to get next element: Decide")
-			}
-			// set fields of next element
-			nextElement.Status.Input = outputRaw
-			nextElement.Status.LastUpdated = metav1.Time{Time: r.instanceState[req.NamespacedName].LastUpdated}
-			// update next element via kube-api-server
-			if err := r.Status().Update(ctx, &nextElement); err != nil {
-				r.Logger.Error(err, "Failed to update next element (Decide) status")
-			}
-		case "Learn":
-			// fetch the next element
-			resourceName := element.Spec.Master + "-" + next.Name
-			resourceNamespace := "default"
-			var nextElement v1.Learn
-			err := r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &nextElement)
-			if err != nil {
-				r.Logger.Error(err, "Failed to get next element: Learn")
-			}
-			// set fields of next element
-			nextElement.Status.Input = outputRaw
-			nextElement.Status.LastUpdated = metav1.Time{Time: r.instanceState[req.NamespacedName].LastUpdated}
-			// update next element via kube-api-server
-			if err := r.Status().Update(ctx, &nextElement); err != nil {
-				r.Logger.Error(err, "Failed to update next element (Learn) status")
-			}
-		case "Execute":
-			// fetch the next element
-			resourceName := element.Spec.Master + "-" + next.Name
-			resourceNamespace := "default"
-			var nextElement v1.Execute
-			err := r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &nextElement)
-			if err != nil {
-				r.Logger.Error(err, "Failed to get next element: Decide")
-			}
-			// set fields of next element
-			nextElement.Status.Input = outputRaw
-			nextElement.Status.LastUpdated = metav1.Time{Time: r.instanceState[req.NamespacedName].LastUpdated}
-			// update next element via kube-api-server
-			if err := r.Status().Update(ctx, &nextElement); err != nil {
-				r.Logger.Error(err, "Failed to update next element (Decide) status")
-			}
-		default:
-			r.Logger.Error(errors.New("cannot pass input to any other element type than Execute or Decide"), "Unrecognized element type")
+		// update status of next element with output
+		updateTime := metav1.Time{Time: r.instanceState[req.NamespacedName].LastUpdated}
+		objectKey := client.ObjectKey{Name: element.Spec.Master + "-" + next.Name, Namespace: "default"}
+		err = r.updateStatus(ctx, next.Type, objectKey, updateTime, *output)
+		if err != nil {
+			r.Logger.Error(err, "Failed to update status of next element")
 		}
 	}
 	r.Logger.Info("Decide sucessfully reconciled", "name", req.Name)
@@ -230,9 +173,6 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 }
 
 func sendToDestination(input interface{}, dest v1.Destination) (interface{}, error) {
-	print("----------------------")
-	print(dest.Type)
-	print("======================")
 	switch dest.Type {
 	case "HTTP":
 		res, err := sendToHTTP(dest.HTTP.Path, dest.HTTP.Method, input)
@@ -315,4 +255,56 @@ func (r *DecideReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1.Decide{}).
 		Complete(r)
+}
+
+func (r *DecideReconciler) updateStatus(ctx context.Context, t string, objKey client.ObjectKey, updateTime metav1.Time, output runtime.RawExtension) error {
+	switch t {
+	case "Learn":
+		nextElement := v1.Learn{}
+		// (k8s) fetch lupus element from kube-api-server
+		err := r.Get(ctx, objKey, &nextElement)
+		if err != nil {
+			r.Logger.Error(err, "Failed to get next element: Learn")
+		}
+		// (k8s/go) set fields
+		nextElement.Status.Input = output
+		nextElement.Status.LastUpdated = updateTime
+		// (k8s) update k8s object in kube-api-server
+		if err := r.Status().Update(ctx, &nextElement); err != nil {
+			r.Logger.Error(err, "Failed to update next element (Learn) status")
+		}
+	case "Decide":
+		nextElement := v1.Decide{}
+		// (k8s) fetch lupus element from kube-api-server
+		err := r.Get(ctx, objKey, &nextElement)
+		if err != nil {
+			r.Logger.Error(err, "Failed to get next element: Decide")
+		}
+		// (k8s/go) set fields
+		nextElement.Status.Input = output
+		nextElement.Status.LastUpdated = updateTime
+		// (k8s) update k8s object in kube-api-server
+		if err := r.Status().Update(ctx, &nextElement); err != nil {
+			r.Logger.Error(err, "Failed to update next element (Decide) status")
+		}
+	case "Execute":
+		nextElement := v1.Execute{}
+		// (k8s) fetch lupus element from kube-api-server
+		err := r.Get(ctx, objKey, &nextElement)
+		if err != nil {
+			r.Logger.Error(err, "Failed to get next element: Execute")
+		}
+		// (k8s/go) set fields
+		nextElement.Status.Input = output
+		nextElement.Status.LastUpdated = updateTime
+		// (k8s) update k8s object in kube-api-server
+		if err := r.Status().Update(ctx, &nextElement); err != nil {
+			r.Logger.Error(err, "Failed to update next element (Execute) status")
+		}
+	default:
+		err := errors.New("cannot pass input to any other element type than Lean or Decide")
+		r.Logger.Error(err, "Unrecognized element type")
+		return err
+	}
+	return nil
 }

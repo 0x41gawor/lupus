@@ -64,7 +64,8 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	r.Logger = log.FromContext(ctx)
 	r.Logger.Info(fmt.Sprintf("=================== START OF %s Reconciler: \n", strings.ToUpper(r.ElementType)))
 
-	// Step 1 - Fetch the reconciled resource instance
+	// Step 1 - (k8s) Fetch reconciled resource instance
+	// Step 1 - (lupus) Fetch element
 	var element v1.Observe
 	if err := r.Get(ctx, req.NamespacedName, &element); err != nil {
 		r.Logger.Info("Failed to fetch Observe instance", "error", err)
@@ -88,12 +89,6 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 	// Check for double update in single loop iteration. If r.LastUpdated time is zero it means it is the 2nd run (so double update can't happen)
 	// If the Status.LastUpdated time is non-zero we have to check if its not the same as the previous one
-	println("=+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=")
-	println("controller last updated of this element")
-	println(r.instanceState[req.NamespacedName].LastUpdated.String())
-	println("element last updated")
-	println(element.Status.LastUpdated.Time.String())
-
 	if !r.instanceState[req.NamespacedName].LastUpdated.IsZero() && !element.Status.LastUpdated.Time.After(r.instanceState[req.NamespacedName].LastUpdated) {
 		// If this condition is true it means we are reconciling again in the same iteration
 		r.Logger.Info("Already reconciled in this loop iteration, no need to reconcile")
@@ -104,64 +99,29 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	var input runtime.RawExtension = element.Status.Input
 	r.instanceState[req.NamespacedName].LastUpdated = time.Now()
 
-	// Step 4 - Unmarshall input into map[string]interface{} so you can easily access its root elements
-	data, err := rawExtensionToMap(input)
+	// Step 4 - (Go) Unmarshall input into map[string]interface{}
+	// Step 4 - (Lupus) Create Data object
+	data, err := NewData(input)
 	if err != nil {
 		r.Logger.Error(err, "Cannot unmarshall the input")
 		return ctrl.Result{}, nil
 	}
 
-	// Step 5 - Send input to the next elements
-	// Iterate over the array of next elements
+	// Step 5 - (Lupus) Send input to the next elements
+	// Step 5 - (K8s) Update Status.Input field of next element
 	for _, next := range element.Spec.Next {
-		// prepare placeholder for output
-		outputMap := make(map[string]interface{})
-		if len(next.Tags) == 1 && next.Tags[0] == "*" {
-			outputMap = data
-		} else {
-			for _, tag := range next.Tags {
-				if value, exists := data[tag]; exists {
-					outputMap[tag] = value
-				}
-			}
-		}
-
-		outputRaw, err := mapToRawExtension(outputMap)
+		// prepare output based on keys
+		output, err := data.GetKeys(next.Keys)
 		if err != nil {
-			r.Logger.Error(err, "Cannot convert map to RawExtension")
+			r.Logger.Error(err, "Cannot retrieve keys from data")
+			return ctrl.Result{}, nil
 		}
-		// fetch the nextElement
-		switch next.Type {
-		case "Learn":
-			resourceName := element.Spec.Master + "-" + next.Name
-			resourceNamespace := "default"
-
-			var nextElement v1.Learn
-			err := r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &nextElement)
-			if err != nil {
-				r.Logger.Error(err, "Failed to get next element: Learn")
-			}
-			nextElement.Status.Input = outputRaw
-			nextElement.Status.LastUpdated = metav1.Time{Time: r.instanceState[req.NamespacedName].LastUpdated}
-			if err := r.Status().Update(ctx, &nextElement); err != nil {
-				r.Logger.Error(err, "Failed to update next element (Learn) status")
-			}
-		case "Decide":
-			resourceName := element.Spec.Master + "-" + next.Name
-			resourceNamespace := "default"
-
-			var nextElement v1.Decide
-			err := r.Get(ctx, client.ObjectKey{Name: resourceName, Namespace: resourceNamespace}, &nextElement)
-			if err != nil {
-				r.Logger.Error(err, "Failed to get next element: Decide")
-			}
-			nextElement.Status.Input = outputRaw
-			nextElement.Status.LastUpdated = metav1.Time{Time: r.instanceState[req.NamespacedName].LastUpdated}
-			if err := r.Status().Update(ctx, &nextElement); err != nil {
-				r.Logger.Error(err, "Failed to update next element (Decide) status")
-			}
-		default:
-			r.Logger.Error(errors.New("cannot pass input to any other element type than Lean or Decide"), "Unrecognized element type")
+		// update status of next element with output
+		updateTime := metav1.Time{Time: r.instanceState[req.NamespacedName].LastUpdated}
+		objectKey := client.ObjectKey{Name: element.Spec.Master + "-" + next.Name, Namespace: "default"}
+		err = r.updateStatus(ctx, next.Type, objectKey, updateTime, *output)
+		if err != nil {
+			r.Logger.Error(err, "Failed to update status of next element")
 		}
 	}
 	r.Logger.Info("Observe sucessfully reconciled", "name", req.Name)
@@ -177,4 +137,42 @@ func (r *ObserveReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1.Observe{}).
 		Complete(r)
+}
+
+func (r *ObserveReconciler) updateStatus(ctx context.Context, t string, objKey client.ObjectKey, updateTime metav1.Time, output runtime.RawExtension) error {
+	switch t {
+	case "Learn":
+		nextElement := v1.Learn{}
+		// (k8s) fetch lupus element from kube-api-server
+		err := r.Get(ctx, objKey, &nextElement)
+		if err != nil {
+			r.Logger.Error(err, "Failed to get next element: Learn")
+		}
+		// (k8s/go) set fields
+		nextElement.Status.Input = output
+		nextElement.Status.LastUpdated = updateTime
+		// (k8s) update k8s object in kube-api-server
+		if err := r.Status().Update(ctx, &nextElement); err != nil {
+			r.Logger.Error(err, "Failed to update next element (Learn) status")
+		}
+	case "Decide":
+		nextElement := v1.Decide{}
+		// (k8s) fetch lupus element from kube-api-server
+		err := r.Get(ctx, objKey, &nextElement)
+		if err != nil {
+			r.Logger.Error(err, "Failed to get next element: Decide")
+		}
+		// (k8s/go) set fields
+		nextElement.Status.Input = output
+		nextElement.Status.LastUpdated = updateTime
+		// (k8s) update k8s object in kube-api-server
+		if err := r.Status().Update(ctx, &nextElement); err != nil {
+			r.Logger.Error(err, "Failed to update next element (Decide) status")
+		}
+	default:
+		err := errors.New("cannot pass input to any other element type than Lean or Decide")
+		r.Logger.Error(err, "Unrecognized element type")
+		return err
+	}
+	return nil
 }

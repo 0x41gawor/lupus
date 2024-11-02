@@ -9,9 +9,9 @@ type Next struct {
 	// Kubernetes name of the API Object
 	// This is the name that you give in Master CR spec
 	Name string `json:"name"`
-	// List of input tags (json root fields) that have to be forwarded
+	// List of input keys (data fields) that have to be forwarded
 	// Pass array with single element '*' to forward the whole input
-	Tags []string `json:"tags"`
+	Keys []string `json:"keys"`
 }
 
 // Destination in Action type and in Learn Spec

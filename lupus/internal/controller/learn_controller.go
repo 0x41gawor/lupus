@@ -62,8 +62,8 @@ func (r *LearnReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	r.ElementType = "Learn"
 	r.Logger = log.FromContext(ctx)
 	r.Logger.Info(fmt.Sprintf("=================== START OF %s Reconciler: \n", strings.ToUpper(r.ElementType)))
-	// Step 1 - Fetch the reconciled resource instance (Controller-Runtime nomenclature)
-	// Step 1 - Fetch reconciled element 	(Lupus nomenclature)
+	// Step 1 - (k8s) Fetch reconciled resource instance
+	// Step 1 - (lupus) Fetch element
 	var element v1.Learn
 	if err := r.Get(ctx, req.NamespacedName, &element); err != nil {
 		r.Logger.Info(fmt.Sprintf("Failed to fetch %s instance", r.ElementType), "error", err)
