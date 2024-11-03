@@ -812,3 +812,9 @@ spec:
             path: "/api/execute"
             method: "POST"
 ```
+
+## 3rd Sprint - Live demo
+
+Live demos are described in Live Demo sections of:
+- [managed-system/upf-net/sample-loop/readme.md](managed-systems/upf-net/sample-loop/readme.md)
+- [managed-system/mc-server/sample-loop/readme.md](managed-systems/mc-server/sample-loop/readme.md)

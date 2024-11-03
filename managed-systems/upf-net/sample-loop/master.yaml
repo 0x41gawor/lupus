@@ -14,10 +14,10 @@ spec:
         next:
           - type: "Decide"
             name: "decide1"
-            tags: ["*"]
+            keys: ["*"]
           - type: "Learn"
             name: "learn1"
-            tags: ["*"]
+            keys: ["*"]
     - name: "decide1"
       type: "Decide"
       decideSpec:
@@ -44,10 +44,10 @@ spec:
         next:
           - type: "Execute"
             name: "execute1"
-            tags: ["*"]
+            keys: ["*"]
           - type: "Learn"
             name: "learn2"
-            tags: ["*"]
+            keys: ["*"]
     - name: "learn1"
       type: "Learn"
       learnSpec:
