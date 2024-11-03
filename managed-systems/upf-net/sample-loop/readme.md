@@ -2,7 +2,7 @@
 
 Let's bring back the general architecture for Lupus application:
 
-![](../../../_img/readme/1.png)
+<img src="../_img/8.png" style="zoom:50%">
 
 First you need to develop Ingress and Egress Agents:
 
