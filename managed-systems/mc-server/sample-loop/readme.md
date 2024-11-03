@@ -23,8 +23,14 @@ Prepare the external elements of Loop:
 ## Steps
 ### 1. Prepare static external elements
 #### 1.1 Opa
-Follow [this doc](opa.md)
-
+Run
+```sh
+docker run -p 8282:8181 openpolicyagent/opa     run --server --log-level debug
+```
+Setup
+```sh
+./setup_opa.sh
+```
 ### 2. Run Egress-Agent
 ```sh
 python3 managed-systems/mc-server/sample-loop/egress-agent.py 

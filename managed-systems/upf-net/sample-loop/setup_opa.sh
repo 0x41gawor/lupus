@@ -1,14 +1,8 @@
-#### 1. Prepare OPA
-##### 1.1 Run OPA
-On 1st terminal
-```sh
-docker run -p 8181:8181 openpolicyagent/opa     run --server --log-level debug
-```
+#!/bin/bash
 
-From now on you can use Postman or perform curl commands in terminal:
-##### 1.2 Put policy
-```sh
-curl --location --request PUT 'http://192.168.56.111:8181/v1/policies/mmet' \
+# Step 2: Load the OPA policy
+echo "Uploading policy..."
+curl --location --request PUT 'http://localhost:8181/v1/policies/mmet' \
 --header 'Content-Type: text/plain' \
 --data 'package mmet
 
@@ -61,34 +55,31 @@ move_commands[command] {
         "Count": count_int
     }
 }'
-```
 
-You can check if it exists by:
-```sh
-curl --location 'http://192.168.56.111:8181/v1/policies/mmet'
-```
+# Check if the policy exists
+echo "Checking if policy is loaded..."
+curl --location 'http://localhost:8181/v1/policies/mmet'
+echo -e "\n"
 
-##### 2.3 Put data
-```sh
-curl --location --request PUT 'http://192.168.56.111:8181/v1/data/percentages' \
+# Step 3: Upload data for percentages
+echo "Uploading data for percentages..."
+curl --location --request PUT 'http://localhost:8181/v1/data/percentages' \
 --header 'Content-Type: application/json' \
 --data '{
-    	"Gdansk": 25,
-		"Krakow": 25,
-		"Poznan": 25,
-		"Warsaw": 25
+    "Gdansk": 25,
+    "Krakow": 25,
+    "Poznan": 25,
+    "Warsaw": 25
 }'
-```
 
-You check if it exists by:
-```sh
-curl --location 'http://192.168.56.111:8181/v1/data/percentages' \
---data ''
-```
+# Check if the data exists
+echo "Checking if data is loaded..."
+curl --location 'http://localhost:8181/v1/data/percentages'
+echo -e "\n"
 
-##### 2.4 Perform test query
-```sh
-curl --location 'http://192.168.56.111:8181/v1/data/mmet/move_commands' \
+# Step 4: Perform a test query
+echo "Performing test query..."
+curl --location 'http://localhost:8181/v1/data/mmet/move_commands' \
 --header 'Content-Type: application/json' \
 --data '{
     "input":{
@@ -98,4 +89,6 @@ curl --location 'http://192.168.56.111:8181/v1/data/mmet/move_commands' \
         "Warsaw": 13
     }
 }'
-```
+echo -e "\n"
+
+echo "OPA setup and test completed."

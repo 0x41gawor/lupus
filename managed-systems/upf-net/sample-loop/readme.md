@@ -38,8 +38,14 @@ Static elements are http-bouncer and opa.
 go run managed-systems/upf-net/sample-loop/http-bouncer.go
 ```
 #### 1.2 OPA
-Follow [this doc](opa.md)
-
+Run
+```sh
+docker run -p 8181:8181 openpolicyagent/opa     run --server --log-level debug
+```
+Setup
+```sh
+./setup_opa.sh
+```
 ### 2. Run Egress-Agent
 ```sh
 python3 managed-systems/upf-net/sample-loop/egress-agent.py 
