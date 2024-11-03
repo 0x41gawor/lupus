@@ -3,6 +3,7 @@ import requests
 import time
 from kubernetes import client, config
 import argparse
+from datetime import datetime
 
 # Global state shared across threads
 state = None
@@ -24,15 +25,15 @@ def periodic_task(interval, k8s_client):
                     version="v1",
                     namespace='default',
                     plural="observes",
-                    name='adam-observe1'
+                    name='olek-observe1'
                 )
                 
                 # Update the `status.input` field with the state
                 observe_status = observe.get('status', {})
                 observe_status['input'] = state
+                observe_status['lastUpdated'] = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
 
                 observe['status'] = observe_status
-                print(observe['status'])
                 
 
                 # Patch the custom resource status
@@ -41,7 +42,7 @@ def periodic_task(interval, k8s_client):
                     version="v1",
                     namespace='default',
                     plural="observes",
-                    name='adam-observe1',
+                    name='olek-observe1',
                     body=observe
                 )
                 print("Updated Kubernetes custom resource status successfully.")

@@ -4,9 +4,9 @@ metadata:
   labels:
     app.kubernetes.io/name: lupus
     app.kubernetes.io/managed-by: kustomize
-  name: piotrek
+  name: olek
 spec:
-  name: "piotrek"
+  name: "olek"
   elements:
     - name: "observe1"
       type: "Observe"
@@ -14,29 +14,38 @@ spec:
         next:
           - type: "Decide"
             name: "decide1"
-            tags: ["*"]
+            keys: ["*"]
     - name: "decide1"
       type: "Decide"
       decideSpec:
         actions:
           - name: "ram"
-            inputTag: "ram"
-            destination:
-              type: Opa
-              http:
-                path: "http://192.168.56.111:8181/v1/data/mc_server/ram"
-            outputTag: "ram"
+            type: send
+            send:
+              inputKey: "ram"
+              destination:
+                type: Opa
+                opa:
+                  path: "http://192.168.56.111:8181/v1/data/mc_server/ram"
+              outputKey: "ram"
           - name: "cpu"
-            inputTag: "cpu"
-            destination:
-              type: "Opa"
-              opa:
-                path: "http://192.168.56.111:8181/v1/data/mc_server/cpu"
-            outputTag: "cpu"
+            type: send
+            send:
+              inputKey: "cpu"
+              destination:
+                type: Opa
+                opa:
+                  path: "http://192.168.56.111:8181/v1/data/mc_server/cpu"
+              outputKey: "cpu"
+          - name: "concat"
+            type: concat
+            concat:
+              inputKeys: ["ram", "cpu"]
+              outputKey: "commands"
         next:
           - type: "Execute"
             name: "execute1"
-            tags: ["*"]
+            keys: ["*"]
     - name: "execute1"
       type: "Execute"
       executeSpec:

@@ -28,10 +28,10 @@ Express the Loop in yaml manifest file of master element.
 - Minikube running
 - CRD installed
 
-- move to root dir of this repo
+- move to the root dir of this repo
 
 ## Steps
-### 1. Prepare static elements
+### 1. Prepare static external elements
 Static elements are http-bouncer and opa.
 #### 1.1 http-bouncer
 ```sh

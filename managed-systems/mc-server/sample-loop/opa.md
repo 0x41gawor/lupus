@@ -10,13 +10,13 @@ curl --location --request PUT 'http://192.168.56.111:8181/v1/policies/mc_server'
 --data 'package mc_server
 
 # Rule to calculate the new license value for CPU only
-cpu = {"cpu": cpu_new_license} {
-    cpu_new_license := ceil(input.cpu.in_use * 1.2)
+cpu = cpu_new_license {
+    cpu_new_license := ceil(input.in_use * 1.2)
 }
 
-# Rule to calculate the new license value for RAM onlylup
-ram = {"ram": ram_new_license} {
-    ram_new_license := ceil(input.ram.in_use * 1.2)
+# Rule to calculate the new license value for RAM only
+ram = ram_new_license {
+    ram_new_license := ceil(input.in_use * 1.4)
 }
 '
 ```
@@ -28,9 +28,8 @@ curl --location 'http://192.168.56.111:8181/v1/data/mc_server/ram' \
 --header 'Content-Type: application/json' \
 --data '{
     "input": {
-        "ram" : {
-                "in_use": 40
-        }
+            "in_use": 8,
+            "license": 8
     }
 }'
 ```
@@ -40,9 +39,8 @@ curl --location 'http://192.168.56.111:8181/v1/data/mc_server/cpu' \
 --header 'Content-Type: application/json' \
 --data '{
     "input": {
-        "cpu" : {
-                "in_use": 20 
-        }
+            "in_use": 8,
+            "license": 8
     }
 }'
 ```

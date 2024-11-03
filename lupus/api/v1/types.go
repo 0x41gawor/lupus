@@ -1,5 +1,7 @@
 package v1
 
+import "fmt"
+
 // Next is used in Observe Spec
 // It specifies to which element forward the input
 // It allows not to forward the whole input, but also parts of it
@@ -70,6 +72,50 @@ type Action struct {
 	Duplicate *DuplicateAction `json:"duplicate,omitempty" kubebuilder:"validation:Optional"`
 }
 
+func (a *Action) String() string {
+	// Start with the Name and Type fields
+	result := fmt.Sprintf("Action(Name: %s, Type: %s", a.Name, a.Type)
+
+	// Add details based on the Type of Action using the specific String() methods
+	switch a.Type {
+	case "send":
+		if a.Send != nil {
+			result += fmt.Sprintf(", %s", a.Send.String())
+		} else {
+			result += ", Send: <nil>"
+		}
+	case "concat":
+		if a.Concat != nil {
+			result += fmt.Sprintf(", %s", a.Concat.String())
+		} else {
+			result += ", Concat: <nil>"
+		}
+	case "remove":
+		if a.Remove != nil {
+			result += fmt.Sprintf(", %s", a.Remove.String())
+		} else {
+			result += ", Remove: <nil>"
+		}
+	case "rename":
+		if a.Rename != nil {
+			result += fmt.Sprintf(", %s", a.Rename.String())
+		} else {
+			result += ", Rename: <nil>"
+		}
+	case "duplicate":
+		if a.Duplicate != nil {
+			result += fmt.Sprintf(", %s", a.Duplicate.String())
+		} else {
+			result += ", Duplicate: <nil>"
+		}
+	default:
+		result += ", <Unknown Action Type>"
+	}
+
+	result += ")"
+	return result
+}
+
 type SendAction struct {
 	InputKey    string      `json:"inputKey"`
 	Destination Destination `json:"destination"`
@@ -93,6 +139,26 @@ type RenameAction struct {
 type DuplicateAction struct {
 	InputKey  string `json:"inputKey"`
 	OutputKey string `json:"outputKey"`
+}
+
+func (s *SendAction) String() string {
+	return fmt.Sprintf("SendAction(InputKey: %s, Destination: %v, OutputKey: %s)", s.InputKey, s.Destination, s.OutputKey)
+}
+
+func (c *ConcatAction) String() string {
+	return fmt.Sprintf("ConcatAction(InputKeys: %v, OutputKey: %s)", c.InputKeys, c.OutputKey)
+}
+
+func (r *RemoveAction) String() string {
+	return fmt.Sprintf("RemoveAction(InputKeys: %v)", r.InputKeys)
+}
+
+func (r *RenameAction) String() string {
+	return fmt.Sprintf("RenameAction(InputKey: %s, OutputKey: %s)", r.InputKey, r.OutputKey)
+}
+
+func (d *DuplicateAction) String() string {
+	return fmt.Sprintf("DuplicateAction(InputKey: %s, OutputKey: %s)", d.InputKey, d.OutputKey)
 }
 
 // Element is a polymorphic structure that can represent different types of specs

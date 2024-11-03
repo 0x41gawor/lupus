@@ -201,16 +201,15 @@ func sendToOpa(path string, reqBody interface{}) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// Ensure res is a map and check for the "result" field
-	if resMap, ok := res.(map[string]interface{}); ok {
-		if result, ok := resMap["result"]; ok {
-			return result, nil // Return only the content of "result"
-		}
-		return nil, fmt.Errorf("no 'result' field in response")
+	resMap, err := interfaceToMap(res)
+	if err != nil {
+		return nil, fmt.Errorf("unexpected response format, not a map")
 	}
-
-	return nil, fmt.Errorf("unexpected response format")
+	// Return only the content of "result"
+	if result, ok := resMap["result"]; ok {
+		return result, nil
+	}
+	return nil, fmt.Errorf("no 'result' field in response")
 }
 
 func sendToHTTP(path string, method string, body interface{}) (interface{}, error) {
@@ -239,7 +238,7 @@ func sendToHTTP(path string, method string, body interface{}) (interface{}, erro
 		return nil, fmt.Errorf("non-ok HTTP Status")
 	}
 
-	var res map[string]interface{}
+	var res interface{}
 	if err := json.Unmarshal(respBody, &res); err != nil {
 		return nil, err
 	}

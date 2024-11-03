@@ -10,12 +10,10 @@ app = Flask(__name__)
 def handle_commands():
     try:
         data = request.json
-        commands = data.get('commands', [])
-        for command in commands:
-            # Forward each command to the external API
-            response = requests.post('http://192.168.56.111:6000/api/set-license', json=command)
-            if response.status_code != 200:
-                print(f"Failed to send command: {command}")
+        command = data.get('commands', [])
+        response = requests.post('http://192.168.56.111:6000/api/set-license', json=command)
+        if response.status_code != 200:
+            print(f"Failed to send command: {command}")
         return jsonify({"status": "success"}), 200
     except Exception as e:
         print(f"Error handling commands: {e}")
