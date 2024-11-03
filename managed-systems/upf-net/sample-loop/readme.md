@@ -11,7 +11,7 @@ First you need to develop Ingress and Egress Agents:
 
 Now design the architecture of Loop:
 
-![](../_img/sample-loop.svg)
+![](../_img/7.png)
 
 Prepare the external elements of Loop:
 - [http-bouncer](http-bouncer.go)
