@@ -9,18 +9,18 @@ spec:
   name: "adam"
   elements:
     - name: "observe1"
-      type: "Observe"
-      observeSpec:
+      type: observe
+      observe:
         next:
-          - type: "Decide"
+          - type: decide
             name: "decide1"
             keys: ["*"]
-          - type: "Learn"
+          - type: learn
             name: "learn1"
             keys: ["*"]
     - name: "decide1"
-      type: "Decide"
-      decideSpec:
+      type: decide
+      decide:
         actions:
           - name: "bounce"
             type: send
@@ -42,29 +42,29 @@ spec:
                   path: "http://192.168.56.111:8181/v1/data/mmet/move_commands"
               outputKey: "commands"
         next:
-          - type: "Execute"
+          - type: execute
             name: "execute1"
             keys: ["*"]
-          - type: "Learn"
+          - type: learn
             name: "learn2"
             keys: ["*"]
     - name: "learn1"
-      type: "Learn"
-      learnSpec:
+      type: learn
+      learn:
         destination:
           type: "FILE"
           file:
             path: "trace.txt"
     - name: "learn2"
-      type: "Learn"
-      learnSpec:
+      type: learn
+      learn:
         destination:
           type: "FILE"
           file:
             path: "trace.txt"
     - name: "execute1"
-      type: "Execute"
-      executeSpec:
+      type: execute
+      execute:
         destination:
           type: "HTTP"
           http:

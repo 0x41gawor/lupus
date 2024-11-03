@@ -7,7 +7,7 @@ import "fmt"
 // It allows not to forward the whole input, but also parts of it
 type Next struct {
 	// Type specifies the type of the element ("Observe", "Decide", "Learn", "Execute", etc.)
-	Type string `json:"type" kubebuilder:"validation:Enum=Observe;Decide;Learn;Execute"`
+	Type string `json:"type" kubebuilder:"validation:Enum=observe;decide;learn;execute"`
 	// Kubernetes name of the API Object
 	// This is the name that you give in Master CR spec
 	Name string `json:"name"`
@@ -166,10 +166,10 @@ type Element struct {
 	// Name is the name of the element
 	Name string `json:"name"`
 	// Type specifies the type of the element ("Observe", "Decide", "Learn", "Execute", etc.)
-	Type string `json:"type" kubebuilder:"validation:Enum=Observe;Decide;Learn;Execute"`
+	Type string `json:"type" kubebuilder:"validation:Enum=observe;decide;learn;execute"`
 
-	ObserveSpec *ObserveSpec `json:"observeSpec,omitempty"`
-	DecideSpec  *DecideSpec  `json:"decideSpec,omitempty"`
-	LearnSpec   *LearnSpec   `json:"learnSpec,omitempty"`
-	ExecuteSpec *ExecuteSpec `json:"executeSpec,omitempty"`
+	Observe *ObserveSpec `json:"observe,omitempty"`
+	Decide  *DecideSpec  `json:"decide,omitempty"`
+	Learn   *LearnSpec   `json:"learn,omitempty"`
+	Execute *ExecuteSpec `json:"execute,omitempty"`
 }

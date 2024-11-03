@@ -126,7 +126,7 @@ func (r *MasterReconciler) createObserveResource(ctx context.Context, element v1
 			Name:      r.NamePrefix + "-" + element.Name,
 			Namespace: namespace,
 		},
-		Spec: *element.ObserveSpec,
+		Spec: *element.Observe,
 	}
 	observe.Spec.Master = r.NamePrefix
 	// Set Master as owner of Observe
@@ -146,7 +146,7 @@ func (r *MasterReconciler) createDecideResource(ctx context.Context, element v1.
 			Name:      r.NamePrefix + "-" + element.Name,
 			Namespace: namespace,
 		},
-		Spec: *element.DecideSpec,
+		Spec: *element.Decide,
 	}
 	decide.Spec.Master = r.NamePrefix
 	// Set Master as owner of Decide
@@ -166,7 +166,7 @@ func (r *MasterReconciler) createLearnResource(ctx context.Context, element v1.E
 			Name:      r.NamePrefix + "-" + element.Name,
 			Namespace: namespace,
 		},
-		Spec: *element.LearnSpec,
+		Spec: *element.Learn,
 	}
 	learn.Spec.Master = r.NamePrefix
 	// Set Master as owner of Learn
@@ -186,7 +186,7 @@ func (r *MasterReconciler) createExecuteResource(ctx context.Context, element v1
 			Name:      r.NamePrefix + "-" + element.Name,
 			Namespace: namespace,
 		},
-		Spec: *element.ExecuteSpec,
+		Spec: *element.Execute,
 	}
 	execute.Spec.Master = r.NamePrefix
 	// Set Master as owner of Execute

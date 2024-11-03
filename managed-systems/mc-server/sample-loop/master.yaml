@@ -9,15 +9,15 @@ spec:
   name: "olek"
   elements:
     - name: "observe1"
-      type: "Observe"
-      observeSpec:
+      type: observe
+      observe:
         next:
           - type: "Decide"
             name: "decide1"
             keys: ["*"]
     - name: "decide1"
-      type: "Decide"
-      decideSpec:
+      type: decide
+      decide:
         actions:
           - name: "ram"
             type: send
@@ -47,8 +47,8 @@ spec:
             name: "execute1"
             keys: ["*"]
     - name: "execute1"
-      type: "Execute"
-      executeSpec:
+      type: execute
+      execute:
         destination:
           type: "HTTP"
           http:

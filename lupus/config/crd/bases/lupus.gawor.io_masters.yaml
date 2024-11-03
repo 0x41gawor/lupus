@@ -46,7 +46,7 @@ spec:
                   description: Element is a polymorphic structure that can represent
                     different types of specs
                   properties:
-                    decideSpec:
+                    decide:
                       description: DecideSpec defines the desired state of Decide
                       properties:
                         actions:
@@ -211,7 +211,7 @@ spec:
                             type: object
                           type: array
                       type: object
-                    executeSpec:
+                    execute:
                       description: ExecuteSpec defines the desired state of Execute
                       properties:
                         destination:
@@ -273,7 +273,7 @@ spec:
                       required:
                       - destination
                       type: object
-                    learnSpec:
+                    learn:
                       description: LearnSpec defines the desired state of Learn
                       properties:
                         destination:
@@ -337,7 +337,7 @@ spec:
                     name:
                       description: Name is the name of the element
                       type: string
-                    observeSpec:
+                    observe:
                       description: ObserveSpec defines the desired state of Observe
                       properties:
                         master:
