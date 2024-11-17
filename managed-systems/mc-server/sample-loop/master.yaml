@@ -38,8 +38,8 @@ spec:
                   path: "http://192.168.56.111:8181/v1/data/mc_server/cpu"
               outputKey: "cpu"
           - name: "concat"
-            type: concat
-            concat:
+            type: nest
+            nest:
               inputKeys: ["ram", "cpu"]
               outputKey: "commands"
         next:

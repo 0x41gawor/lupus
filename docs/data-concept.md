@@ -97,7 +97,7 @@ Every action has an InputField and performs something on that InputField, typica
 
 ### Send
 ![](../_img/21.png)
-### Concat
+### Nest
 ![](../_img/22.png)
 ### Remove
 ![](../_img/23.png)
@@ -120,3 +120,5 @@ Let's junxtapose each type of action:
 ![](../_img/27.png)
 
 > `Field` was renamed to `key` as it better reflects the map[string]interface{} shape of Data.
+
+> Action `concat` was renamed to `nest`. Nest is more general, because in concat action we could have single element array as input which is absurd because in such case we are not concatenating actually (but we are still nesting).

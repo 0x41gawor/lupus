@@ -126,10 +126,10 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			if err = data.Set(action.Send.OutputKey, output); err != nil {
 				r.Logger.Error(err, "cannot set data field")
 			}
-		case "concat":
-			err := data.Concat(action.Concat.InputKeys, action.Concat.OutputKey)
+		case "nest":
+			err := data.Nest(action.Concat.InputKeys, action.Concat.OutputKey)
 			if err != nil {
-				r.Logger.Error(err, "cannot concat data field")
+				r.Logger.Error(err, "cannot nest data field")
 				return ctrl.Result{}, nil
 			}
 		case "remove":

@@ -162,8 +162,8 @@ func (d *Data) String() string {
 	return str
 }
 
-// Concat creates a combined field with all inputKeys in it and names it outputKey
-func (d *Data) Concat(inputKeys []string, outputKey string) error {
+// Nest creates a combined field with all inputKeys in it and names it outputKey
+func (d *Data) Nest(inputKeys []string, outputKey string) error {
 	if outputKey == "*" {
 		return fmt.Errorf("`*` is not allowed as a key name for Concat")
 	}

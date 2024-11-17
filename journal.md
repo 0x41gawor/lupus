@@ -886,3 +886,4 @@ Create a new type of Desination named `gofunc`. User should be able to modify th
 - [ ] GoFunc as Action Destination
 	- [ ] Create new type of Destination called `gofunc`.
 	- [ ] Research how it can be implemented. Does GO allow dynamic func name resolution? Will user only implement func with certain name and use this name in LupN or is he forced to modify Lupus code (more precisely Decide controller)
+	- [ ] Implement
