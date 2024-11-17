@@ -81,25 +81,19 @@ func (r *MasterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	for _, element := range master.Spec.Elements {
 		// Check the element's type and create the corresponding resource
 		switch element.Type {
-		case "Observe":
+		case "observe":
 			err := r.createObserveResource(ctx, element, master.Namespace, &master)
 			if err != nil {
 				r.Logger.Error(err, "Failed to create/update Observe resource", "ElementName", element.Name)
 				return ctrl.Result{}, err
 			}
-		case "Decide":
+		case "decide":
 			err := r.createDecideResource(ctx, element, master.Namespace, &master)
 			if err != nil {
 				r.Logger.Error(err, "Failed to create/update Decide resource", "ElementName", element.Name)
 				return ctrl.Result{}, err
 			}
-		case "Learn":
-			err := r.createLearnResource(ctx, element, master.Namespace, &master)
-			if err != nil {
-				r.Logger.Error(err, "Failed to create/update Learn resource", "ElementName", element.Name)
-				return ctrl.Result{}, err
-			}
-		case "Execute":
+		case "execute":
 			err := r.createExecuteResource(ctx, element, master.Namespace, &master)
 			if err != nil {
 				r.Logger.Error(err, "Failed to create/update Execute resource", "ElementName", element.Name)
@@ -157,26 +151,6 @@ func (r *MasterReconciler) createDecideResource(ctx context.Context, element v1.
 
 	// Simply create the resource without checking if it exists
 	return r.Create(ctx, decide)
-}
-
-func (r *MasterReconciler) createLearnResource(ctx context.Context, element v1.Element, namespace string, master *v1.Master) error {
-	// Define the desired Observe custom resource
-	learn := &v1.Learn{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      r.NamePrefix + "-" + element.Name,
-			Namespace: namespace,
-		},
-		Spec: *element.Learn,
-	}
-	learn.Spec.Master = r.NamePrefix
-	// Set Master as owner of Learn
-	if err := setOwnerReference(master, learn, r.Scheme); err != nil {
-		r.Logger.Error(err, "Failed to set owner reference for Learn")
-		return err
-	}
-
-	// Simply create the resource without checking if it exists
-	return r.Create(ctx, learn)
 }
 
 func (r *MasterReconciler) createExecuteResource(ctx context.Context, element v1.Element, namespace string, master *v1.Master) error {

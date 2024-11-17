@@ -9,7 +9,6 @@ rules:
   resources:
   - decides
   - executes
-  - learns
   - masters
   - observes
   verbs:
@@ -25,7 +24,6 @@ rules:
   resources:
   - decides/finalizers
   - executes/finalizers
-  - learns/finalizers
   - masters/finalizers
   - observes/finalizers
   verbs:
@@ -35,7 +33,6 @@ rules:
   resources:
   - decides/status
   - executes/status
-  - learns/status
   - masters/status
   - observes/status
   verbs:

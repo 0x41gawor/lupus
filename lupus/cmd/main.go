@@ -158,13 +158,6 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Decide")
 		os.Exit(1)
 	}
-	if err = (&controller.LearnReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Learn")
-		os.Exit(1)
-	}
 	if err = (&controller.ExecuteReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),

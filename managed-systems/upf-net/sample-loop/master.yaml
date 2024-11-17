@@ -15,9 +15,6 @@ spec:
           - type: decide
             name: "decide1"
             keys: ["*"]
-          - type: learn
-            name: "learn1"
-            keys: ["*"]
     - name: "decide1"
       type: decide
       decide:
@@ -45,23 +42,6 @@ spec:
           - type: execute
             name: "execute1"
             keys: ["*"]
-          - type: learn
-            name: "learn2"
-            keys: ["*"]
-    - name: "learn1"
-      type: learn
-      learn:
-        destination:
-          type: "FILE"
-          file:
-            path: "trace.txt"
-    - name: "learn2"
-      type: learn
-      learn:
-        destination:
-          type: "FILE"
-          file:
-            path: "trace.txt"
     - name: "execute1"
       type: execute
       execute:

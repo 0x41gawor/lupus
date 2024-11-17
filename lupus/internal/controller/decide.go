@@ -259,21 +259,7 @@ func (r *DecideReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *DecideReconciler) updateStatus(ctx context.Context, t string, objKey client.ObjectKey, updateTime metav1.Time, output runtime.RawExtension) error {
 	switch t {
-	case "Learn":
-		nextElement := v1.Learn{}
-		// (k8s) fetch lupus element from kube-api-server
-		err := r.Get(ctx, objKey, &nextElement)
-		if err != nil {
-			r.Logger.Error(err, "Failed to get next element: Learn")
-		}
-		// (k8s/go) set fields
-		nextElement.Status.Input = output
-		nextElement.Status.LastUpdated = updateTime
-		// (k8s) update k8s object in kube-api-server
-		if err := r.Status().Update(ctx, &nextElement); err != nil {
-			r.Logger.Error(err, "Failed to update next element (Learn) status")
-		}
-	case "Decide":
+	case "decide":
 		nextElement := v1.Decide{}
 		// (k8s) fetch lupus element from kube-api-server
 		err := r.Get(ctx, objKey, &nextElement)
@@ -287,7 +273,7 @@ func (r *DecideReconciler) updateStatus(ctx context.Context, t string, objKey cl
 		if err := r.Status().Update(ctx, &nextElement); err != nil {
 			r.Logger.Error(err, "Failed to update next element (Decide) status")
 		}
-	case "Execute":
+	case "execute":
 		nextElement := v1.Execute{}
 		// (k8s) fetch lupus element from kube-api-server
 		err := r.Get(ctx, objKey, &nextElement)
@@ -302,7 +288,7 @@ func (r *DecideReconciler) updateStatus(ctx context.Context, t string, objKey cl
 			r.Logger.Error(err, "Failed to update next element (Execute) status")
 		}
 	default:
-		err := errors.New("cannot pass input to any other element type than Lean or Decide")
+		err := errors.New("cannot pass input to any other element type than Execute or Decide")
 		r.Logger.Error(err, "Unrecognized element type")
 		return err
 	}

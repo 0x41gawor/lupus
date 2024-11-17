@@ -170,6 +170,5 @@ type Element struct {
 
 	Observe *ObserveSpec `json:"observe,omitempty"`
 	Decide  *DecideSpec  `json:"decide,omitempty"`
-	Learn   *LearnSpec   `json:"learn,omitempty"`
 	Execute *ExecuteSpec `json:"execute,omitempty"`
 }
