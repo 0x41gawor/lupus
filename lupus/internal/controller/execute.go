@@ -18,10 +18,8 @@ package controller
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -31,44 +29,45 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	v1 "github.com/0x41gawor/lupus/api/v1"
+	util "github.com/0x41gawor/lupus/internal/util"
 	"github.com/go-logr/logr"
 )
 
-// ObserveReconciler reconciles a Observe object
-type ObserveReconciler struct {
+// ExecuteReconciler reconciles a Execute object
+type ExecuteReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 	// Static fields of Reconciler
 	Logger      logr.Logger
 	ElementType string
 	// Map that holds of reconciler state for each element
-	instanceState map[types.NamespacedName]*ElementInstanceState
+	instanceState map[types.NamespacedName]*util.ElementInstanceState
 }
 
-// +kubebuilder:rbac:groups=lupus.gawor.io,resources=observes,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=lupus.gawor.io,resources=observes/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=lupus.gawor.io,resources=observes/finalizers,verbs=update
+// +kubebuilder:rbac:groups=lupus.gawor.io,resources=executes,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=lupus.gawor.io,resources=executes/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=lupus.gawor.io,resources=executes/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(user): Modify the Reconcile function to compare the state specified by
-// the Observe object against the actual cluster state, and then
+// the Execute object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
-func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	// Set up logging context
-	r.ElementType = "Observe"
+	r.ElementType = "Execute"
 	r.Logger = log.FromContext(ctx)
 	r.Logger.Info(fmt.Sprintf("=================== START OF %s Reconciler: \n", strings.ToUpper(r.ElementType)))
 
 	// Step 1 - (k8s) Fetch reconciled resource instance
 	// Step 1 - (lupus) Fetch element
-	var element v1.Observe
+	var element v1.Execute
 	if err := r.Get(ctx, req.NamespacedName, &element); err != nil {
-		r.Logger.Info("Failed to fetch Observe instance", "error", err)
+		r.Logger.Info(fmt.Sprintf("Failed to fetch %s instance", r.ElementType), "error", err)
 		// If the resource is not found, we return and don't requeue
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -78,7 +77,7 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	_, exists := r.instanceState[req.NamespacedName]
 	if !exists {
 		// Initialize instance data if it doesn't exist
-		r.instanceState[req.NamespacedName] = &ElementInstanceState{}
+		r.instanceState[req.NamespacedName] = &util.ElementInstanceState{}
 		// clear status as it can contain some garbage
 		element.Status.Input = runtime.RawExtension{}
 		element.Status.LastUpdated = metav1.Time{}
@@ -97,82 +96,40 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	// Step 3 - We reconcile, so let's begin the process with variable settings
 	var input runtime.RawExtension = element.Status.Input
-	r.instanceState[req.NamespacedName].LastUpdated = time.Now()
+	r.instanceState[req.NamespacedName].LastUpdated = element.Status.LastUpdated.Time
 
-	// Step 4 - (Go) Unmarshall input into map[string]interface{}
-	// Step 4 - (Lupus) Create Data object
-	data, err := NewData(input)
+	// Step 4 - Unmarshall input into map[string]interface{} called `output`. This is the struct that we will work on. The central point of Execute Element.
+	output, err := util.RawExtensionToMap(input)
 	if err != nil {
 		r.Logger.Error(err, "Cannot unmarshall the input")
 		return ctrl.Result{}, nil
 	}
 
-	// Step 5 - (Lupus) Send input to the next elements
-	// Step 5 - (K8s) Update Status.Input field of next element
-	for _, next := range element.Spec.Next {
-		// prepare output based on keys
-		output, err := data.GetKeys(next.Keys)
+	// Step 5 - Send input to destianation
+	destination := element.Spec.Destination
+	switch destination.Type {
+	case "HTTP":
+		res, err := sendToHTTP(destination.HTTP.Path, destination.HTTP.Method, output)
 		if err != nil {
-			r.Logger.Error(err, "Cannot retrieve keys from data")
+			r.Logger.Error(err, "Cannot get response from external HTTP element")
 			return ctrl.Result{}, nil
+		} else {
+			r.Logger.Info("Sent properly", "res", res)
 		}
-		// update status of next element with output
-		updateTime := metav1.Time{Time: r.instanceState[req.NamespacedName].LastUpdated}
-		objectKey := client.ObjectKey{Name: element.Spec.Master + "-" + next.Name, Namespace: "default"}
-		err = r.updateStatus(ctx, next.Type, objectKey, updateTime, *output)
-		if err != nil {
-			r.Logger.Error(err, "Failed to update status of next element")
-		}
+	default:
+		r.Logger.Info(fmt.Sprintf("Destination %s not yet implemented in Execute", destination.Type))
 	}
-	r.Logger.Info("Observe sucessfully reconciled", "name", req.Name)
+
 	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *ObserveReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ExecuteReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// Initialize instanceState map if it's nil
 	if r.instanceState == nil {
-		r.instanceState = make(map[types.NamespacedName]*ElementInstanceState)
+		r.instanceState = make(map[types.NamespacedName]*util.ElementInstanceState)
 	}
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&v1.Observe{}).
+		For(&v1.Execute{}).
 		Complete(r)
-}
-
-func (r *ObserveReconciler) updateStatus(ctx context.Context, t string, objKey client.ObjectKey, updateTime metav1.Time, output runtime.RawExtension) error {
-	switch t {
-	case "Learn":
-		nextElement := v1.Learn{}
-		// (k8s) fetch lupus element from kube-api-server
-		err := r.Get(ctx, objKey, &nextElement)
-		if err != nil {
-			r.Logger.Error(err, "Failed to get next element: Learn")
-		}
-		// (k8s/go) set fields
-		nextElement.Status.Input = output
-		nextElement.Status.LastUpdated = updateTime
-		// (k8s) update k8s object in kube-api-server
-		if err := r.Status().Update(ctx, &nextElement); err != nil {
-			r.Logger.Error(err, "Failed to update next element (Learn) status")
-		}
-	case "Decide":
-		nextElement := v1.Decide{}
-		// (k8s) fetch lupus element from kube-api-server
-		err := r.Get(ctx, objKey, &nextElement)
-		if err != nil {
-			r.Logger.Error(err, "Failed to get next element: Decide")
-		}
-		// (k8s/go) set fields
-		nextElement.Status.Input = output
-		nextElement.Status.LastUpdated = updateTime
-		// (k8s) update k8s object in kube-api-server
-		if err := r.Status().Update(ctx, &nextElement); err != nil {
-			r.Logger.Error(err, "Failed to update next element (Decide) status")
-		}
-	default:
-		err := errors.New("cannot pass input to any other element type than Lean or Decide")
-		r.Logger.Error(err, "Unrecognized element type")
-		return err
-	}
-	return nil
 }

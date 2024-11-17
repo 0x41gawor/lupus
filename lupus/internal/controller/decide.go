@@ -34,6 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	v1 "github.com/0x41gawor/lupus/api/v1"
+	util "github.com/0x41gawor/lupus/internal/util"
 	"github.com/go-logr/logr"
 )
 
@@ -45,7 +46,7 @@ type DecideReconciler struct {
 	Logger      logr.Logger
 	ElementType string
 	// Map that holds of reconciler state for each element
-	instanceState map[types.NamespacedName]*ElementInstanceState
+	instanceState map[types.NamespacedName]*util.ElementInstanceState
 }
 
 // +kubebuilder:rbac:groups=lupus.gawor.io,resources=decides,verbs=get;list;watch;create;update;patch;delete
@@ -80,7 +81,7 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	_, exists := r.instanceState[req.NamespacedName]
 	if !exists {
 		// Initialize instance data if it doesn't exist
-		r.instanceState[req.NamespacedName] = &ElementInstanceState{}
+		r.instanceState[req.NamespacedName] = &util.ElementInstanceState{}
 		// clear status as it can contain some garbage
 		element.Status.Input = runtime.RawExtension{}
 		element.Status.LastUpdated = metav1.Time{}
@@ -103,7 +104,7 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	// Step 4 - (Go) Unmarshall input into map[string]interface{}
 	// Step 4 - (Lupus) Create Data object
-	data, err := NewData(input)
+	data, err := util.NewData(input)
 	if err != nil {
 		r.Logger.Error(err, "Cannot unmarshall the input")
 		return ctrl.Result{}, nil
@@ -201,7 +202,7 @@ func sendToOpa(path string, reqBody interface{}) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	resMap, err := interfaceToMap(res)
+	resMap, err := util.InterfaceToMap(res)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected response format, not a map")
 	}
@@ -249,7 +250,7 @@ func sendToHTTP(path string, method string, body interface{}) (interface{}, erro
 func (r *DecideReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// Initialize instanceState map if it's nil
 	if r.instanceState == nil {
-		r.instanceState = make(map[types.NamespacedName]*ElementInstanceState)
+		r.instanceState = make(map[types.NamespacedName]*util.ElementInstanceState)
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1.Decide{}).
