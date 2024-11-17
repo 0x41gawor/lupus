@@ -22,11 +22,9 @@ func NewData(input runtime.RawExtension) (*Data, error) {
 func (d *Data) Get(key string) (interface{}, error) {
 	if key == "*" {
 		value := d.Body
-		d.Body = make(map[string]interface{}) // delete all root fields
 		return value, nil
 	} else {
 		value := d.Body[key]
-		delete(d.Body, key) // delete this one root field
 		return value, nil
 	}
 }
