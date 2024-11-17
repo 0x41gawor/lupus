@@ -62,14 +62,15 @@ type OpaDestination struct {
 type Action struct {
 	// Name of the Action, it is for designer to ease the management of the Loop
 	Name string `json:"name"`
-	// Type of Action one of send;concat,remove,rename,duplicate
-	Type string `json:"type" kubebuilder:"validation:Enum=send;concat,remove,rename,duplicate"`
+	// Type of Action one of send;nest,remove,rename,duplicate
+	Type string `json:"type" kubebuilder:"validation:Enum=send;nest,remove,rename,duplicate,print"`
 	// One of these fields is not null depending on a Type.
 	Send      *SendAction      `json:"send,omitempty" kubebuilder:"validation:Optional"`
-	Concat    *ConcatAction    `json:"concat,omitempty" kubebuilder:"validation:Optional"`
+	Nest      *NestAction      `json:"nest,omitempty" kubebuilder:"validation:Optional"`
 	Remove    *RemoveAction    `json:"remove,omitempty" kubebuilder:"validation:Optional"`
 	Rename    *RenameAction    `json:"rename,omitempty" kubebuilder:"validation:Optional"`
 	Duplicate *DuplicateAction `json:"duplicate,omitempty" kubebuilder:"validation:Optional"`
+	Print     *PrintAction     `json:"print,omitempty" kubebuilder:"validation:Optional"`
 }
 
 func (a *Action) String() string {
@@ -84,11 +85,11 @@ func (a *Action) String() string {
 		} else {
 			result += ", Send: <nil>"
 		}
-	case "concat":
-		if a.Concat != nil {
-			result += fmt.Sprintf(", %s", a.Concat.String())
+	case "nest":
+		if a.Nest != nil {
+			result += fmt.Sprintf(", %s", a.Nest.String())
 		} else {
-			result += ", Concat: <nil>"
+			result += ", Nest: <nil>"
 		}
 	case "remove":
 		if a.Remove != nil {
@@ -108,6 +109,12 @@ func (a *Action) String() string {
 		} else {
 			result += ", Duplicate: <nil>"
 		}
+	case "print":
+		if a.Print != nil {
+			result += fmt.Sprintf(", %s", a.Print.String())
+		} else {
+			result += ", Duplicate: <nil>"
+		}
 	default:
 		result += ", <Unknown Action Type>"
 	}
@@ -122,7 +129,7 @@ type SendAction struct {
 	OutputKey   string      `json:"outputKey"`
 }
 
-type ConcatAction struct {
+type NestAction struct {
 	InputKeys []string `json:"inputKeys"`
 	OutputKey string   `json:"outputKey"`
 }
@@ -141,11 +148,15 @@ type DuplicateAction struct {
 	OutputKey string `json:"outputKey"`
 }
 
+type PrintAction struct {
+	InputKeys []string `json:"inputKeys"`
+}
+
 func (s *SendAction) String() string {
 	return fmt.Sprintf("SendAction(InputKey: %s, Destination: %v, OutputKey: %s)", s.InputKey, s.Destination, s.OutputKey)
 }
 
-func (c *ConcatAction) String() string {
+func (c *NestAction) String() string {
 	return fmt.Sprintf("ConcatAction(InputKeys: %v, OutputKey: %s)", c.InputKeys, c.OutputKey)
 }
 
@@ -159,6 +170,10 @@ func (r *RenameAction) String() string {
 
 func (d *DuplicateAction) String() string {
 	return fmt.Sprintf("DuplicateAction(InputKey: %s, OutputKey: %s)", d.InputKey, d.OutputKey)
+}
+
+func (d *PrintAction) String() string {
+	return fmt.Sprintf("PrintAction(InputKeys: %v)", d.InputKeys)
 }
 
 // Element is a polymorphic structure that can represent different types of specs

@@ -128,7 +128,7 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 				r.Logger.Error(err, "cannot set data field")
 			}
 		case "nest":
-			err := data.Nest(action.Concat.InputKeys, action.Concat.OutputKey)
+			err := data.Nest(action.Nest.InputKeys, action.Nest.OutputKey)
 			if err != nil {
 				r.Logger.Error(err, "cannot nest data field")
 				return ctrl.Result{}, nil
@@ -150,6 +150,12 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			if err != nil {
 				r.Logger.Error(err, "cannot duplicate data field")
 				return ctrl.Result{}, nil
+			}
+		case "print":
+			fmt.Printf("----------------%s-------------------Data:-----------------------------------------\n", action.Name)
+			err := data.Print(action.Print.InputKeys)
+			if err != nil {
+				r.Logger.Error(err, "cannot print data")
 			}
 		}
 	}

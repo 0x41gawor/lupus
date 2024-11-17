@@ -4,7 +4,6 @@
 resources:
 - bases/lupus.gawor.io_observes.yaml
 - bases/lupus.gawor.io_decides.yaml
-- bases/lupus.gawor.io_learns.yaml
 - bases/lupus.gawor.io_executes.yaml
 - bases/lupus.gawor.io_masters.yaml
 # +kubebuilder:scaffold:crdkustomizeresource

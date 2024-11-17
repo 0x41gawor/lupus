@@ -47,18 +47,6 @@ spec:
                     Action is used in Decide spec
                     It represents the Action that Decide has to perform on Data
                   properties:
-                    concat:
-                      properties:
-                        inputKeys:
-                          items:
-                            type: string
-                          type: array
-                        outputKey:
-                          type: string
-                      required:
-                      - inputKeys
-                      - outputKey
-                      type: object
                     duplicate:
                       properties:
                         inputKey:
@@ -73,6 +61,27 @@ spec:
                       description: Name of the Action, it is for designer to ease
                         the management of the Loop
                       type: string
+                    nest:
+                      properties:
+                        inputKeys:
+                          items:
+                            type: string
+                          type: array
+                        outputKey:
+                          type: string
+                      required:
+                      - inputKeys
+                      - outputKey
+                      type: object
+                    print:
+                      properties:
+                        inputKeys:
+                          items:
+                            type: string
+                          type: array
+                      required:
+                      - inputKeys
+                      type: object
                     remove:
                       properties:
                         inputKeys:
@@ -159,7 +168,7 @@ spec:
                       - outputKey
                       type: object
                     type:
-                      description: Type of Action one of send;concat,remove,rename,duplicate
+                      description: Type of Action one of send;nest,remove,rename,duplicate
                       type: string
                   required:
                   - name

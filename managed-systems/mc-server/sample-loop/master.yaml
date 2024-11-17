@@ -12,13 +12,17 @@ spec:
       type: observe
       observe:
         next:
-          - type: "Decide"
+          - type: "decide"
             name: "decide1"
             keys: ["*"]
     - name: "decide1"
       type: decide
       decide:
         actions:
+          - name: "start"
+            type: print
+            print:
+              inputKeys: ["*"]
           - name: "ram"
             type: send
             send:
@@ -26,7 +30,7 @@ spec:
               destination:
                 type: Opa
                 opa:
-                  path: "http://192.168.56.111:8181/v1/data/mc_server/ram"
+                  path: "http://192.168.56.111:8282/v1/data/mc_server/ram"
               outputKey: "ram"
           - name: "cpu"
             type: send
@@ -35,15 +39,23 @@ spec:
               destination:
                 type: Opa
                 opa:
-                  path: "http://192.168.56.111:8181/v1/data/mc_server/cpu"
+                  path: "http://192.168.56.111:8282/v1/data/mc_server/cpu"
               outputKey: "cpu"
+          - name: "before-concat"
+            type: print
+            print:
+              inputKeys: ["*"]
           - name: "concat"
             type: nest
             nest:
               inputKeys: ["ram", "cpu"]
               outputKey: "commands"
+          - name: "after-concat"
+            type: print
+            print:
+              inputKeys: ["*"]
         next:
-          - type: "Execute"
+          - type: "execute"
             name: "execute1"
             keys: ["*"]
     - name: "execute1"

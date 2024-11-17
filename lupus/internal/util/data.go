@@ -140,3 +140,24 @@ func (d *Data) Duplicate(inputKey string, outputKey string) error {
 
 	return nil
 }
+
+func (d *Data) Print(keys []string) error {
+	// prepare placeholder for output
+	outputMap := make(map[string]interface{})
+	// cut data parts based on next.Keys
+	if len(keys) == 1 && keys[0] == "*" {
+		outputMap = d.Body
+	} else {
+		for _, tag := range keys {
+			if value, exists := d.Body[tag]; exists {
+				outputMap[tag] = value
+			}
+		}
+	}
+	str, err := MapToString(outputMap)
+	if err != nil {
+		return err
+	}
+	fmt.Println(str)
+	return nil
+}
