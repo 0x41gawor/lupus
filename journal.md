@@ -818,3 +818,71 @@ spec:
 Live demos are described in Live Demo sections of:
 - [managed-system/upf-net/sample-loop/readme.md](managed-systems/upf-net/sample-loop/readme.md)
 - [managed-system/mc-server/sample-loop/readme.md](managed-systems/mc-server/sample-loop/readme.md)
+
+## 3rd Sprint - Summary
+
+After meeting with thesis supervisor 24-11-04.
+### What to improve?
+- Field nesting
+	- As for now only Root Fields of Data can be regarded as input/output keys for Action. Let's make use of `.` operator to engage nested fields.
+- Loop workflow notation:
+	- As for now our actions in Loop are waterfall and have one thread. But we aim to develop a framework that lets user to develop ANY loop. It comes down to developing a language that let's us to express the loop logic. At first study the control loops itself, what mechanisms do they need. 
+	- The first missing mechanism in Lupus that catches eye is an oppourtinity to fork. It should be possible to based on output from some action (based on some data field) to decide which action is next or at least to break the loop (exit immediately -> do not reconcile in this iteration).
+- Learn should not be separate element
+	- Here, we should bring back the definition of Reinforcement Learning. Learn should be rather plugged in into some points flow of Data and gather information on that point and to link it with information on previous points. The sentence of "Aim of machine learning is to be ready for the case, when you need to the reconciliation steps in offline mode".
+	- Do not make Learn as separate loop element, rather it should be expressed in actions (labeled with name "lear") that feed some external system.
+- Go funtion as Action Destination
+	- What if user has to perform some simply task on Data, that cannot be expressed in our Loop Workflow Notation (let's name it LupN) and it is not worthy to for him to deploy a server that will listen for this single, simple task. 
+	- We should let such user to write his own Go function that will modify Data. Framework for such functions should be well documented. etc.
+	- Add GoFunc as possible Destination in Action
+- One note in Polish
+	- From this note nothing "To Do" results. Just note it.
+	- It regards the forks in loop workflow. The question is "Should we allow Opa to indicate the next action in workflow, or LupN itself should decide it based on output from Opa?"
+	- "Albo z góry wiemy do których akcji wysłać based on input z opy,
+	(do rozważenia, jest tu zagrożenie, że pętla sama siebie modyfikuje, a tak powinny robić tylko systemy kognitywne, uczące się, zmiana pętli powinna wystąpić na wyższym poziomie logicznym niż sama pętla) albo opa (odpowiednio świadoma opa) sama nam mówi, która akcja ma być następna."
+	- "Pytanie sprowadza sie do tego czy "Opa może być swiadoma nazw akcji z yaml" oraz czy jest taka wgl potrzeba.
+	Warunkowanie/fork może nastąpić na poziomie Opy, albo można w yaml " jeśli przyszło z opy to, to zrób. Przetestuj oba podejścia fork w Opa i fork w yaml. min_req tutaj to obsługa exitu z podścieżki, czyli usecase jest taki ze opa moze stwierdzic brak autoryzacji i wtedy należy przerwac procesowanie pętli"
+
+# 4th Sprint
+## Blueprints of improvements
+### Field Nesting in Data
+
+Allow `.` operator in LupN, to make use of nested fields of Data as input/output keys for Actions.
+
+It's mainly a programming task. No need for any design.
+
+### Loop Workflow Notation (LupN)
+Our work eventually comes down to design of Language/Notation to express any loop workflow. Let's call such language LupN (Loop Notation). Loop is in some way a Workflow itself, so "Workflow" can be omitted. 
+Our actual concepts of Data and Data modification by Actions are the actual LupN. We just need to extend it with two features:
+- Control Flow (as in https://www.learncpp.com/cpp-tutorial/control-flow-introduction/)
+- Immediate exit from current loop iteration (as `Exit()` or `return` in programming languages).
+
+And then document it well.
+
+LupN will simply be a language to:
+- arrange set of Actions (loop elements) in a workflow
+- tell this Actions on which parts of Data should they operate
+
+### Remove learn element
+
+Its role/fucntionality will be expressed in Action of Decision.
+
+### Go funtion as Action Destination
+
+Create a new type of Desination named `gofunc`. User should be able to modify the code of controller by adding his own func. The func should meet certain requirements and let manipulate on Data fields. Document how to design such function and provide examples. 
+ 
+## Tasks
+- [ ] Field nesting in Data
+	- [ ] Add new Action of type "log" that prints the data
+	- [ ] Temporarily change the Data sent by managed-system/mc-server to contain nesting e.g. {"ram": {"ram2": {"in_use": 14, "license: 20"}}, "cpu": {"in_use": 8, "license: 8"}}, and adjust master LupN to read inputKey of `"ram.ram2"` instead of "ram". cpu leave as it is to test both cases nested and non nested.
+	- [ ] Code the nesting with `.` in Data fields. Handle errors e.g. when nested field is actually not `map[string]interface{}`. 
+- [ ] LupN
+	- [ ] Create docs document of LupN. First make overview of workflows. Then state requirements for LupN. What kind of workflow "features" it should allow. Discuss flow control statements from https://www.learncpp.com/cpp-tutorial/control-flow-introduction/
+	- [ ] Prepare some managed-system that will require Conditional Statements and Halts in its loop workflow. Also remember that later you will replace some http call with internal go func.
+	- [ ] In docs, design the notation for Conditional Statements and Halts.
+	- [ ] Implement, run and test.
+- [ ] Remove Learn element
+	- [ ] Remove Learn type, its controller and docs.
+- [ ] GoFunc as Action Destination
+	- [ ] Create new type of Destination called `gofunc`.
+	- [ ] Research how it can be implemented. Does GO allow dynamic func name resolution? Will user only implement func with certain name and use this name in LupN or is he forced to modify Lupus code (more precisely Decide controller)
