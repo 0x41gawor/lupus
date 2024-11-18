@@ -91,6 +91,16 @@ func TestData_Get(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	t.Log(cpuStr)
+	// test multiple keys
+	mul, err := data.Get([]string{"cpu", "ram.ram2"})
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	mulStr, err := InterfaceToString(mul)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	t.Log(mulStr)
 	// test get nested field
 	ram2, err := data.Get([]string{"ram.ram2"})
 	if err != nil {

@@ -21,36 +21,41 @@ func NewData(input runtime.RawExtension) (*Data, error) {
 }
 
 func (d *Data) Get(keys []string) (*runtime.RawExtension, error) {
-	// If the keys array contains exactly one key, handle it as a nested field
+	if len(keys) == 0 {
+		return nil, fmt.Errorf("no keys provided")
+	}
+
+	// Handle wildcard "*"
+	if len(keys) == 1 && keys[0] == "*" {
+		return InterfaceToRawExtension(d.Body)
+	}
+
+	// Handle a single key
 	if len(keys) == 1 {
 		parsedKeys := ParseKey(keys[0]) // Parse the dotted key
 		value, exists := GetNestedValue(d.Body, parsedKeys)
 		if !exists {
 			return nil, fmt.Errorf("key %s not found", keys[0])
 		}
-		// Convert
-		// Convert the value to a runtime.RawExtension
-		outputRaw, err := InterfaceToRawExtension(value)
-		if err != nil {
-			return nil, err
-		}
-		return &outputRaw, nil
+
+		// Convert the value directly to a runtime.RawExtension
+		return InterfaceToRawExtension(value)
 	}
 
-	// For multiple keys or "*", handle as before
+	// Handle multiple keys: create a subset object
 	outputMap := make(map[string]interface{})
-	for _, tag := range keys {
-		parsedKeys := ParseKey(tag)
+	for _, key := range keys {
+		parsedKeys := ParseKey(key)
 		value, exists := GetNestedValue(d.Body, parsedKeys)
 		if exists {
-			SetNestedValue(outputMap, parsedKeys, value)
+			// Use only the last part of the key as the field name in the output map
+			lastPart := parsedKeys[len(parsedKeys)-1]
+			outputMap[lastPart] = value
 		}
 	}
-	outputRaw, err := MapToRawExtension(outputMap)
-	if err != nil {
-		return nil, err
-	}
-	return &outputRaw, nil
+
+	// Convert the resulting map to a runtime.RawExtension
+	return InterfaceToRawExtension(outputMap)
 }
 
 func (d *Data) Set(key string, value interface{}) error {
@@ -70,7 +75,6 @@ func (d *Data) String() string {
 	return str
 }
 
-// Nest creates a combined field with all inputKeys in it and assigns it to outputKey.
 // Nest creates a combined field with all inputKeys in it and assigns it to outputKey.
 func (d *Data) Nest(inputKeys []string, outputKey string) error {
 	if outputKey == "*" {
@@ -93,15 +97,9 @@ func (d *Data) Nest(inputKeys []string, outputKey string) error {
 			return fmt.Errorf("field not found in body: %s", key)
 		}
 
-		// Ensure the value is a map[string]interface{}
-		nestedValue, ok := value.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("field %s is not a map[string]interface{}", key)
-		}
-
 		// Use the last part of the key as the field name in the combined map
 		lastKeyPart := parsedKeys[len(parsedKeys)-1]
-		combinedMap[lastKeyPart] = nestedValue
+		combinedMap[lastKeyPart] = value
 
 		// Remove the key from the original map
 		if err := DeleteNestedValue(d.Body, parsedKeys); err != nil {

@@ -109,15 +109,15 @@ func InterfaceToString(data interface{}) (string, error) {
 }
 
 // InterfaceToRawExtension converts any interface{} to runtime.RawExtension
-func InterfaceToRawExtension(data interface{}) (runtime.RawExtension, error) {
+func InterfaceToRawExtension(data interface{}) (*runtime.RawExtension, error) {
 	// Marshal the interface into a JSON byte slice
 	rawBytes, err := json.Marshal(data)
 	if err != nil {
-		return runtime.RawExtension{}, fmt.Errorf("failed to marshal interface to JSON: %v", err)
+		return nil, fmt.Errorf("failed to marshal interface to JSON: %v", err)
 	}
 
 	// Create and return a runtime.RawExtension
-	return runtime.RawExtension{
+	return &runtime.RawExtension{
 		Raw: rawBytes,
 	}, nil
 }
