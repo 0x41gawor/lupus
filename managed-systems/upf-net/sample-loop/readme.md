@@ -44,7 +44,7 @@ docker run -p 8181:8181 openpolicyagent/opa     run --server --log-level debug
 ```
 Setup
 ```sh
-./setup_opa.sh
+./managed-systems/upf-net/sample-loop/setup_opa.sh
 ```
 ### 2. Run Egress-Agent
 ```sh
