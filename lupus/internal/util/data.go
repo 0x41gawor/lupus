@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -19,27 +20,30 @@ func NewData(input runtime.RawExtension) (*Data, error) {
 	return &Data{Body: dataMap}, nil
 }
 
-func (d *Data) Get(key string) (interface{}, error) {
-	if key == "*" {
-		value := d.Body
-		return value, nil
-	} else {
-		value := d.Body[key]
-		return value, nil
+func (d *Data) Get(keys []string) (*runtime.RawExtension, error) {
+	// If the keys array contains exactly one key, handle it as a nested field
+	if len(keys) == 1 {
+		parsedKeys := ParseKey(keys[0]) // Parse the dotted key
+		value, exists := GetNestedValue(d.Body, parsedKeys)
+		if !exists {
+			return nil, fmt.Errorf("key %s not found", keys[0])
+		}
+		// Convert
+		// Convert the value to a runtime.RawExtension
+		outputRaw, err := InterfaceToRawExtension(value)
+		if err != nil {
+			return nil, err
+		}
+		return &outputRaw, nil
 	}
-}
 
-func (d *Data) GetKeys(keys []string) (*runtime.RawExtension, error) {
-	// prepare placeholder for output
+	// For multiple keys or "*", handle as before
 	outputMap := make(map[string]interface{})
-	// cut data parts based on next.Keys
-	if len(keys) == 1 && keys[0] == "*" {
-		outputMap = d.Body
-	} else {
-		for _, tag := range keys {
-			if value, exists := d.Body[tag]; exists {
-				outputMap[tag] = value
-			}
+	for _, tag := range keys {
+		parsedKeys := ParseKey(tag)
+		value, exists := GetNestedValue(d.Body, parsedKeys)
+		if exists {
+			SetNestedValue(outputMap, parsedKeys, value)
 		}
 	}
 	outputRaw, err := MapToRawExtension(outputMap)
@@ -47,21 +51,18 @@ func (d *Data) GetKeys(keys []string) (*runtime.RawExtension, error) {
 		return nil, err
 	}
 	return &outputRaw, nil
-
 }
 
 func (d *Data) Set(key string, value interface{}) error {
-	if key == "*" {
-		newBody, err := InterfaceToMap(value)
-		if err != nil {
-			return err
-		}
-		d.Body = newBody
-		return nil
-	} else {
-		d.Body[key] = value
-		return nil
+	// Parse the dotted key into a slice of strings
+	parsedKeys := ParseKey(key)
+
+	// Use SetNestedValue to update the nested structure
+	err := SetNestedValue(d.Body, parsedKeys, value)
+	if err != nil {
+		return fmt.Errorf("failed to set value for key %s: %w", key, err)
 	}
+	return nil
 }
 
 func (d *Data) String() string {
@@ -69,30 +70,53 @@ func (d *Data) String() string {
 	return str
 }
 
-// Nest creates a combined field with all inputKeys in it and names it outputKey
+// Nest creates a combined field with all inputKeys in it and assigns it to outputKey.
+// Nest creates a combined field with all inputKeys in it and assigns it to outputKey.
 func (d *Data) Nest(inputKeys []string, outputKey string) error {
 	if outputKey == "*" {
-		return fmt.Errorf("`*` is not allowed as a key name for Concat")
+		return fmt.Errorf("`*` is not allowed as a key name for Nest")
 	}
+
 	// Initialize a map to hold the combined fields
 	combinedMap := make(map[string]interface{})
-	// Iterate over each field in the inputFields slice
+
+	// Iterate over each input key
 	for _, key := range inputKeys {
 		if key == "*" {
-			return fmt.Errorf("`*` is not allowed as a key name for Remove")
+			return fmt.Errorf("`*` is not allowed as a key name for Nest")
 		}
-		// Retrieve the value for the field
-		value, exists := d.Body[key]
+
+		// Parse the key and get the value
+		parsedKeys := ParseKey(key)
+		value, exists := GetNestedValue(d.Body, parsedKeys)
 		if !exists {
 			return fmt.Errorf("field not found in body: %s", key)
 		}
-		// Add the field to the combined map
-		combinedMap[key] = value
-		// Remove the field from the original map to "move" it
-		delete(d.Body, key)
+
+		// Ensure the value is a map[string]interface{}
+		nestedValue, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("field %s is not a map[string]interface{}", key)
+		}
+
+		// Use the last part of the key as the field name in the combined map
+		lastKeyPart := parsedKeys[len(parsedKeys)-1]
+		combinedMap[lastKeyPart] = nestedValue
+
+		// Remove the key from the original map
+		if err := DeleteNestedValue(d.Body, parsedKeys); err != nil {
+			return fmt.Errorf("failed to remove key %s: %w", key, err)
+		}
 	}
-	// Set the combined map as the value of outputField
-	d.Body[outputKey] = combinedMap
+
+	// Parse the output key
+	parsedOutputKey := ParseKey(outputKey)
+
+	// Set the combined map as the value of outputKey
+	if err := SetNestedValue(d.Body, parsedOutputKey, combinedMap); err != nil {
+		return fmt.Errorf("failed to set combined value for key %s: %w", outputKey, err)
+	}
+
 	return nil
 }
 
@@ -102,62 +126,192 @@ func (d *Data) Remove(inputKeys []string) error {
 		if key == "*" {
 			return fmt.Errorf("`*` is not allowed as a key name for Remove")
 		}
-		delete(d.Body, key)
+
+		// Parse the key
+		parsedKeys := ParseKey(key)
+
+		// Attempt to delete the key; if it doesn't exist, skip it
+		err := DeleteNestedValue(d.Body, parsedKeys)
+		if err != nil {
+			// Log or ignore the error if the key doesn't exist
+			fmt.Printf("Warning: failed to remove key %s: %v\n", key, err)
+		}
 	}
 	return nil
 }
 
-// Rename changes name from inputKey to outputKey
+// Rename changes the last part of inputKey to outputKey, supporting both nested and non-nested inputKey.
 func (d *Data) Rename(inputKey string, outputKey string) error {
 	if inputKey == "*" || outputKey == "*" {
 		return fmt.Errorf("'*' is not allowed as a key name for Rename")
 	}
-	// Check if inputKey exists in the map
-	value, exists := d.Body[inputKey]
+
+	// Parse the input key
+	parsedInputKeys := ParseKey(inputKey)
+
+	// Handle non-nested fields
+	if len(parsedInputKeys) == 1 {
+		value, exists := d.Body[inputKey]
+		if !exists {
+			return fmt.Errorf("key %s not found in body", inputKey)
+		}
+		// Rename by deleting the old key and adding the new key
+		delete(d.Body, inputKey)
+		d.Body[outputKey] = value
+		return nil
+	}
+
+	// Handle nested fields
+	parentKeys := parsedInputKeys[:len(parsedInputKeys)-1]
+	lastKey := parsedInputKeys[len(parsedInputKeys)-1]
+
+	// Navigate to the parent map
+	parentMap, ok := GetNestedValue(d.Body, parentKeys)
+	if !ok {
+		return fmt.Errorf("parent path %v not found in body", parentKeys)
+	}
+
+	// Ensure the parent is a map[string]interface{}
+	parentMapTyped, ok := parentMap.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("parent path %v is not a map[string]interface{}", parentKeys)
+	}
+
+	// Check if the last key exists in the parent map
+	value, exists := parentMapTyped[lastKey]
 	if !exists {
 		return fmt.Errorf("key %s not found in body", inputKey)
 	}
-	// Set the value of outputKey to the value of inputKey
-	d.Body[outputKey] = value
-	// Delete the inputKey to complete the "rename"
-	delete(d.Body, inputKey)
+
+	// Rename the key by deleting the old key and adding a new one
+	delete(parentMapTyped, lastKey)
+	parentMapTyped[outputKey] = value
+
 	return nil
 }
 
-// Duplicate function, copies  the value associated with inputKey in d.Body to a new key named outputKey, without removing the original key.
+// Duplicate copies the value associated with inputKey to outputKey, supporting nested keys.
 func (d *Data) Duplicate(inputKey string, outputKey string) error {
 	if inputKey == "*" || outputKey == "*" {
 		return fmt.Errorf("'*' is not allowed as a key name for Duplicate")
 	}
-	// Check if inputKey exists in the map
-	value, exists := d.Body[inputKey]
+
+	// Parse the input key
+	parsedInputKeys := ParseKey(inputKey)
+
+	// Get the value for the inputKey
+	value, exists := GetNestedValue(d.Body, parsedInputKeys)
 	if !exists {
 		return fmt.Errorf("key %s not found in body", inputKey)
 	}
 
-	// Set the value of outputKey to the value of inputKey
-	d.Body[outputKey] = value
+	// Parse the output key
+	parsedOutputKeys := ParseKey(outputKey)
+
+	// Set the value to the outputKey
+	if err := SetNestedValue(d.Body, parsedOutputKeys, value); err != nil {
+		return fmt.Errorf("failed to set value for key %s: %w", outputKey, err)
+	}
 
 	return nil
 }
 
 func (d *Data) Print(keys []string) error {
-	// prepare placeholder for output
+	// Prepare placeholder for output
 	outputMap := make(map[string]interface{})
-	// cut data parts based on next.Keys
+
+	// Handle wildcard "*" to print the entire body
 	if len(keys) == 1 && keys[0] == "*" {
 		outputMap = d.Body
 	} else {
-		for _, tag := range keys {
-			if value, exists := d.Body[tag]; exists {
-				outputMap[tag] = value
+		for _, key := range keys {
+			// Parse the key to support nested paths
+			parsedKeys := ParseKey(key)
+
+			// Retrieve the value for the key
+			value, exists := GetNestedValue(d.Body, parsedKeys)
+			if exists {
+				// Add the value to the output map, using the original key string
+				outputMap[key] = value
 			}
 		}
 	}
+
+	// Convert the output map to a JSON string
 	str, err := MapToString(outputMap)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to convert map to string: %w", err)
 	}
+
+	// Print the result
 	fmt.Println(str)
+	return nil
+}
+
+// Helper function to parse a dotted key into a slice of strings
+func ParseKey(key string) []string {
+	return strings.Split(key, ".")
+}
+
+// Helper function to navigate and get a value from nested maps
+func GetNestedValue(data map[string]interface{}, keys []string) (interface{}, bool) {
+	current := data
+	for i, key := range keys {
+		value, exists := current[key]
+		if !exists {
+			return nil, false
+		}
+		// If this is the last key, return the value
+		if i == len(keys)-1 {
+			return value, true
+		}
+		// Otherwise, continue navigating
+		nextMap, ok := value.(map[string]interface{})
+		if !ok {
+			return nil, false
+		}
+		current = nextMap
+	}
+	return nil, false
+}
+
+// Helper function to set a value in nested maps
+func SetNestedValue(data map[string]interface{}, keys []string, value interface{}) error {
+	current := data
+	for i, key := range keys {
+		// If this is the last key, set the value
+		if i == len(keys)-1 {
+			current[key] = value
+			return nil
+		}
+
+		// Navigate or create nested maps
+		nextMap, ok := current[key].(map[string]interface{})
+		if !ok {
+			// If the next level doesn't exist, create it
+			nextMap = make(map[string]interface{})
+			current[key] = nextMap
+		}
+		current = nextMap
+	}
+	return nil
+}
+
+// Helper function to delete a nested key
+func DeleteNestedValue(data map[string]interface{}, keys []string) error {
+	current := data
+	for i, key := range keys {
+		// If this is the last key, delete it
+		if i == len(keys)-1 {
+			delete(current, key)
+			return nil
+		}
+		// Otherwise, navigate
+		nextMap, ok := current[key].(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("key path %v does not exist", keys)
+		}
+		current = nextMap
+	}
 	return nil
 }

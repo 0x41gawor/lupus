@@ -96,3 +96,28 @@ func MapToString(data map[string]interface{}) (string, error) {
 	// Convert JSON bytes to a string and return
 	return string(jsonBytes), nil
 }
+
+// InterfaceToString converts any interface{} to its string representation
+func InterfaceToString(data interface{}) (string, error) {
+	// Use JSON marshaling to handle structured data
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		return "", fmt.Errorf("failed to convert to string: %w", err)
+	}
+
+	return string(jsonBytes), nil
+}
+
+// InterfaceToRawExtension converts any interface{} to runtime.RawExtension
+func InterfaceToRawExtension(data interface{}) (runtime.RawExtension, error) {
+	// Marshal the interface into a JSON byte slice
+	rawBytes, err := json.Marshal(data)
+	if err != nil {
+		return runtime.RawExtension{}, fmt.Errorf("failed to marshal interface to JSON: %v", err)
+	}
+
+	// Create and return a runtime.RawExtension
+	return runtime.RawExtension{
+		Raw: rawBytes,
+	}, nil
+}

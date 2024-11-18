@@ -112,7 +112,7 @@ func (r *ObserveReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// Step 5 - (K8s) Update Status.Input field of next element
 	for _, next := range element.Spec.Next {
 		// prepare output based on keys
-		output, err := data.GetKeys(next.Keys)
+		output, err := data.Get(next.Keys)
 		if err != nil {
 			r.Logger.Error(err, "Cannot retrieve keys from data")
 			return ctrl.Result{}, nil

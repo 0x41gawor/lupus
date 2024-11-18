@@ -114,7 +114,7 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	for _, action := range element.Spec.Actions {
 		switch action.Type {
 		case "send":
-			input, err := data.Get(action.Send.InputKey)
+			input, err := data.Get([]string{action.Send.InputKey})
 			if err != nil {
 				r.Logger.Error(err, "cannot get Data inputKey object")
 				return ctrl.Result{}, nil
@@ -162,7 +162,7 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	// Step 6 - Send data output to the next elements
 	for _, next := range element.Spec.Next {
 		// prepare output based on keys
-		output, err := data.GetKeys(next.Keys)
+		output, err := data.Get(next.Keys)
 		if err != nil {
 			r.Logger.Error(err, "Cannot retrieve keys from data")
 			return ctrl.Result{}, nil
