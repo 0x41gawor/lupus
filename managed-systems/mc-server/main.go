@@ -24,8 +24,10 @@ type ServerData struct {
 		License int `json:"license"`
 	} `json:"cpu"`
 	RAM struct {
-		InUse   int `json:"in_use"`
-		License int `json:"license"`
+		RAM2 struct {
+			InUse   int `json:"in_use"`
+			License int `json:"license"`
+		} `json:"ram2"`
 	} `json:"ram"`
 }
 
@@ -42,8 +44,8 @@ func updateUsage() {
 	defer dataMutex.Unlock()
 
 	// Randomly update in_use values for CPU and RAM
-	data.CPU.InUse += rand.Intn(4) - 1 // -1, 0, 1 or 2
-	data.RAM.InUse += rand.Intn(4) - 1 // -1, 0, 1 or 2
+	data.CPU.InUse += rand.Intn(4) - 1      // -1, 0, 1 or 2
+	data.RAM.RAM2.InUse += rand.Intn(4) - 1 // -1, 0, 1 or 2
 
 	// Keep values within a logical range (e.g., 0 to license limit)
 	if data.CPU.InUse < 0 {
@@ -52,11 +54,11 @@ func updateUsage() {
 	if data.CPU.InUse > data.CPU.License {
 		data.CPU.InUse = data.CPU.License
 	}
-	if data.RAM.InUse < 0 {
-		data.RAM.InUse = 0
+	if data.RAM.RAM2.InUse < 0 {
+		data.RAM.RAM2.InUse = 0
 	}
-	if data.RAM.InUse > data.RAM.License {
-		data.RAM.InUse = data.RAM.License
+	if data.RAM.RAM2.InUse > data.RAM.RAM2.License {
+		data.RAM.RAM2.InUse = data.RAM.RAM2.License
 	}
 }
 
@@ -101,9 +103,9 @@ func setLicenseHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("CPU License changed from: %d to: %d", oldCPU, data.CPU.License)
 	}
 	if command.RAM != nil {
-		oldRAM := data.RAM.License
-		data.RAM.License = *command.RAM
-		log.Printf("RAM License changed from: %d to:  %d", oldRAM, data.RAM.License)
+		oldRAM := data.RAM.RAM2.License
+		data.RAM.RAM2.License = *command.RAM
+		log.Printf("RAM License changed from: %d to:  %d", oldRAM, data.RAM.RAM2.License)
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -118,9 +120,9 @@ func main() {
 
 	// Initialize the server data
 	data.CPU.License = 20
-	data.RAM.License = 8
-	data.CPU.InUse = 10 // Starting with 10% CPU usage
-	data.RAM.InUse = 5  // Starting with 5% RAM usage
+	data.RAM.RAM2.License = 8
+	data.CPU.InUse = 10     // Starting with 10% CPU usage
+	data.RAM.RAM2.InUse = 5 // Starting with 5% RAM usage
 
 	// Create a ticker to update server usage periodically
 	http.HandleFunc("/api/data", dataHandler)
