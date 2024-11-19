@@ -203,4 +203,17 @@ func TestData_Get(t *testing.T) {
 	if err != nil {
 		t.Fatal(err.Error())
 	}
+	err = data.Insert("trump.kox", 12)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	err = data.Insert("homicide", false)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	err = data.Insert("genocide", rawExtension)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	t.Log(data.String())
 }

@@ -246,6 +246,20 @@ func (d *Data) Print(keys []string) error {
 	return nil
 }
 
+// Insert adds a new key-value pair to the Body map.
+// Supports dot-separated keys for nested fields.
+func (d *Data) Insert(key string, value interface{}) error {
+	// Parse the key into its components
+	parsedKeys := ParseKey(key)
+
+	// Use SetNestedValue to insert the value
+	err := SetNestedValue(d.Body, parsedKeys, value)
+	if err != nil {
+		return fmt.Errorf("failed to insert value for key %s: %w", key, err)
+	}
+	return nil
+}
+
 // Helper function to parse a dotted key into a slice of strings
 func ParseKey(key string) []string {
 	return strings.Split(key, ".")
