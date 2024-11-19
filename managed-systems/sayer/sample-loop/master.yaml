@@ -1,0 +1,37 @@
+apiVersion: lupus.gawor.io/v1
+kind: Master
+metadata:
+  labels:
+    app.kubernetes.io/name: lupus
+    app.kubernetes.io/managed-by: kustomize
+  name: lola
+spec:
+  name: "lola"
+  elements:
+    - name: "observe1"
+      type: observe
+      observe:
+        next:
+          - type: "decide"
+            name: "decide1"
+            keys: ["*"]
+    - name: "decide1"
+      type: decide
+      decide:
+        actions:
+          - name: "start"
+            type: print
+            print:
+              inputKeys: ["*"]
+        next:
+          - type: "execute"
+            name: "execute1"
+            keys: ["*"]
+    - name: "execute1"
+      type: execute
+      execute:
+        destination:
+          type: "HTTP"
+          http:
+            path: "http://192.168.56.111:7000/api/command"
+            method: "POST"

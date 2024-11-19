@@ -239,14 +239,17 @@ func sendToHTTP(path string, method string, body interface{}) (interface{}, erro
 	defer resp.Body.Close()
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
+		println("here1\n")
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
+		println("here2\n")
 		return nil, fmt.Errorf("non-ok HTTP Status")
 	}
 
 	var res interface{}
 	if err := json.Unmarshal(respBody, &res); err != nil {
+		println("here3\n")
 		return nil, err
 	}
 	return res, nil

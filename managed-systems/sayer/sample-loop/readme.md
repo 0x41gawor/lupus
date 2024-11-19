@@ -24,8 +24,7 @@ docker run -p 8383:8181 openpolicyagent/opa     run --server --log-level debug
 ```
 Setup
 ```sh
-cd managed-systems/sayer/sample-loop
-./setup_opa.sh
+.managed-systems/sayer/sample-loop/setup_opa.sh
 ```
 ### 2. Run Egress-Agent
 ```sh

@@ -68,8 +68,16 @@ func (s *Sayer) CommandHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Print("ERROR")
 	}
 	log.Printf("Round %d: I've received: %v\n", s.round, receivedStr)
+	// Prepare a JSON response
+	response := map[string]string{
+		"res": "Command received and logged",
+	}
+	// Encode and send the JSON response
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Command received and logged"))
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, `{"error": "Failed to send response"}`, http.StatusInternalServerError)
+	}
 }
 
 // Start rounds for periodic data generation.

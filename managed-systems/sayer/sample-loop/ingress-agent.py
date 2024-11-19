@@ -42,7 +42,7 @@ def periodic_task(interval, k8s_client):
                     version="v1",
                     namespace='default',
                     plural="observes",
-                    name='olek-observe1',
+                    name='lola-observe1',
                     body=observe
                 )
                 print("Updated Kubernetes custom resource status successfully.")
