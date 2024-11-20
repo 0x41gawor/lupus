@@ -151,6 +151,12 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 				r.Logger.Error(err, "cannot duplicate data field")
 				return ctrl.Result{}, nil
 			}
+		case "insert":
+			err := data.Insert(action.Insert.OutputKey, action.Insert.Value)
+			if err != nil {
+				r.Logger.Error(err, "cannot insert field")
+				return ctrl.Result{}, nil
+			}
 		case "print":
 			fmt.Printf("----------------%s-------------------Data:-----------------------------------------\n", action.Name)
 			err := data.Print(action.Print.InputKeys)

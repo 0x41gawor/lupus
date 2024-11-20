@@ -19,6 +19,16 @@ spec:
       type: decide
       decide:
         actions:
+          - name: "insert2"
+            type: insert
+            insert:
+              outputKey: "elo"
+              value: {karczycho: 10}
+          - name: "insert3"
+            type: insert
+            insert:
+              outputKey: "elo"
+              value: {"name": "maria", "age": 12}
           - name: "start"
             type: print
             print:

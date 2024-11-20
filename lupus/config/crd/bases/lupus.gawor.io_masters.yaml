@@ -67,6 +67,17 @@ spec:
                                 - inputKey
                                 - outputKey
                                 type: object
+                              insert:
+                                properties:
+                                  outputKey:
+                                    type: string
+                                  value:
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
+                                required:
+                                - outputKey
+                                - value
+                                type: object
                               name:
                                 description: Name of the Action, it is for designer
                                   to ease the management of the Loop

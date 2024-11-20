@@ -1,6 +1,10 @@
 package v1
 
-import "fmt"
+import (
+	"fmt"
+
+	"k8s.io/apimachinery/pkg/runtime"
+)
 
 // Next is used in Observe Spec
 // It specifies to which element forward the input
@@ -71,6 +75,7 @@ type Action struct {
 	Rename    *RenameAction    `json:"rename,omitempty" kubebuilder:"validation:Optional"`
 	Duplicate *DuplicateAction `json:"duplicate,omitempty" kubebuilder:"validation:Optional"`
 	Print     *PrintAction     `json:"print,omitempty" kubebuilder:"validation:Optional"`
+	Insert    *InsertAction    `json:"insert,omitempty" kubebuilder:"validation:Optional"`
 }
 
 func (a *Action) String() string {
@@ -115,6 +120,10 @@ func (a *Action) String() string {
 		} else {
 			result += ", Duplicate: <nil>"
 		}
+	case "insert":
+		if a.Insert != nil {
+			result += fmt.Sprintf(", %s", a.Insert.String())
+		}
 	default:
 		result += ", <Unknown Action Type>"
 	}
@@ -152,6 +161,11 @@ type PrintAction struct {
 	InputKeys []string `json:"inputKeys"`
 }
 
+type InsertAction struct {
+	OutputKey string               `json:"outputKey"`
+	Value     runtime.RawExtension `json:"value"` //value can be of type: int, float, bool, string
+}
+
 func (s *SendAction) String() string {
 	return fmt.Sprintf("SendAction(InputKey: %s, Destination: %v, OutputKey: %s)", s.InputKey, s.Destination, s.OutputKey)
 }
@@ -174,6 +188,10 @@ func (d *DuplicateAction) String() string {
 
 func (d *PrintAction) String() string {
 	return fmt.Sprintf("PrintAction(InputKeys: %v)", d.InputKeys)
+}
+
+func (d *InsertAction) String() string {
+	return fmt.Sprintf("InsertAction(OutputKey: %s, Value: %v)", d.OutputKey, d.Value)
 }
 
 // Element is a polymorphic structure that can represent different types of specs
