@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -246,20 +247,6 @@ func (d *Data) Print(keys []string) error {
 	return nil
 }
 
-// Insert adds a new key-value pair to the Body map.
-// Supports dot-separated keys for nested fields.
-func (d *Data) Insert(key string, value interface{}) error {
-	// Parse the key into its components
-	parsedKeys := ParseKey(key)
-
-	// Use SetNestedValue to insert the value
-	err := SetNestedValue(d.Body, parsedKeys, value)
-	if err != nil {
-		return fmt.Errorf("failed to insert value for key %s: %w", key, err)
-	}
-	return nil
-}
-
 // Helper function to parse a dotted key into a slice of strings
 func ParseKey(key string) []string {
 	return strings.Split(key, ".")
@@ -326,4 +313,102 @@ func DeleteNestedValue(data map[string]interface{}, keys []string) error {
 		current = nextMap
 	}
 	return nil
+}
+
+// Helper function to navigate to the parent map of the target key
+func navigateToParent(data map[string]interface{}, keys []string) (map[string]interface{}, error) {
+	current := data
+	for i := 0; i < len(keys)-1; i++ {
+		key := keys[i]
+		nextMap, ok := current[key].(map[string]interface{})
+		if !ok {
+			// If the next level doesn't exist, create it
+			nextMap = make(map[string]interface{})
+			current[key] = nextMap
+		}
+		current = nextMap
+	}
+	return current, nil
+}
+
+func (d *Data) Insert(key string, raw runtime.RawExtension) error {
+	// Convert RawExtension to a map[string]interface{}
+	var newMap map[string]interface{}
+	if err := json.Unmarshal(raw.Raw, &newMap); err != nil {
+		return fmt.Errorf("failed to unmarshal RawExtension: %w", err)
+	}
+
+	if key == "*" {
+		// Add newMap at the root of the JSON structure
+		for rootKey, newValue := range newMap {
+			if existingValue, exists := d.Body[rootKey]; exists {
+				// Merge or replace
+				mergedValue, err := mergeOrReplace(existingValue, newValue)
+				if err != nil {
+					return fmt.Errorf("failed to merge or replace values for root key %s: %w", rootKey, err)
+				}
+				d.Body[rootKey] = mergedValue
+			} else {
+				d.Body[rootKey] = newValue
+			}
+		}
+		return nil
+	}
+
+	// Parse the dotted key into a slice of strings
+	parsedKeys := ParseKey(key)
+
+	// Navigate to the target location
+	targetParent, err := navigateToParent(d.Body, parsedKeys)
+	if err != nil {
+		return fmt.Errorf("failed to navigate to parent key for %s: %w", key, err)
+	}
+
+	// Get the last key where the newMap will be inserted
+	targetKey := parsedKeys[len(parsedKeys)-1]
+
+	if existingValue, exists := targetParent[targetKey]; exists {
+		// Merge or replace
+		mergedValue, err := mergeOrReplace(existingValue, newMap)
+		if err != nil {
+			return fmt.Errorf("failed to merge or replace values for key %s: %w", key, err)
+		}
+		targetParent[targetKey] = mergedValue
+	} else {
+		// Insert new field
+		targetParent[targetKey] = newMap
+	}
+
+	return nil
+}
+
+// Helper function to merge or replace values
+func mergeOrReplace(existing, incoming interface{}) (interface{}, error) {
+	existingMap, err := InterfaceToMap(existing)
+	if err != nil {
+		// If the existing value is not a map, replace it
+		return incoming, nil
+	}
+
+	incomingMap, err := InterfaceToMap(incoming)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert incoming value to map: %w", err)
+	}
+
+	// Perform recursive merging
+	for key, incomingValue := range incomingMap {
+		if existingValue, exists := existingMap[key]; exists {
+			// Merge recursively or replace
+			mergedValue, err := mergeOrReplace(existingValue, incomingValue)
+			if err != nil {
+				return nil, err
+			}
+			existingMap[key] = mergedValue
+		} else {
+			// Insert new field
+			existingMap[key] = incomingValue
+		}
+	}
+
+	return existingMap, nil
 }

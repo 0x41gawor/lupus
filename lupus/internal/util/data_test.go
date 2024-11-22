@@ -203,17 +203,42 @@ func TestData_Get(t *testing.T) {
 	if err != nil {
 		t.Fatal(err.Error())
 	}
-	err = data.Insert("trump.kox", 12)
+	data2Str := `
+		{
+    "elo": "hej",
+    "poland": {
+        "capital": "Warsaw",
+        "population": 38
+    	}
+	}
+	`
+	// Create a runtime.RawExtension
+	rawExtension2 := &runtime.RawExtension{
+		Raw: []byte(data2Str),
+	}
+	data2, err := NewData(*rawExtension2)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
-	err = data.Insert("homicide", false)
+	t.Log(data2.String())
+	err = data2.Insert("*", runtime.RawExtension{Raw: []byte(`{"elo2":"siema"}`)})
 	if err != nil {
 		t.Fatal(err.Error())
 	}
-	err = data.Insert("genocide", rawExtension)
+	t.Log(data2.String())
+	err = data2.Insert("poland", runtime.RawExtension{Raw: []byte(`{"cities": ["Poznan", "Gdansk", "Krakow"]}`)})
 	if err != nil {
 		t.Fatal(err.Error())
 	}
-	t.Log(data.String())
+	t.Log(data2.String())
+	err = data2.Insert("poland.capital", runtime.RawExtension{Raw: []byte(`{"first": "Gniezno"}`)})
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	t.Log(data2.String())
+	err = data2.Insert("poland.capital", runtime.RawExtension{Raw: []byte(`{"second": "Krakow"}`)})
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	t.Log(data2.String())
 }

@@ -19,6 +19,19 @@ spec:
       type: decide
       decide:
         actions:
+          - name: "insert1"
+            type: insert
+            insert:
+              outputKey: "*"
+              value: {"log.path_taken": "A"}
+          - name: "insertComplex"
+            type: insert
+            insert:
+              outputKey: "*"
+              value: {"elo": "hej", "poland": {
+                      "capital": "Warsaw",
+                      "population": 38
+                    }}
           - name: "insert2"
             type: insert
             insert:
