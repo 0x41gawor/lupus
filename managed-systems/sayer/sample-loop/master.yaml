@@ -24,6 +24,7 @@ spec:
             insert:
               outputKey: "*"
               value: {"log.path_taken": "A"}
+            next: "start"
           - name: "insertComplex"
             type: insert
             insert:
@@ -32,20 +33,24 @@ spec:
                       "capital": "Warsaw",
                       "population": 38
                     }}
+            next: "insert2"
           - name: "insert2"
             type: insert
             insert:
               outputKey: "elo"
               value: {karczycho: 10}
+            next: "insert3"
           - name: "insert3"
             type: insert
             insert:
               outputKey: "elo"
               value: {"name": "maria", "age": 12}
+            next: "start"
           - name: "start"
             type: print
             print:
               inputKeys: ["*"]
+            next: "final"
         next:
           - type: "execute"
             name: "execute1"

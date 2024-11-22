@@ -1,10 +1,7 @@
 package v1
 
 import (
-	"errors"
 	"fmt"
-	"reflect"
-	"strconv"
 
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -70,7 +67,7 @@ type Action struct {
 	// Name of the Action, it is for designer to ease the management of the Loop
 	Name string `json:"name"`
 	// Type of Action one of send;nest,remove,rename,duplicate
-	Type string `json:"type" kubebuilder:"validation:Enum=send;nest,remove,rename,duplicate,print,switch"`
+	Type string `json:"type" kubebuilder:"validation:Enum=send,nest,remove,rename,duplicate,print,insert,switch"`
 	// One of these fields is not null depending on a Type.
 	Send      *SendAction      `json:"send,omitempty" kubebuilder:"validation:Optional"`
 	Nest      *NestAction      `json:"nest,omitempty" kubebuilder:"validation:Optional"`
@@ -80,6 +77,8 @@ type Action struct {
 	Print     *PrintAction     `json:"print,omitempty" kubebuilder:"validation:Optional"`
 	Insert    *InsertAction    `json:"insert,omitempty" kubebuilder:"validation:Optional"`
 	Switch    *Switch          `json:"switch,omitempty" kubebuilder:"validation:Optional"`
+	// Next is the name of the next action to execute
+	Next string `json:"next"`
 }
 
 func (a *Action) String() string {
@@ -213,144 +212,13 @@ type Element struct {
 	Execute *ExecuteSpec `json:"execute,omitempty"`
 }
 
-type Condition struct {
-	// Key indicates the field of Data that has to be retrieved
-	Key string `json:"key"`
-	// Operator can be one of: eq (equals to), gt/ls (greater/less than), ne (not equal to)
-	Operator string `json:"operator"`
-	// Value that will be comapred againts Data field
-	Value interface{} `json:"value"`
-	// Next specifies name of the next action to execute
-	Next string `json:"next"`
-}
-
-func (c *Condition) Compare(field interface{}) (bool, error) {
-	// Validate the field type
-	switch v := field.(type) {
-	case int, float64, bool, string:
-		// Proceed with validation of c.Value
-	default:
-		return false, fmt.Errorf("unsupported field type: %T", v)
-	}
-
-	// Validate that c.Value has a compatible type with field
-	fieldType := reflect.TypeOf(field)
-	valueType := reflect.TypeOf(c.Value)
-
-	// Attempt type conversion if types are different
-	var value interface{}
-	var err error
-	if fieldType != valueType {
-		value, err = convertValueToType(c.Value, fieldType)
-		if err != nil {
-			return false, fmt.Errorf("type mismatch and conversion failed: %w", err)
-		}
-	} else {
-		value = c.Value
-	}
-
-	// Perform the comparison based on the operator
-	switch c.Operator {
-	case "eq":
-		return reflect.DeepEqual(field, value), nil
-	case "ne":
-		return !reflect.DeepEqual(field, value), nil
-	case "gt":
-		return compareNumeric(field, value, ">")
-	case "ls":
-		return compareNumeric(field, value, "<")
-	default:
-		return false, fmt.Errorf("unsupported operator: %s", c.Operator)
-	}
-}
-
-// Helper to convert value to a specific type
-func convertValueToType(value interface{}, targetType reflect.Type) (interface{}, error) {
-	switch targetType.Kind() {
-	case reflect.Int:
-		switch v := value.(type) {
-		case int:
-			return v, nil
-		case float64:
-			return int(v), nil
-		case string:
-			i, err := strconv.Atoi(v)
-			if err != nil {
-				return nil, fmt.Errorf("cannot convert string to int: %w", err)
-			}
-			return i, nil
-		default:
-			return nil, fmt.Errorf("cannot convert %T to int", v)
-		}
-	case reflect.Float64:
-		switch v := value.(type) {
-		case int:
-			return float64(v), nil
-		case float64:
-			return v, nil
-		case string:
-			f, err := strconv.ParseFloat(v, 64)
-			if err != nil {
-				return nil, fmt.Errorf("cannot convert string to float64: %w", err)
-			}
-			return f, nil
-		default:
-			return nil, fmt.Errorf("cannot convert %T to float64", v)
-		}
-	case reflect.Bool:
-		switch v := value.(type) {
-		case bool:
-			return v, nil
-		case string:
-			if v == "true" {
-				return true, nil
-			} else if v == "false" {
-				return false, nil
-			}
-			return nil, fmt.Errorf("cannot convert string to bool")
-		default:
-			return nil, fmt.Errorf("cannot convert %T to bool", v)
-		}
-	case reflect.String:
-		switch v := value.(type) {
-		case string:
-			return v, nil
-		default:
-			return fmt.Sprintf("%v", v), nil
-		}
-	default:
-		return nil, fmt.Errorf("unsupported target type: %v", targetType)
-	}
-}
-
-// Helper for numeric comparisons
-func compareNumeric(field interface{}, value interface{}, operator string) (bool, error) {
-	var fieldVal, valueVal float64
-
-	switch v := field.(type) {
-	case int:
-		fieldVal = float64(v)
-	case float64:
-		fieldVal = v
-	default:
-		return false, errors.New("field is not numeric")
-	}
-
-	switch v := value.(type) {
-	case int:
-		valueVal = float64(v)
-	case float64:
-		valueVal = v
-	default:
-		return false, errors.New("value is not numeric")
-	}
-
-	switch operator {
-	case ">":
-		return fieldVal > valueVal, nil
-	case "<":
-		return fieldVal < valueVal, nil
-	default:
-		return false, fmt.Errorf("unsupported numeric operator: %s", operator)
-	}
-}
+// type Condition struct {
+// 	// Key indicates the field of Data that has to be retrieved
+// 	Key string `json:"key"`
+// 	// Operator can be one of: eq (equals to), gt/ls (greater/less than), ne (not equal to)
+// 	Operator string `json:"operator"`
+// 	// Value that will be comapred againts Data field
+// 	Value interface{} `json:"value"`
+// 	// Next specifies name of the next action to execute
+// 	Next string `json:"next"`
+// }

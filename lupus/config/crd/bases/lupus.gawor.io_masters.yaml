@@ -94,6 +94,10 @@ spec:
                                 - inputKeys
                                 - outputKey
                                 type: object
+                              next:
+                                description: Next is the name of the next action to
+                                  execute
+                                type: string
                               print:
                                 properties:
                                   inputKeys:
@@ -188,11 +192,14 @@ spec:
                                 - inputKey
                                 - outputKey
                                 type: object
+                              switch:
+                                type: object
                               type:
                                 description: Type of Action one of send;nest,remove,rename,duplicate
                                 type: string
                             required:
                             - name
+                            - next
                             - type
                             type: object
                           type: array

@@ -111,58 +111,25 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	// Step 5 - Perform actions
-	for _, action := range element.Spec.Actions {
-		switch action.Type {
-		case "send":
-			input, err := data.Get([]string{action.Send.InputKey})
-			if err != nil {
-				r.Logger.Error(err, "cannot get Data inputKey object")
-				return ctrl.Result{}, nil
-			}
-			output, err := sendToDestination(input, action.Send.Destination)
-			if err != nil {
-				r.Logger.Error(err, "cannot get Data inputKey object")
-				return ctrl.Result{}, nil
-			}
-			if err = data.Set(action.Send.OutputKey, output); err != nil {
-				r.Logger.Error(err, "cannot set data field")
-			}
-		case "nest":
-			err := data.Nest(action.Nest.InputKeys, action.Nest.OutputKey)
-			if err != nil {
-				r.Logger.Error(err, "cannot nest data field")
-				return ctrl.Result{}, nil
-			}
-		case "remove":
-			err := data.Remove(action.Remove.InputKeys)
-			if err != nil {
-				r.Logger.Error(err, "cannot remove data field")
-				return ctrl.Result{}, nil
-			}
-		case "rename":
-			err := data.Rename(action.Rename.InputKey, action.Rename.OutputKey)
-			if err != nil {
-				r.Logger.Error(err, "cannot rename data field")
-				return ctrl.Result{}, nil
-			}
-		case "duplicate":
-			err := data.Duplicate(action.Duplicate.InputKey, action.Duplicate.OutputKey)
-			if err != nil {
-				r.Logger.Error(err, "cannot duplicate data field")
-				return ctrl.Result{}, nil
-			}
-		case "insert":
-			err := data.Insert(action.Insert.OutputKey, action.Insert.Value)
-			if err != nil {
-				r.Logger.Error(err, "cannot insert field")
-				return ctrl.Result{}, nil
-			}
-		case "print":
-			fmt.Printf("----------------%s-------------------Data:-----------------------------------------\n", action.Name)
-			err := data.Print(action.Print.InputKeys)
-			if err != nil {
-				r.Logger.Error(err, "cannot print data")
-			}
+	next := element.Spec.Actions[0].Name
+	actionsMap, err := ConvertActionsToMap(element.Spec.Actions)
+	if err != nil {
+		r.Logger.Error(err, "Failed to convert actions list to map")
+	}
+	print("-------------------------START OF ACTIONS LOOOP -------------------------\n\n")
+	for {
+		print("next:" + next + "\n\n")
+		if next == "final" {
+			r.Logger.Info("Success exit encountered")
+			break
+		}
+		if next == "exit" {
+			r.Logger.Info("Failure exit encountered")
+			return ctrl.Result{}, nil
+		}
+		next, err = r.PerformAction(data, actionsMap[next])
+		if err != nil {
+			r.Logger.Error(err, "Failed to perform action")
 		}
 	}
 	// Step 6 - Send data output to the next elements
@@ -308,4 +275,78 @@ func (r *DecideReconciler) updateStatus(ctx context.Context, t string, objKey cl
 		return err
 	}
 	return nil
+}
+
+func (r *DecideReconciler) PerformAction(data *util.Data, action v1.Action) (string, error) {
+	switch action.Type {
+	case "send":
+		input, err := data.Get([]string{action.Send.InputKey})
+		if err != nil {
+			r.Logger.Error(err, "cannot get Data inputKey object")
+			return "", err
+		}
+		output, err := sendToDestination(input, action.Send.Destination)
+		if err != nil {
+			r.Logger.Error(err, "cannot get Data inputKey object")
+			return "", err
+		}
+		if err = data.Set(action.Send.OutputKey, output); err != nil {
+			r.Logger.Error(err, "cannot set data field")
+			return "", err
+		}
+	case "nest":
+		err := data.Nest(action.Nest.InputKeys, action.Nest.OutputKey)
+		if err != nil {
+			r.Logger.Error(err, "cannot nest data field")
+			return "", err
+		}
+	case "remove":
+		err := data.Remove(action.Remove.InputKeys)
+		if err != nil {
+			r.Logger.Error(err, "cannot remove data field")
+			return "", err
+		}
+	case "rename":
+		err := data.Rename(action.Rename.InputKey, action.Rename.OutputKey)
+		if err != nil {
+			r.Logger.Error(err, "cannot rename data field")
+			return "", err
+		}
+	case "duplicate":
+		err := data.Duplicate(action.Duplicate.InputKey, action.Duplicate.OutputKey)
+		if err != nil {
+			r.Logger.Error(err, "cannot duplicate data field")
+			return "", err
+		}
+	case "insert":
+		err := data.Insert(action.Insert.OutputKey, action.Insert.Value)
+		if err != nil {
+			r.Logger.Error(err, "cannot insert field")
+			return "", err
+		}
+	case "print":
+		fmt.Printf("----------------%s-------------------Data:-----------------------------------------\n", action.Name)
+		err := data.Print(action.Print.InputKeys)
+		if err != nil {
+			r.Logger.Error(err, "cannot print data")
+			return "", err
+		}
+	}
+	return action.Next, nil
+}
+
+type ActionMap map[string]v1.Action
+
+func ConvertActionsToMap(actions []v1.Action) (ActionMap, error) {
+	actionMap := make(ActionMap)
+	for _, action := range actions {
+		if action.Name == "" {
+			return nil, fmt.Errorf("action with empty name cannot be added to the map")
+		}
+		if _, exists := actionMap[action.Name]; exists {
+			return nil, fmt.Errorf("duplicate action name found: %s", action.Name)
+		}
+		actionMap[action.Name] = action
+	}
+	return actionMap, nil
 }
