@@ -112,7 +112,9 @@ func (r *DecideReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	// Step 5 - Perform actions
 	next := element.Spec.Actions[0].Name
+	print("name of the first action", next, "\n\n")
 	actionsMap, err := ConvertActionsToMap(element.Spec.Actions)
+	print(actionsMap)
 	if err != nil {
 		r.Logger.Error(err, "Failed to convert actions list to map")
 	}
@@ -278,6 +280,9 @@ func (r *DecideReconciler) updateStatus(ctx context.Context, t string, objKey cl
 }
 
 func (r *DecideReconciler) PerformAction(data *util.Data, action v1.Action) (string, error) {
+	if action.Name == "" {
+		return "", fmt.Errorf("empty action")
+	}
 	switch action.Type {
 	case "send":
 		input, err := data.Get([]string{action.Send.InputKey})
@@ -330,6 +335,29 @@ func (r *DecideReconciler) PerformAction(data *util.Data, action v1.Action) (str
 		if err != nil {
 			r.Logger.Error(err, "cannot print data")
 			return "", err
+		}
+	case "switch":
+		print("switch\n")
+		for _, condition := range action.Switch.Conditions {
+			field, err := data.Get([]string{condition.Key})
+			if err != nil {
+				r.Logger.Error(err, "could not retrieve data field for evaluating condition")
+				return "exit", err
+			}
+			fieldStr, err := util.InterfaceToString(*field)
+			if err != nil {
+				r.Logger.Error(err, "could not convert data field into string")
+				return "exit", err
+			}
+			print("field: ", fieldStr, "\n")
+			eval, err := condition.Evaluate(*field)
+			if err != nil {
+				r.Logger.Error(err, "error during condition evaluation")
+				return "exit", err
+			}
+			if eval {
+				return condition.Next, nil
+			}
 		}
 	}
 	return action.Next, nil

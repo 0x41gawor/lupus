@@ -85,7 +85,8 @@ spec:
                       - outputKey
                       type: object
                     next:
-                      description: Next is the name of the next action to execute
+                      description: Next is the name of the next action to execute,
+                        in the case of Action type Switch it is the default branch
                       type: string
                     print:
                       properties:
@@ -182,6 +183,64 @@ spec:
                       - outputKey
                       type: object
                     switch:
+                      properties:
+                        conditions:
+                          items:
+                            description: Condition represent signle condition present
+                              in Switch action.
+                            properties:
+                              bool:
+                                description: BoolCondition specifies the condition
+                                  for boolean values
+                                properties:
+                                  value:
+                                    type: boolean
+                                required:
+                                - value
+                                type: object
+                              int:
+                                description: IntCondition specifies the condition
+                                  for integer values
+                                properties:
+                                  value:
+                                    type: integer
+                                required:
+                                - value
+                                type: object
+                              key:
+                                description: Key indicates the field of Data that
+                                  has to be retrieved
+                                type: string
+                              next:
+                                description: Next specifies the name of the next action
+                                  to execute
+                                type: string
+                              operator:
+                                description: Operator defines the comparison operation,
+                                  e.g., eq, ne, gt, lt
+                                type: string
+                              string:
+                                description: StringCondition specifies the condition
+                                  for string values
+                                properties:
+                                  value:
+                                    type: string
+                                required:
+                                - value
+                                type: object
+                              type:
+                                description: 'Type specifies the type of the value:
+                                  string, int, float, bool'
+                                type: string
+                            required:
+                            - key
+                            - next
+                            - operator
+                            - type
+                            type: object
+                          type: array
+                      required:
+                      - conditions
                       type: object
                     type:
                       description: Type of Action one of send;nest,remove,rename,duplicate

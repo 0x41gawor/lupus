@@ -19,38 +19,75 @@ spec:
       type: decide
       decide:
         actions:
-          - name: "insert1"
-            type: insert
-            insert:
-              outputKey: "*"
-              value: {"log.path_taken": "A"}
-            next: "start"
-          - name: "insertComplex"
-            type: insert
-            insert:
-              outputKey: "*"
-              value: {"elo": "hej", "poland": {
-                      "capital": "Warsaw",
-                      "population": 38
-                    }}
-            next: "insert2"
-          - name: "insert2"
-            type: insert
-            insert:
-              outputKey: "elo"
-              value: {karczycho: 10}
-            next: "insert3"
-          - name: "insert3"
-            type: insert
-            insert:
-              outputKey: "elo"
-              value: {"name": "maria", "age": 12}
-            next: "start"
           - name: "start"
             type: print
             print:
               inputKeys: ["*"]
-            next: "final"
+            next: "switch-start"
+          - name: "switch-start"
+            type: switch
+            switch:
+              conditions:
+                - key: "case"
+                  operator: eq
+                  type: string
+                  string: 
+                    value: "A"
+                  next: "insert-A"
+                - key: "case"
+                  operator: eq
+                  type: string
+                  string: 
+                    value: "B"
+                  next: "insert-B"
+                - key: "case"
+                  operator: eq
+                  type: string
+                  string: 
+                    value: "C"
+                  next: "insert-C"
+            next: exit
+          - name: "insert-A"
+            type: insert
+            insert: 
+              outputKey: "*"
+              value: {"path_taken": "A"}
+            next: "switch-ram"
+          - name: "insert-B"
+            type: insert
+            insert:
+              outputKey: "*"
+              value: {"path_taken": "B"}
+            next: "switch-ram"
+          - name: "insert-C"
+            type: insert
+            insert:
+              outputKey: "*"
+              value: {"path_taken": "C"}
+            next: "switch-ram"
+          - name: "switch-ram"
+            type: switch
+            switch:
+              conditions:
+                - key: "ram"
+                  operator: gt
+                  type: int
+                  int: 
+                    value: 10
+                  next: "critical"
+            next: "normal"
+          - name: "critical"
+            type: insert
+            insert:
+              outputKey: "*"
+              value: {"log.ram.critical": "yes"}
+            next: final
+          - name: "normal"
+            type: insert
+            insert:
+              outputKey: "*"
+              value: {"log.ram.critical": "no"}
+            next: final
         next:
           - type: "execute"
             name: "execute1"

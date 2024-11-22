@@ -102,7 +102,7 @@ func TestData_Get(t *testing.T) {
 	}
 	t.Log(mulStr)
 	// test get nested field
-	ram2, err := data.Get([]string{"ram.ram2"})
+	ram2, err := data.Get([]string{"ram.ram2.in_use"})
 	if err != nil {
 		t.Fatal(err.Error())
 	}
