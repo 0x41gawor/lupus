@@ -26,17 +26,16 @@ type Next struct {
 type Destination struct {
 	// Discriminator: "HTTP", "FILE", "gRPC", etc.
 	Type string `json:"type" kubebuilder:"validation:Enum=HTTP;FILE;gRPC;Opa"`
-
 	// HTTP-specific fields
 	HTTP *HTTPDestination `json:"http,omitempty" kubebuilder:"validation:Optional"`
-
 	// File-specific fields
 	File *FileDestination `json:"file,omitempty" kubebuilder:"validation:Optional"`
-
 	// gRPC-specific fields
 	GRPC *GRPCDestination `json:"grpc,omitempty" kubebuilder:"validation:Optional"`
 	// Opa-specific fields
 	Opa *OpaDestination `json:"opa,omitempty" kubebuilder:"validation:Optional"`
+	// gofunc-specific fields
+	GoFunc *GoFuncDestination `json:"gofunc,omitempty" kubebuilder:"validation:Optional"`
 }
 
 // HTTPDestination defines fields specific to HTTP type
@@ -60,6 +59,11 @@ type GRPCDestination struct {
 // OpaDestination defines fields specific to Open Policy Agent type
 type OpaDestination struct {
 	Path string `json:"path"`
+}
+
+// GoFuncDestination defines fields specific to GoFunc type
+type GoFuncDestination struct {
+	Name string `json:"name"`
 }
 
 // Action is used in Decide spec

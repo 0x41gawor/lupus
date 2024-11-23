@@ -52,6 +52,14 @@ spec:
                     required:
                     - path
                     type: object
+                  gofunc:
+                    description: gofunc-specific fields
+                    properties:
+                      name:
+                        type: string
+                    required:
+                    - name
+                    type: object
                   grpc:
                     description: gRPC-specific fields
                     properties:

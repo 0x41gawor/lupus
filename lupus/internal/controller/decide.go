@@ -168,6 +168,12 @@ func sendToDestination(input interface{}, dest v1.Destination) (interface{}, err
 			return nil, err
 		}
 		return res, nil
+	case "gofunc":
+		res, err := sendToGoFunc(dest.GoFunc.Name, input)
+		if err != nil {
+			return nil, err
+		}
+		return res, nil
 	default:
 		return nil, fmt.Errorf("no such destination type implemented yet")
 	}
@@ -230,6 +236,14 @@ func sendToHTTP(path string, method string, body interface{}) (interface{}, erro
 	return res, nil
 }
 
+func sendToGoFunc(funcName string, body interface{}) (interface{}, error) {
+	if fn, exists := FunctionRegistry[funcName]; exists {
+		return fn(body)
+	} else {
+		return nil, fmt.Errorf("no such UserFunction defined")
+	}
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *DecideReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// Initialize instanceState map if it's nil
@@ -288,53 +302,53 @@ func (r *DecideReconciler) PerformAction(data *util.Data, action v1.Action) (str
 		input, err := data.Get([]string{action.Send.InputKey})
 		if err != nil {
 			r.Logger.Error(err, "cannot get Data inputKey object")
-			return "", err
+			return "exit", err
 		}
 		output, err := sendToDestination(input, action.Send.Destination)
 		if err != nil {
-			r.Logger.Error(err, "cannot get Data inputKey object")
-			return "", err
+			r.Logger.Error(err, "send to destination failed")
+			return "exit", err
 		}
 		if err = data.Set(action.Send.OutputKey, output); err != nil {
 			r.Logger.Error(err, "cannot set data field")
-			return "", err
+			return "exit", err
 		}
 	case "nest":
 		err := data.Nest(action.Nest.InputKeys, action.Nest.OutputKey)
 		if err != nil {
 			r.Logger.Error(err, "cannot nest data field")
-			return "", err
+			return "exit", err
 		}
 	case "remove":
 		err := data.Remove(action.Remove.InputKeys)
 		if err != nil {
 			r.Logger.Error(err, "cannot remove data field")
-			return "", err
+			return "exit", err
 		}
 	case "rename":
 		err := data.Rename(action.Rename.InputKey, action.Rename.OutputKey)
 		if err != nil {
 			r.Logger.Error(err, "cannot rename data field")
-			return "", err
+			return "exit", err
 		}
 	case "duplicate":
 		err := data.Duplicate(action.Duplicate.InputKey, action.Duplicate.OutputKey)
 		if err != nil {
 			r.Logger.Error(err, "cannot duplicate data field")
-			return "", err
+			return "exit", err
 		}
 	case "insert":
 		err := data.Insert(action.Insert.OutputKey, action.Insert.Value)
 		if err != nil {
 			r.Logger.Error(err, "cannot insert field")
-			return "", err
+			return "exit", err
 		}
 	case "print":
 		fmt.Printf("----------------%s-------------------Data:-----------------------------------------\n", action.Name)
 		err := data.Print(action.Print.InputKeys)
 		if err != nil {
 			r.Logger.Error(err, "cannot print data")
-			return "", err
+			return "exit", err
 		}
 	case "switch":
 		print("switch\n")

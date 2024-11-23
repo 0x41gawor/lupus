@@ -23,6 +23,26 @@ spec:
             type: print
             print:
               inputKeys: ["*"]
+            next: "gofunc"
+          - name: "gofunc"
+            type: send
+            send:
+              inputKey: "case"
+              outputKey: "case-copied"
+              destination:
+                type: gofunc
+                gofunc:
+                  name: "Echo"
+            next: "add-10-ram"
+          - name: "add-10-ram"
+            type: send
+            send:
+              inputKey: "ram"
+              outputKey: "ram"
+              destination:
+                type: gofunc
+                gofunc:
+                  name: "AddTen"
             next: "switch-start"
           - name: "switch-start"
             type: switch
