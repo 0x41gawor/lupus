@@ -24,7 +24,7 @@ def periodic_task(interval, k8s_client):
                     group="lupus.gawor.io",
                     version="v1",
                     namespace='default',
-                    plural="observes",
+                    plural="elements",
                     name='olek-observe1'
                 )
                 
@@ -41,7 +41,7 @@ def periodic_task(interval, k8s_client):
                     group="lupus.gawor.io",
                     version="v1",
                     namespace='default',
-                    plural="observes",
+                    plural="elements",
                     name='olek-observe1',
                     body=observe
                 )

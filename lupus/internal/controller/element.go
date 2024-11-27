@@ -19,7 +19,6 @@ package controller
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -60,7 +59,7 @@ type ElementReconciler struct {
 func (r *ElementReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	r.ElementType = "Element"
 	r.Logger = log.FromContext(ctx)
-	r.Logger.Info(fmt.Sprintf("=================== START OF %s Reconciler: \n", strings.ToUpper(r.ElementType)))
+	r.Logger.Info(fmt.Sprintf("=================== START OF %s RECONCLIER: \n", req.Name))
 
 	// Step 1 - (k8s) Fetch reconciled resource instance
 	// Step 1 - (lupus) Fetch element
@@ -104,10 +103,95 @@ func (r *ElementReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		r.Logger.Error(err, "Cannot unmarshall the input")
 		return ctrl.Result{}, nil
 	}
-	println("-----------------", data)
-	// Step <last) bye bye
+
+	// Step 5 - Perform actions
+	// convert list of actions to a map of actions
+	println("------------\nData Before Actions:")
+	print(data.String(), "\n")
+	if len(element.Spec.Actions) != 0 {
+		next := element.Spec.Actions[0].Name
+		actionsMap, err := ConvertActionsToMap(element.Spec.Actions)
+		if err != nil {
+			r.Logger.Error(err, "Failed to convert actions list to map")
+		}
+		for {
+			if next == "final" {
+				r.Logger.Info("Success exit encountered")
+				break
+			}
+			if next == "exit" || next == "" {
+				r.Logger.Info("Failure or empty exit encountered")
+				return ctrl.Result{}, nil
+			}
+			println("Action: ", next, "  Data before:", data.String())
+			next, err = PerformAction(data, actionsMap[next])
+			if err != nil {
+				r.Logger.Error(err, "Failed to perform action")
+			}
+		}
+	}
+	println("------------\nData After Actions:")
+	print(data.String(), "\n")
+	// Step 6 - Send data output to the next elements
+	for _, next := range element.Spec.Next {
+		err := r.sendToNext(ctx, element, next, req, data)
+		if err != nil {
+			r.Logger.Error(err, "Cannot send to Next")
+			return ctrl.Result{}, nil
+		}
+	}
+	r.Logger.Info("Succesfully sent final Data to Next element")
+
+	// Step 7 bye bye
 	r.Logger.Info("Element sucessfully reconciled", "name", req.Name)
 	return ctrl.Result{}, nil
+}
+
+func (r *ElementReconciler) updateStatus(ctx context.Context, objKey client.ObjectKey, updateTime metav1.Time, output runtime.RawExtension) error {
+	nextElement := v1.Element{}
+	// (lupus) fetch Element from kube-api-server
+	// (k8s) fetch API Object from kube-api-server
+	err := r.Get(ctx, objKey, &nextElement)
+	if err != nil {
+		r.Logger.Error(err, "Failed to get next element")
+	}
+	// (k8s) set fields
+	nextElement.Status.Input = output
+	nextElement.Status.LastUpdated = updateTime
+	// (k8s) update k8s object in kube-api-server
+	if err := r.Status().Update(ctx, &nextElement); err != nil {
+		r.Logger.Error(err, "Failed to update next element status")
+	}
+	return nil
+}
+
+func (r *ElementReconciler) sendToNext(ctx context.Context, element v1.Element, next v1.Next, req ctrl.Request, data *util.Data) error {
+	outputRaw, err := data.Get(next.Keys)
+	if err != nil {
+		return fmt.Errorf("cannot retrieve keys from data: %w", err)
+	}
+	// Step 4 - Unmarshall input into map[string]interface{} called `output`. This is the struct that we will work on. The central point of Execute Element.
+	output, err := util.RawExtensionToMap(*outputRaw)
+	if err != nil {
+		return fmt.Errorf("cannot unmarshall the output from Data")
+	}
+	// switch based on  next.type
+	switch next.Type {
+	case "element":
+		// update status of next element with output
+		updateTime := metav1.Time{Time: r.instanceState[req.NamespacedName].LastUpdated}
+		objectKey := client.ObjectKey{Name: element.Spec.Master + "-" + next.Element.Name, Namespace: "default"}
+		err := r.updateStatus(ctx, objectKey, updateTime, *outputRaw)
+		if err != nil {
+			return fmt.Errorf("failed to update status of next element %w", err)
+		}
+	case "destination":
+		_, err := sendToDestination(output, *next.Destination)
+		if err != nil {
+			return fmt.Errorf("failed to send to Destination as next element: %w", err)
+		}
+	}
+	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
