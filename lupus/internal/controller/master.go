@@ -80,30 +80,13 @@ func (r *MasterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	// Loop through each element in the Master spec
 	for _, element := range master.Spec.Elements {
 		// Check the element's type and create the corresponding resource
-		switch element.Type {
-		case "observe":
-			err := r.createObserveResource(ctx, element, master.Namespace, &master)
-			if err != nil {
-				r.Logger.Error(err, "Failed to create/update Observe resource", "ElementName", element.Name)
-				return ctrl.Result{}, err
-			}
-		case "decide":
-			err := r.createDecideResource(ctx, element, master.Namespace, &master)
-			if err != nil {
-				r.Logger.Error(err, "Failed to create/update Decide resource", "ElementName", element.Name)
-				return ctrl.Result{}, err
-			}
-		case "execute":
-			err := r.createExecuteResource(ctx, element, master.Namespace, &master)
-			if err != nil {
-				r.Logger.Error(err, "Failed to create/update Execute resource", "ElementName", element.Name)
-				return ctrl.Result{}, err
-			}
-		default:
-			r.Logger.Info("Unknown element type, skipping", "ElementName", element.Name)
+		err := r.createElementResource(ctx, *element, master.Namespace, &master)
+		if err != nil {
+			r.Logger.Error(err, "Failed to create/update Element resource", "ElementName", element.Name)
+			return ctrl.Result{}, err
 		}
 	}
-	// Set Master status as active
+	//Set Master status as active
 	master.Status.IsActive = true
 	// Step 4 - Update the reconciled resource instance
 	if err := r.Status().Update(ctx, &master); err != nil {
@@ -113,64 +96,24 @@ func (r *MasterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	return ctrl.Result{}, nil
 }
 
-func (r *MasterReconciler) createObserveResource(ctx context.Context, element v1.Element, namespace string, master *v1.Master) error {
+func (r *MasterReconciler) createElementResource(ctx context.Context, es v1.ElementSpec, namespace string, master *v1.Master) error {
 	// Define the desired Observe custom resource
-	observe := &v1.Observe{
+	e := &v1.Element{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      r.NamePrefix + "-" + element.Name,
+			Name:      r.NamePrefix + "-" + es.Name,
 			Namespace: namespace,
 		},
-		Spec: *element.Observe,
+		Spec: es,
 	}
-	observe.Spec.Master = r.NamePrefix
+	e.Spec.Master = r.NamePrefix
 	// Set Master as owner of Observe
-	if err := setOwnerReference(master, observe, r.Scheme); err != nil {
+	if err := setOwnerReference(master, e, r.Scheme); err != nil {
 		r.Logger.Error(err, "Failed to set owner reference for Observe")
 		return err
 	}
 
 	// Simply create the resource without checking if it exists
-	return r.Create(ctx, observe)
-}
-
-func (r *MasterReconciler) createDecideResource(ctx context.Context, element v1.Element, namespace string, master *v1.Master) error {
-	// Define the desired Observe custom resource
-	decide := &v1.Decide{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      r.NamePrefix + "-" + element.Name,
-			Namespace: namespace,
-		},
-		Spec: *element.Decide,
-	}
-	decide.Spec.Master = r.NamePrefix
-	// Set Master as owner of Decide
-	if err := setOwnerReference(master, decide, r.Scheme); err != nil {
-		r.Logger.Error(err, "Failed to set owner reference for Decide")
-		return err
-	}
-
-	// Simply create the resource without checking if it exists
-	return r.Create(ctx, decide)
-}
-
-func (r *MasterReconciler) createExecuteResource(ctx context.Context, element v1.Element, namespace string, master *v1.Master) error {
-	// Define the desired Observe custom resource
-	execute := &v1.Execute{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      r.NamePrefix + "-" + element.Name,
-			Namespace: namespace,
-		},
-		Spec: *element.Execute,
-	}
-	execute.Spec.Master = r.NamePrefix
-	// Set Master as owner of Execute
-	if err := setOwnerReference(master, execute, r.Scheme); err != nil {
-		r.Logger.Error(err, "Failed to set owner reference for Execute")
-		return err
-	}
-
-	// Simply create the resource without checking if it exists
-	return r.Create(ctx, execute)
+	return r.Create(ctx, e)
 }
 
 // Helper function to set owner reference

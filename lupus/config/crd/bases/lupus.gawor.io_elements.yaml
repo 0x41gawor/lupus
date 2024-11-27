@@ -4,20 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.16.1
-  name: decides.lupus.gawor.io
+  name: elements.lupus.gawor.io
 spec:
   group: lupus.gawor.io
   names:
-    kind: Decide
-    listKind: DecideList
-    plural: decides
-    singular: decide
+    kind: Element
+    listKind: ElementList
+    plural: elements
+    singular: element
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: Decide is the Schema for the decides API
+        description: Element is the Schema for the elements API
         properties:
           apiVersion:
             description: |-
@@ -37,11 +37,10 @@ spec:
           metadata:
             type: object
           spec:
-            description: DecideSpec defines the desired state of Decide
+            description: ElementSpec defines the desired state of Element
             properties:
               actions:
-                description: Actions is a list of Actions that Decide has to perform
-                  see Action in types.go
+                description: Actions is a list of Actions that Element has to perform
                 items:
                   description: |-
                     Action is used in Decide spec
@@ -259,42 +258,118 @@ spec:
                   - type
                   type: object
                 type: array
+              descr:
+                description: Descr is the description of the element, same as Name
+                  is serves as ease of management aspect for loop-designer
+                type: string
               master:
                 description: Name of master element
                 type: string
+              name:
+                description: Name is the name of the element, its distinct from Kubernetes
+                  API Object name, but rather serves ease of managemenet aspect for
+                  loop-designer
+                type: string
               next:
-                description: Next is a list of elements to which send the output
+                description: Next is a list of element to which send the Data final
+                  form
                 items:
                   description: |-
-                    Next is used in Observe Spec
-                    It specifies to which element forward the input
-                    It allows not to forward the whole input, but also parts of it
+                    It specifies the of next node in loop workflow, it may be other Lupus element or some external Destination
+                    It allows not to forward the whole Data final form, but also parts of it
                   properties:
+                    destination:
+                      description: |-
+                        Destination in Action type and in Learn Spec
+                        Destination is a polymorphic field that can represent different types
+                      properties:
+                        file:
+                          description: File-specific fields
+                          properties:
+                            path:
+                              type: string
+                          required:
+                          - path
+                          type: object
+                        gofunc:
+                          description: gofunc-specific fields
+                          properties:
+                            name:
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        grpc:
+                          description: gRPC-specific fields
+                          properties:
+                            host:
+                              type: string
+                            method:
+                              type: string
+                            service:
+                              type: string
+                          required:
+                          - host
+                          - method
+                          - service
+                          type: object
+                        http:
+                          description: HTTP-specific fields
+                          properties:
+                            method:
+                              type: string
+                            path:
+                              type: string
+                          required:
+                          - method
+                          - path
+                          type: object
+                        opa:
+                          description: Opa-specific fields
+                          properties:
+                            path:
+                              type: string
+                          required:
+                          - path
+                          type: object
+                        type:
+                          description: 'Discriminator: "HTTP", "FILE", "gRPC", etc.'
+                          type: string
+                      required:
+                      - type
+                      type: object
+                    element:
+                      properties:
+                        name:
+                          description: |-
+                            Kubernetes name of the API Object
+                            This is the name that you give in Master CR spec
+                          type: string
+                      required:
+                      - name
+                      type: object
                     keys:
                       description: |-
-                        List of input keys (data fields) that have to be forwarded
+                        List of input keys (Data fields) that have to be forwarded
                         Pass array with single element '*' to forward the whole input
                       items:
                         type: string
                       type: array
-                    name:
-                      description: |-
-                        Kubernetes name of the API Object
-                        This is the name that you give in Master CR spec
-                      type: string
                     type:
-                      description: Type specifies the type of the element ("Observe",
-                        "Decide", "Learn", "Execute", etc.)
+                      description: Type specifies class of next node in loop workflow,
+                        it may be other Lupus element or some external Destination
                       type: string
                   required:
                   - keys
-                  - name
                   - type
                   type: object
                 type: array
+            required:
+            - descr
+            - name
             type: object
           status:
-            description: DecideStatus defines the observed state of Decide
+            description: ElementStatus defines the observed state of Element
             properties:
               input:
                 description: Input contains operational data

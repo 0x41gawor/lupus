@@ -40,388 +40,342 @@ spec:
             description: MasterSpec defines the desired state of Master
             properties:
               elements:
-                description: Elements is a list of elements, each with its name, type,
-                  and corresponding spec
+                description: Elements is a list of Loop Elements
                 items:
-                  description: Element is a polymorphic structure that can represent
-                    different types of specs
+                  description: ElementSpec defines the desired state of Element
                   properties:
-                    decide:
-                      description: DecideSpec defines the desired state of Decide
-                      properties:
-                        actions:
-                          description: Actions is a list of Actions that Decide has
-                            to perform see Action in types.go
-                          items:
-                            description: |-
-                              Action is used in Decide spec
-                              It represents the Action that Decide has to perform on Data
+                    actions:
+                      description: Actions is a list of Actions that Element has to
+                        perform
+                      items:
+                        description: |-
+                          Action is used in Decide spec
+                          It represents the Action that Decide has to perform on Data
+                        properties:
+                          duplicate:
                             properties:
-                              duplicate:
-                                properties:
-                                  inputKey:
-                                    type: string
-                                  outputKey:
-                                    type: string
-                                required:
-                                - inputKey
-                                - outputKey
-                                type: object
-                              insert:
-                                properties:
-                                  outputKey:
-                                    type: string
-                                  value:
-                                    type: object
-                                    x-kubernetes-preserve-unknown-fields: true
-                                required:
-                                - outputKey
-                                - value
-                                type: object
-                              name:
-                                description: Name of the Action, it is for designer
-                                  to ease the management of the Loop
+                              inputKey:
                                 type: string
-                              nest:
-                                properties:
-                                  inputKeys:
-                                    items:
-                                      type: string
-                                    type: array
-                                  outputKey:
-                                    type: string
-                                required:
-                                - inputKeys
-                                - outputKey
-                                type: object
-                              next:
-                                description: Next is the name of the next action to
-                                  execute, in the case of Action type Switch it is
-                                  the default branch
+                              outputKey:
                                 type: string
-                              print:
-                                properties:
-                                  inputKeys:
-                                    items:
-                                      type: string
-                                    type: array
-                                required:
-                                - inputKeys
+                            required:
+                            - inputKey
+                            - outputKey
+                            type: object
+                          insert:
+                            properties:
+                              outputKey:
+                                type: string
+                              value:
                                 type: object
-                              remove:
+                                x-kubernetes-preserve-unknown-fields: true
+                            required:
+                            - outputKey
+                            - value
+                            type: object
+                          name:
+                            description: Name of the Action, it is for designer to
+                              ease the management of the Loop
+                            type: string
+                          nest:
+                            properties:
+                              inputKeys:
+                                items:
+                                  type: string
+                                type: array
+                              outputKey:
+                                type: string
+                            required:
+                            - inputKeys
+                            - outputKey
+                            type: object
+                          next:
+                            description: Next is the name of the next action to execute,
+                              in the case of Action type Switch it is the default
+                              branch
+                            type: string
+                          print:
+                            properties:
+                              inputKeys:
+                                items:
+                                  type: string
+                                type: array
+                            required:
+                            - inputKeys
+                            type: object
+                          remove:
+                            properties:
+                              inputKeys:
+                                items:
+                                  type: string
+                                type: array
+                            required:
+                            - inputKeys
+                            type: object
+                          rename:
+                            properties:
+                              inputKey:
+                                type: string
+                              outputKey:
+                                type: string
+                            required:
+                            - inputKey
+                            - outputKey
+                            type: object
+                          send:
+                            description: One of these fields is not null depending
+                              on a Type.
+                            properties:
+                              destination:
+                                description: |-
+                                  Destination in Action type and in Learn Spec
+                                  Destination is a polymorphic field that can represent different types
                                 properties:
-                                  inputKeys:
-                                    items:
-                                      type: string
-                                    type: array
-                                required:
-                                - inputKeys
-                                type: object
-                              rename:
-                                properties:
-                                  inputKey:
-                                    type: string
-                                  outputKey:
-                                    type: string
-                                required:
-                                - inputKey
-                                - outputKey
-                                type: object
-                              send:
-                                description: One of these fields is not null depending
-                                  on a Type.
-                                properties:
-                                  destination:
-                                    description: |-
-                                      Destination in Action type and in Learn Spec
-                                      Destination is a polymorphic field that can represent different types
+                                  file:
+                                    description: File-specific fields
                                     properties:
-                                      file:
-                                        description: File-specific fields
-                                        properties:
-                                          path:
-                                            type: string
-                                        required:
-                                        - path
-                                        type: object
-                                      gofunc:
-                                        description: gofunc-specific fields
-                                        properties:
-                                          name:
-                                            type: string
-                                        required:
-                                        - name
-                                        type: object
-                                      grpc:
-                                        description: gRPC-specific fields
-                                        properties:
-                                          host:
-                                            type: string
-                                          method:
-                                            type: string
-                                          service:
-                                            type: string
-                                        required:
-                                        - host
-                                        - method
-                                        - service
-                                        type: object
-                                      http:
-                                        description: HTTP-specific fields
-                                        properties:
-                                          method:
-                                            type: string
-                                          path:
-                                            type: string
-                                        required:
-                                        - method
-                                        - path
-                                        type: object
-                                      opa:
-                                        description: Opa-specific fields
-                                        properties:
-                                          path:
-                                            type: string
-                                        required:
-                                        - path
-                                        type: object
-                                      type:
-                                        description: 'Discriminator: "HTTP", "FILE",
-                                          "gRPC", etc.'
+                                      path:
                                         type: string
                                     required:
-                                    - type
+                                    - path
                                     type: object
-                                  inputKey:
-                                    type: string
-                                  outputKey:
+                                  gofunc:
+                                    description: gofunc-specific fields
+                                    properties:
+                                      name:
+                                        type: string
+                                    required:
+                                    - name
+                                    type: object
+                                  grpc:
+                                    description: gRPC-specific fields
+                                    properties:
+                                      host:
+                                        type: string
+                                      method:
+                                        type: string
+                                      service:
+                                        type: string
+                                    required:
+                                    - host
+                                    - method
+                                    - service
+                                    type: object
+                                  http:
+                                    description: HTTP-specific fields
+                                    properties:
+                                      method:
+                                        type: string
+                                      path:
+                                        type: string
+                                    required:
+                                    - method
+                                    - path
+                                    type: object
+                                  opa:
+                                    description: Opa-specific fields
+                                    properties:
+                                      path:
+                                        type: string
+                                    required:
+                                    - path
+                                    type: object
+                                  type:
+                                    description: 'Discriminator: "HTTP", "FILE", "gRPC",
+                                      etc.'
                                     type: string
                                 required:
-                                - destination
-                                - inputKey
-                                - outputKey
+                                - type
                                 type: object
-                              switch:
-                                properties:
-                                  conditions:
-                                    items:
-                                      description: Condition represent signle condition
-                                        present in Switch action.
+                              inputKey:
+                                type: string
+                              outputKey:
+                                type: string
+                            required:
+                            - destination
+                            - inputKey
+                            - outputKey
+                            type: object
+                          switch:
+                            properties:
+                              conditions:
+                                items:
+                                  description: Condition represent signle condition
+                                    present in Switch action.
+                                  properties:
+                                    bool:
+                                      description: BoolCondition specifies the condition
+                                        for boolean values
                                       properties:
-                                        bool:
-                                          description: BoolCondition specifies the
-                                            condition for boolean values
-                                          properties:
-                                            value:
-                                              type: boolean
-                                          required:
-                                          - value
-                                          type: object
-                                        int:
-                                          description: IntCondition specifies the
-                                            condition for integer values
-                                          properties:
-                                            value:
-                                              type: integer
-                                          required:
-                                          - value
-                                          type: object
-                                        key:
-                                          description: Key indicates the field of
-                                            Data that has to be retrieved
-                                          type: string
-                                        next:
-                                          description: Next specifies the name of
-                                            the next action to execute
-                                          type: string
-                                        operator:
-                                          description: Operator defines the comparison
-                                            operation, e.g., eq, ne, gt, lt
-                                          type: string
-                                        string:
-                                          description: StringCondition specifies the
-                                            condition for string values
-                                          properties:
-                                            value:
-                                              type: string
-                                          required:
-                                          - value
-                                          type: object
-                                        type:
-                                          description: 'Type specifies the type of
-                                            the value: string, int, float, bool'
+                                        value:
+                                          type: boolean
+                                      required:
+                                      - value
+                                      type: object
+                                    int:
+                                      description: IntCondition specifies the condition
+                                        for integer values
+                                      properties:
+                                        value:
+                                          type: integer
+                                      required:
+                                      - value
+                                      type: object
+                                    key:
+                                      description: Key indicates the field of Data
+                                        that has to be retrieved
+                                      type: string
+                                    next:
+                                      description: Next specifies the name of the
+                                        next action to execute
+                                      type: string
+                                    operator:
+                                      description: Operator defines the comparison
+                                        operation, e.g., eq, ne, gt, lt
+                                      type: string
+                                    string:
+                                      description: StringCondition specifies the condition
+                                        for string values
+                                      properties:
+                                        value:
                                           type: string
                                       required:
-                                      - key
-                                      - next
-                                      - operator
-                                      - type
+                                      - value
                                       type: object
-                                    type: array
+                                    type:
+                                      description: 'Type specifies the type of the
+                                        value: string, int, float, bool'
+                                      type: string
+                                  required:
+                                  - key
+                                  - next
+                                  - operator
+                                  - type
+                                  type: object
+                                type: array
+                            required:
+                            - conditions
+                            type: object
+                          type:
+                            description: Type of Action one of send;nest,remove,rename,duplicate
+                            type: string
+                        required:
+                        - name
+                        - next
+                        - type
+                        type: object
+                      type: array
+                    descr:
+                      description: Descr is the description of the element, same as
+                        Name is serves as ease of management aspect for loop-designer
+                      type: string
+                    master:
+                      description: Name of master element
+                      type: string
+                    name:
+                      description: Name is the name of the element, its distinct from
+                        Kubernetes API Object name, but rather serves ease of managemenet
+                        aspect for loop-designer
+                      type: string
+                    next:
+                      description: Next is a list of element to which send the Data
+                        final form
+                      items:
+                        description: |-
+                          It specifies the of next node in loop workflow, it may be other Lupus element or some external Destination
+                          It allows not to forward the whole Data final form, but also parts of it
+                        properties:
+                          destination:
+                            description: |-
+                              Destination in Action type and in Learn Spec
+                              Destination is a polymorphic field that can represent different types
+                            properties:
+                              file:
+                                description: File-specific fields
+                                properties:
+                                  path:
+                                    type: string
                                 required:
-                                - conditions
+                                - path
+                                type: object
+                              gofunc:
+                                description: gofunc-specific fields
+                                properties:
+                                  name:
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                              grpc:
+                                description: gRPC-specific fields
+                                properties:
+                                  host:
+                                    type: string
+                                  method:
+                                    type: string
+                                  service:
+                                    type: string
+                                required:
+                                - host
+                                - method
+                                - service
+                                type: object
+                              http:
+                                description: HTTP-specific fields
+                                properties:
+                                  method:
+                                    type: string
+                                  path:
+                                    type: string
+                                required:
+                                - method
+                                - path
+                                type: object
+                              opa:
+                                description: Opa-specific fields
+                                properties:
+                                  path:
+                                    type: string
+                                required:
+                                - path
                                 type: object
                               type:
-                                description: Type of Action one of send;nest,remove,rename,duplicate
+                                description: 'Discriminator: "HTTP", "FILE", "gRPC",
+                                  etc.'
                                 type: string
                             required:
-                            - name
-                            - next
                             - type
                             type: object
-                          type: array
-                        master:
-                          description: Name of master element
-                          type: string
-                        next:
-                          description: Next is a list of elements to which send the
-                            output
-                          items:
-                            description: |-
-                              Next is used in Observe Spec
-                              It specifies to which element forward the input
-                              It allows not to forward the whole input, but also parts of it
+                          element:
                             properties:
-                              keys:
-                                description: |-
-                                  List of input keys (data fields) that have to be forwarded
-                                  Pass array with single element '*' to forward the whole input
-                                items:
-                                  type: string
-                                type: array
                               name:
                                 description: |-
                                   Kubernetes name of the API Object
                                   This is the name that you give in Master CR spec
                                 type: string
-                              type:
-                                description: Type specifies the type of the element
-                                  ("Observe", "Decide", "Learn", "Execute", etc.)
-                                type: string
                             required:
-                            - keys
                             - name
-                            - type
                             type: object
-                          type: array
-                      type: object
-                    execute:
-                      description: ExecuteSpec defines the desired state of Execute
-                      properties:
-                        destination:
-                          description: |-
-                            Destination specifies where the input of Execute has to be sent
-                            It will be always of type HTTP since this is what Lupout interface specifies it to be, but we will reuse the known
-                          properties:
-                            file:
-                              description: File-specific fields
-                              properties:
-                                path:
-                                  type: string
-                              required:
-                              - path
-                              type: object
-                            gofunc:
-                              description: gofunc-specific fields
-                              properties:
-                                name:
-                                  type: string
-                              required:
-                              - name
-                              type: object
-                            grpc:
-                              description: gRPC-specific fields
-                              properties:
-                                host:
-                                  type: string
-                                method:
-                                  type: string
-                                service:
-                                  type: string
-                              required:
-                              - host
-                              - method
-                              - service
-                              type: object
-                            http:
-                              description: HTTP-specific fields
-                              properties:
-                                method:
-                                  type: string
-                                path:
-                                  type: string
-                              required:
-                              - method
-                              - path
-                              type: object
-                            opa:
-                              description: Opa-specific fields
-                              properties:
-                                path:
-                                  type: string
-                              required:
-                              - path
-                              type: object
-                            type:
-                              description: 'Discriminator: "HTTP", "FILE", "gRPC",
-                                etc.'
+                          keys:
+                            description: |-
+                              List of input keys (Data fields) that have to be forwarded
+                              Pass array with single element '*' to forward the whole input
+                            items:
                               type: string
-                          required:
-                          - type
-                          type: object
-                        master:
-                          description: Name of master element
-                          type: string
-                      required:
-                      - destination
-                      type: object
-                    name:
-                      description: Name is the name of the element
-                      type: string
-                    observe:
-                      description: ObserveSpec defines the desired state of Observe
-                      properties:
-                        master:
-                          description: Name of master element
-                          type: string
-                        next:
-                          description: List of elements of to which forward the input
-                          items:
-                            description: |-
-                              Next is used in Observe Spec
-                              It specifies to which element forward the input
-                              It allows not to forward the whole input, but also parts of it
-                            properties:
-                              keys:
-                                description: |-
-                                  List of input keys (data fields) that have to be forwarded
-                                  Pass array with single element '*' to forward the whole input
-                                items:
-                                  type: string
-                                type: array
-                              name:
-                                description: |-
-                                  Kubernetes name of the API Object
-                                  This is the name that you give in Master CR spec
-                                type: string
-                              type:
-                                description: Type specifies the type of the element
-                                  ("Observe", "Decide", "Learn", "Execute", etc.)
-                                type: string
-                            required:
-                            - keys
-                            - name
-                            - type
-                            type: object
-                          type: array
-                      type: object
-                    type:
-                      description: Type specifies the type of the element ("Observe",
-                        "Decide", "Learn", "Execute", etc.)
-                      type: string
+                            type: array
+                          type:
+                            description: Type specifies class of next node in loop
+                              workflow, it may be other Lupus element or some external
+                              Destination
+                            type: string
+                        required:
+                        - keys
+                        - type
+                        type: object
+                      type: array
                   required:
+                  - descr
                   - name
-                  - type
                   type: object
                 type: array
               name:

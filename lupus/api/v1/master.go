@@ -23,25 +23,12 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// Element is a polymorphic structure that can represent different types of specs
-type Element struct {
-	// Name is the name of the element
-	Name string `json:"name"`
-	// Type specifies the type of the element ("Observe", "Decide", "Learn", "Execute", etc.)
-	Type string `json:"type" kubebuilder:"validation:Enum=observe;decide;learn;execute"`
-
-	Observe *ObserveSpec `json:"observe,omitempty"`
-	Decide  *DecideSpec  `json:"decide,omitempty"`
-	Execute *ExecuteSpec `json:"execute,omitempty"`
-}
-
 // MasterSpec defines the desired state of Master
 type MasterSpec struct {
 	// Name of the Master CR
 	Name string `json:"name"`
-
-	// Elements is a list of elements, each with its name, type, and corresponding spec
-	Elements []Element `json:"elements"`
+	// Elements is a list of Loop Elements
+	Elements []*ElementSpec `json:"elements"`
 }
 
 // MasterStatus defines the observed state of Master

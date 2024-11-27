@@ -33,8 +33,8 @@ import (
 	"github.com/go-logr/logr"
 )
 
-// ExecuteReconciler reconciles a Execute object
-type ExecuteReconciler struct {
+// ElementReconciler reconciles a Element object
+type ElementReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 	// Static fields of Reconciler
@@ -44,28 +44,27 @@ type ExecuteReconciler struct {
 	instanceState map[types.NamespacedName]*util.ElementInstanceState
 }
 
-// +kubebuilder:rbac:groups=lupus.gawor.io,resources=executes,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=lupus.gawor.io,resources=executes/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=lupus.gawor.io,resources=executes/finalizers,verbs=update
+// +kubebuilder:rbac:groups=lupus.gawor.io,resources=elements,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=lupus.gawor.io,resources=elements/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=lupus.gawor.io,resources=elements/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(user): Modify the Reconcile function to compare the state specified by
-// the Execute object against the actual cluster state, and then
+// the Element object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
-func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	// Set up logging context
-	r.ElementType = "Execute"
+func (r *ElementReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	r.ElementType = "Element"
 	r.Logger = log.FromContext(ctx)
 	r.Logger.Info(fmt.Sprintf("=================== START OF %s Reconciler: \n", strings.ToUpper(r.ElementType)))
 
 	// Step 1 - (k8s) Fetch reconciled resource instance
 	// Step 1 - (lupus) Fetch element
-	var element v1.Execute
+	var element v1.Element
 	if err := r.Get(ctx, req.NamespacedName, &element); err != nil {
 		r.Logger.Info(fmt.Sprintf("Failed to fetch %s instance", r.ElementType), "error", err)
 		// If the resource is not found, we return and don't requeue
@@ -98,38 +97,26 @@ func (r *ExecuteReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	var input runtime.RawExtension = element.Status.Input
 	r.instanceState[req.NamespacedName].LastUpdated = element.Status.LastUpdated.Time
 
-	// Step 4 - Unmarshall input into map[string]interface{} called `output`. This is the struct that we will work on. The central point of Execute Element.
-	output, err := util.RawExtensionToMap(input)
+	// Step 4 - (Go) Unmarshall input into map[string]interface{}
+	// Step 4 - (Lupus) Create Data object
+	data, err := util.NewData(input)
 	if err != nil {
 		r.Logger.Error(err, "Cannot unmarshall the input")
 		return ctrl.Result{}, nil
 	}
-
-	// Step 5 - Send input to destianation
-	destination := element.Spec.Destination
-	switch destination.Type {
-	case "HTTP":
-		res, err := sendToHTTP(destination.HTTP.Path, destination.HTTP.Method, output)
-		if err != nil {
-			r.Logger.Error(err, "Cannot get response from external HTTP element")
-			return ctrl.Result{}, nil
-		} else {
-			r.Logger.Info("Sent properly", "res", res)
-		}
-	default:
-		r.Logger.Info(fmt.Sprintf("Destination %s not yet implemented in Execute", destination.Type))
-	}
-
+	println("-----------------", data)
+	// Step <last) bye bye
+	r.Logger.Info("Element sucessfully reconciled", "name", req.Name)
 	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *ExecuteReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ElementReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// Initialize instanceState map if it's nil
 	if r.instanceState == nil {
 		r.instanceState = make(map[types.NamespacedName]*util.ElementInstanceState)
 	}
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&v1.Execute{}).
+		For(&v1.Element{}).
 		Complete(r)
 }

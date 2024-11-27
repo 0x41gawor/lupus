@@ -1,15 +1,19 @@
 package v1
 
-// Next is used in Observe Spec
-// It specifies to which element forward the input
-// It allows not to forward the whole input, but also parts of it
+// It specifies the of next node in loop workflow, it may be other Lupus element or some external Destination
+// It allows not to forward the whole Data final form, but also parts of it
 type Next struct {
-	// Type specifies the type of the element ("Observe", "Decide", "Learn", "Execute", etc.)
-	Type string `json:"type" kubebuilder:"validation:Enum=observe;decide;learn;execute"`
+	// Type specifies class of next node in loop workflow, it may be other Lupus element or some external Destination
+	Type string `json:"type" kubebuilder:"validation:Enum=element,destination"`
+	// List of input keys (Data fields) that have to be forwarded
+	// Pass array with single element '*' to forward the whole input
+	Keys        []string     `json:"keys"`
+	Element     *NextElement `json:"element,omitempty" kubebuilder:"validation:Optional"`
+	Destination *Destination `json:"destination,omitempty" kubebuilder:"validation:Optional"`
+}
+
+type NextElement struct {
 	// Kubernetes name of the API Object
 	// This is the name that you give in Master CR spec
 	Name string `json:"name"`
-	// List of input keys (data fields) that have to be forwarded
-	// Pass array with single element '*' to forward the whole input
-	Keys []string `json:"keys"`
 }

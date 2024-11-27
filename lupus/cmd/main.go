@@ -144,32 +144,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controller.ObserveReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Observe")
-		os.Exit(1)
-	}
-	if err = (&controller.DecideReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Decide")
-		os.Exit(1)
-	}
-	if err = (&controller.ExecuteReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Execute")
-		os.Exit(1)
-	}
 	if err = (&controller.MasterReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Master")
+		os.Exit(1)
+	}
+	if err = (&controller.ElementReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Element")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder
