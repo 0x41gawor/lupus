@@ -61,14 +61,14 @@ func RawExtensionToString(rawExt runtime.RawExtension) (string, error) {
 }
 
 // interfaceToMap tries to convert any interface{} to map[string]interface{}
-func InterfaceToMap(data interface{}) (map[string]interface{}, error) {
+func InterfaceToMap(value interface{}) (map[string]interface{}, error) {
 	// Check if data is already a map[string]interface{}
-	if result, ok := data.(map[string]interface{}); ok {
+	if result, ok := value.(map[string]interface{}); ok {
 		return result, nil
 	}
 
 	// Use reflection to inspect and handle other possible structures
-	val := reflect.ValueOf(data)
+	val := reflect.ValueOf(value)
 	if val.Kind() == reflect.Map {
 		converted := make(map[string]interface{})
 		for _, key := range val.MapKeys() {
@@ -82,7 +82,28 @@ func InterfaceToMap(data interface{}) (map[string]interface{}, error) {
 		return converted, nil
 	}
 
-	return nil, errors.New("data is not convertible to map[string]interface{}")
+	return nil, errors.New("value is not convertible to map[string]interface{}")
+}
+
+// InterfaceToMap tries to convert an interface{} to map[string]interface{}
+func InterfaceToMap2(data interface{}) (map[string]interface{}, error) {
+	// Check if data is already a map[string]interface{}
+	if result, ok := data.(map[string]interface{}); ok {
+		return result, nil
+	}
+
+	// Use JSON marshalling and unmarshalling as a fallback
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal value: %w", err)
+	}
+
+	var result map[string]interface{}
+	if err := json.Unmarshal(jsonBytes, &result); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal value into map: %w", err)
+	}
+
+	return result, nil
 }
 
 // Function to convert a map[string]interface{} to a JSON string

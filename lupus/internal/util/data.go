@@ -60,6 +60,18 @@ func (d *Data) Get(keys []string) (*runtime.RawExtension, error) {
 }
 
 func (d *Data) Set(key string, value interface{}) error {
+	if key == "*" {
+		// Validate that the value is convertible to map[string]interface{}
+		newBody, err := InterfaceToMap2(value)
+		if err != nil {
+			return fmt.Errorf("failed to set body: value is not convertible to map[string]interface{}: %w", err)
+		}
+
+		// Replace the current body with the new map
+		d.Body = newBody
+		return nil
+	}
+
 	// Parse the dotted key into a slice of strings
 	parsedKeys := ParseKey(key)
 
