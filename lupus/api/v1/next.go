@@ -7,7 +7,8 @@ type Next struct {
 	Type string `json:"type" kubebuilder:"validation:Enum=element,destination"`
 	// List of input keys (Data fields) that have to be forwarded
 	// Pass array with single element '*' to forward the whole input
-	Keys        []string     `json:"keys"`
+	Keys []string `json:"keys"`
+	// One of the fields below is not null
 	Element     *NextElement `json:"element,omitempty" kubebuilder:"validation:Optional"`
 	Destination *Destination `json:"destination,omitempty" kubebuilder:"validation:Optional"`
 }

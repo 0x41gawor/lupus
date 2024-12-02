@@ -10,13 +10,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+// Exemplary user-function. It just returns the input
 func (UserFunctions) Echo(input interface{}) (interface{}, error) {
-	fmt.Println("\n\n ---------- WYKON -----------")
-	inputStr, err := util.InterfaceToString(input)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println("input: ", inputStr)
 	return input, nil
 }
 

@@ -79,7 +79,7 @@ func (r *MasterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	r.NamePrefix = master.Spec.Name
 	// Loop through each element in the Master spec
 	for _, element := range master.Spec.Elements {
-		// Check the element's type and create the corresponding resource
+		// create each Element k8s resource
 		err := r.createElementResource(ctx, *element, master.Namespace, &master)
 		if err != nil {
 			r.Logger.Error(err, "Failed to create/update Element resource", "ElementName", element.Name)
@@ -97,7 +97,7 @@ func (r *MasterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 }
 
 func (r *MasterReconciler) createElementResource(ctx context.Context, es v1.ElementSpec, namespace string, master *v1.Master) error {
-	// Define the desired Observe custom resource
+	// Define the desired Element custom resource
 	e := &v1.Element{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      r.NamePrefix + "-" + es.Name,
@@ -106,9 +106,9 @@ func (r *MasterReconciler) createElementResource(ctx context.Context, es v1.Elem
 		Spec: es,
 	}
 	e.Spec.Master = r.NamePrefix
-	// Set Master as owner of Observe
+	// Set Master as owner of Element
 	if err := setOwnerReference(master, e, r.Scheme); err != nil {
-		r.Logger.Error(err, "Failed to set owner reference for Observe")
+		r.Logger.Error(err, "Failed to set owner reference for Element")
 		return err
 	}
 

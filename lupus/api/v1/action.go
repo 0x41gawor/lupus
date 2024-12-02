@@ -6,12 +6,17 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
-// Action is used in Decide spec
-// It represents the Action that Decide has to perform on Data
+// Action represents operation that is performed on Data
+// https://github.com/0x41gawor/lupus/blob/master/docs/data-concept.md
+// Action is used in Element spec. Element has a list of Actions and executes them
+// In general each action has an input and output keys that define which Data fields it has to work on
+// Each type of Action has fields specific for it
+// Each action indicates the name of the next Action in Action Chain
+// There is special type - Switch. Actually, it does not perform any operation on Data, but rather controls the flow of Action Chain
 type Action struct {
 	// Name of the Action, it is for designer to ease the management of the Loop
 	Name string `json:"name"`
-	// Type of Action one of send;nest,remove,rename,duplicate
+	// Type of Action
 	Type string `json:"type" kubebuilder:"validation:Enum=send,nest,remove,rename,duplicate,print,insert,switch"`
 	// One of these fields is not null depending on a Type.
 	Send      *SendAction      `json:"send,omitempty" kubebuilder:"validation:Optional"`
@@ -22,7 +27,7 @@ type Action struct {
 	Print     *PrintAction     `json:"print,omitempty" kubebuilder:"validation:Optional"`
 	Insert    *InsertAction    `json:"insert,omitempty" kubebuilder:"validation:Optional"`
 	Switch    *Switch          `json:"switch,omitempty" kubebuilder:"validation:Optional"`
-	// Next is the name of the next action to execute, in the case of Action type Switch it is the default branch
+	// Next is the name of the next action to execute, in the case of Switch-type action it stands as default branch
 	Next string `json:"next"`
 }
 

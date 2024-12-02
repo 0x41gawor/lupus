@@ -7,21 +7,20 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
-// Condition represent signle condition present in Switch action.
+// Condition represents signle condition present in Switch action
+// It defines on which Data field it has to be performed, actual condition and next Action if evaluation returns true
 type Condition struct {
-	// Key indicates the field of Data that has to be retrieved
+	// Key indicates the Data field that has to be retrieved
 	Key string `json:"key"`
-	// Operator defines the comparison operation, e.g., eq, ne, gt, lt
+	// Operator defines the comparison operation, e.g. eq, ne, gt, lt
 	Operator string `json:"operator" kubebuilder:"validation:Enum=eq,ne,gt,lt"`
 	// Type specifies the type of the value: string, int, float, bool
 	Type string `json:"type" kubebuilder:"validation:Enum=string,int,float,bool"`
-	// BoolCondition specifies the condition for boolean values
-	BoolCondition *BoolCondition `json:"bool,omitempty" kubebuilder:"validation:Optional"`
-	// IntCondition specifies the condition for integer values
-	IntCondition *IntCondition `json:"int,omitempty" kubebuilder:"validation:Optional"`
-	// StringCondition specifies the condition for string values
+	// One of these fields is not null depending on a Type.
+	BoolCondition   *BoolCondition   `json:"bool,omitempty" kubebuilder:"validation:Optional"`
+	IntCondition    *IntCondition    `json:"int,omitempty" kubebuilder:"validation:Optional"`
 	StringCondition *StringCondition `json:"string,omitempty" kubebuilder:"validation:Optional"`
-	// Next specifies the name of the next action to execute
+	// Next specifies the name of the next action to execute if evalution returns true
 	Next string `json:"next"`
 }
 
@@ -40,6 +39,9 @@ type StringCondition struct {
 	Value string `json:"value"`
 }
 
+// Condition evaluates the condition
+// It takes field as a param, checks its type (bool, int, string),
+// and compares it against value present in Condition with regards to Condition's operator
 func (c *Condition) Evaluate(field runtime.RawExtension) (bool, error) {
 	var fieldValue interface{}
 
