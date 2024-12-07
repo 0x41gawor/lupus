@@ -11,7 +11,7 @@ def handle_commands():
     try:
         data = request.json
         command = data.get('commands', [])
-        response = requests.post('http://192.168.56.111:7000/api/commands', json=command)
+        response = requests.post('http://127.0.0.1:7000/api/commands', json=command)
         if response.status_code != 200:
             print(f"Failed to send command: {command}")
         return jsonify({"status": "success"}), 200

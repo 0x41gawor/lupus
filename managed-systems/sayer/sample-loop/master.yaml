@@ -9,114 +9,116 @@ spec:
   name: "lola"
   elements:
     - name: "observe1"
-      type: observe
-      observe:
-        next:
-          - type: "decide"
+      descr: "Old Observe Element"
+      next:
+        - type: element
+          element:
             name: "decide1"
-            keys: ["*"]
+          keys: ["*"]
     - name: "decide1"
-      type: decide
-      decide:
-        actions:
-          - name: "start"
-            type: print
-            print:
-              inputKeys: ["*"]
-            next: "gofunc"
-          - name: "gofunc"
-            type: send
-            send:
-              inputKey: "case"
-              outputKey: "case-copied"
-              destination:
-                type: gofunc
-                gofunc:
-                  name: "Echo"
-            next: "add-10-ram"
-          - name: "add-10-ram"
-            type: send
-            send:
-              inputKey: "ram"
-              outputKey: "ram"
-              destination:
-                type: gofunc
-                gofunc:
-                  name: "AddTen"
-            next: "switch-start"
-          - name: "switch-start"
-            type: switch
-            switch:
-              conditions:
-                - key: "case"
-                  operator: eq
-                  type: string
-                  string: 
-                    value: "A"
-                  next: "insert-A"
-                - key: "case"
-                  operator: eq
-                  type: string
-                  string: 
-                    value: "B"
-                  next: "insert-B"
-                - key: "case"
-                  operator: eq
-                  type: string
-                  string: 
-                    value: "C"
-                  next: "insert-C"
-            next: exit
-          - name: "insert-A"
-            type: insert
-            insert: 
-              outputKey: "*"
-              value: {"path_taken": "A"}
-            next: "switch-ram"
-          - name: "insert-B"
-            type: insert
-            insert:
-              outputKey: "*"
-              value: {"path_taken": "B"}
-            next: "switch-ram"
-          - name: "insert-C"
-            type: insert
-            insert:
-              outputKey: "*"
-              value: {"path_taken": "C"}
-            next: "switch-ram"
-          - name: "switch-ram"
-            type: switch
-            switch:
-              conditions:
-                - key: "ram"
-                  operator: gt
-                  type: int
-                  int: 
-                    value: 10
-                  next: "critical"
-            next: "normal"
-          - name: "critical"
-            type: insert
-            insert:
-              outputKey: "*"
-              value: {"log.ram.critical": "yes"}
-            next: final
-          - name: "normal"
-            type: insert
-            insert:
-              outputKey: "*"
-              value: {"log.ram.critical": "no"}
-            next: final
-        next:
-          - type: "execute"
+      descr: "Old Decide element"
+      actions:
+        - name: "start"
+          type: print
+          print:
+            inputKeys: ["*"]
+          next: "gofunc"
+        - name: "gofunc"
+          type: send
+          send:
+            inputKey: "case"
+            outputKey: "case-copied"
+            destination:
+              type: gofunc
+              gofunc:
+                name: "Echo"
+          next: "add-10-ram"
+        - name: "add-10-ram"
+          type: send
+          send:
+            inputKey: "ram"
+            outputKey: "ram"
+            destination:
+              type: gofunc
+              gofunc:
+                name: "AddTen"
+          next: "switch-start"
+        - name: "switch-start"
+          type: switch
+          switch:
+            conditions:
+              - key: "case"
+                operator: eq
+                type: string
+                string:
+                  value: "A"
+                next: "insert-A"
+              - key: "case"
+                operator: eq
+                type: string
+                string:
+                  value: "B"
+                next: "insert-B"
+              - key: "case"
+                operator: eq
+                type: string
+                string:
+                  value: "C"
+                next: "insert-C"
+          next: exit
+        - name: "insert-A"
+          type: insert
+          insert:
+            outputKey: "*"
+            value: {"path_taken": "A"}
+          next: "switch-ram"
+        - name: "insert-B"
+          type: insert
+          insert:
+            outputKey: "*"
+            value: {"path_taken": "B"}
+          next: "switch-ram"
+        - name: "insert-C"
+          type: insert
+          insert:
+            outputKey: "*"
+            value: {"path_taken": "C"}
+          next: "switch-ram"
+        - name: "switch-ram"
+          type: switch
+          switch:
+            conditions:
+              - key: "ram"
+                operator: gt
+                type: int
+                int:
+                  value: 10
+                next: "critical"
+          next: "normal"
+        - name: "critical"
+          type: insert
+          insert:
+            outputKey: "*"
+            value: {"log.ram.critical": "yes"}
+          next: final
+        - name: "normal"
+          type: insert
+          insert:
+            outputKey: "*"
+            value: {"log.ram.critical": "no"}
+          next: final
+      next:
+        - type: element
+          element:
             name: "execute1"
-            keys: ["*"]
+          keys: ["*"]
     - name: "execute1"
-      type: execute
-      execute:
-        destination:
-          type: "HTTP"
-          http:
-            path: "http://192.168.56.111:7000/api/command"
-            method: "POST"
+      descr: "Old Execute Element"
+      next:
+        - type: destination
+          destination:
+            type: HTTP
+            http:
+              path: "http://127.0.0.1:7000/api/command"
+              method: "POST"
+          keys: ["*"]

@@ -13,7 +13,7 @@ def handle_commands():
         commands = data.get('commands', [])
         for command in commands:
             # Forward each command to the external API
-            response = requests.post('http://192.168.56.111:5000/api/move', json=command)
+            response = requests.post('http://127.0.0.1:5000/api/move', json=command)
             if response.status_code != 200:
                 print(f"Failed to send command: {command}")
         return jsonify({"status": "success"}), 200

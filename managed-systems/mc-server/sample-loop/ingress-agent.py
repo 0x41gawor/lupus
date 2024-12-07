@@ -14,7 +14,7 @@ def periodic_task(interval, k8s_client):
     while True:
         try:
             # Step 1: Fetch data from the external API
-            response = requests.get('http://192.168.56.111:6000/api/data')
+            response = requests.get('http://127.0.0.1:6000/api/data')
             if response.status_code == 200:
                 state = response.json()
                 print(f"Received state: {state}")

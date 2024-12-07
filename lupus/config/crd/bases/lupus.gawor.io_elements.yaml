@@ -43,8 +43,13 @@ spec:
                 description: Actions is a list of Actions that Element has to perform
                 items:
                   description: |-
-                    Action is used in Decide spec
-                    It represents the Action that Decide has to perform on Data
+                    Action represents operation that is performed on Data
+                    https://github.com/0x41gawor/lupus/blob/master/docs/data-concept.md
+                    Action is used in Element spec. Element has a list of Actions and executes them
+                    In general each action has an input and output keys that define which Data fields it has to work on
+                    Each type of Action has fields specific for it
+                    Each action indicates the name of the next Action in Action Chain
+                    There is special type - Switch. Actually, it does not perform any operation on Data, but rather controls the flow of Action Chain
                   properties:
                     duplicate:
                       properties:
@@ -85,7 +90,7 @@ spec:
                       type: object
                     next:
                       description: Next is the name of the next action to execute,
-                        in the case of Action type Switch it is the default branch
+                        in the case of Switch-type action it stands as default branch
                       type: string
                     print:
                       properties:
@@ -121,61 +126,54 @@ spec:
                       properties:
                         destination:
                           description: |-
-                            Destination in Action type and in Learn Spec
-                            Destination is a polymorphic field that can represent different types
+                            Destination represents and external loop element (external system)
+                            It holds all the info needed to make a call to an External System
+                            It supports calls to HTTP server, Open Policy Agent, internal and user-defined Go function inside an operator
+                            It is used in Action of type Send and can be also used (same as Lupus Element) as Next is Element spec
                           properties:
-                            file:
-                              description: File-specific fields
-                              properties:
-                                path:
-                                  type: string
-                              required:
-                              - path
-                              type: object
                             gofunc:
-                              description: gofunc-specific fields
+                              description: |-
+                                GoFuncDestination defines fields specific to GoFunc type
+                                This is information needed to call a user-defined, internal Go function
                               properties:
                                 name:
+                                  description: Name specifies the name of the function
                                   type: string
                               required:
                               - name
                               type: object
-                            grpc:
-                              description: gRPC-specific fields
-                              properties:
-                                host:
-                                  type: string
-                                method:
-                                  type: string
-                                service:
-                                  type: string
-                              required:
-                              - host
-                              - method
-                              - service
-                              type: object
                             http:
-                              description: HTTP-specific fields
+                              description: One of these fields is not null depending
+                                on a type, it has specifiaction specific to types
                               properties:
                                 method:
+                                  description: Method specifies HTTP method
                                   type: string
                                 path:
+                                  description: Path specifies HTTP URI
                                   type: string
                               required:
                               - method
                               - path
                               type: object
                             opa:
-                              description: Opa-specific fields
+                              description: |-
+                                OpaDestination defines fields specific to Open Policy Agent type
+                                This is information needed to make an Open Policy Agent request
+                                Call to Opa is actually a special type of HTTP call
                               properties:
                                 path:
+                                  description: Path specifies HTTP URI, since method
+                                    is known
                                   type: string
                               required:
                               - path
                               type: object
                             type:
-                              description: 'Discriminator: "HTTP", "FILE", "gRPC",
-                                etc.'
+                              description: 'Type specifies if the external system
+                                is: HTTP server in gerneral, special type of HTTP
+                                server as Open Policy Agent or internal, user-defined
+                                Go function'
                               type: string
                           required:
                           - type
@@ -193,12 +191,13 @@ spec:
                       properties:
                         conditions:
                           items:
-                            description: Condition represent signle condition present
-                              in Switch action.
+                            description: |-
+                              Condition represents signle condition present in Switch action
+                              It defines on which Data field it has to be performed, actual condition and next Action if evaluation returns true
                             properties:
                               bool:
-                                description: BoolCondition specifies the condition
-                                  for boolean values
+                                description: One of these fields is not null depending
+                                  on a Type.
                                 properties:
                                   value:
                                     type: boolean
@@ -206,8 +205,8 @@ spec:
                                 - value
                                 type: object
                               int:
-                                description: IntCondition specifies the condition
-                                  for integer values
+                                description: IntCondition defines an integer-specific
+                                  condition
                                 properties:
                                   value:
                                     type: integer
@@ -215,20 +214,20 @@ spec:
                                 - value
                                 type: object
                               key:
-                                description: Key indicates the field of Data that
-                                  has to be retrieved
+                                description: Key indicates the Data field that has
+                                  to be retrieved
                                 type: string
                               next:
                                 description: Next specifies the name of the next action
-                                  to execute
+                                  to execute if evalution returns true
                                 type: string
                               operator:
                                 description: Operator defines the comparison operation,
-                                  e.g., eq, ne, gt, lt
+                                  e.g. eq, ne, gt, lt
                                 type: string
                               string:
-                                description: StringCondition specifies the condition
-                                  for string values
+                                description: StringCondition defines a string-specific
+                                  condition
                                 properties:
                                   value:
                                     type: string
@@ -250,7 +249,7 @@ spec:
                       - conditions
                       type: object
                     type:
-                      description: Type of Action one of send;nest,remove,rename,duplicate
+                      description: Type of Action
                       type: string
                   required:
                   - name
@@ -280,65 +279,59 @@ spec:
                   properties:
                     destination:
                       description: |-
-                        Destination in Action type and in Learn Spec
-                        Destination is a polymorphic field that can represent different types
+                        Destination represents and external loop element (external system)
+                        It holds all the info needed to make a call to an External System
+                        It supports calls to HTTP server, Open Policy Agent, internal and user-defined Go function inside an operator
+                        It is used in Action of type Send and can be also used (same as Lupus Element) as Next is Element spec
                       properties:
-                        file:
-                          description: File-specific fields
-                          properties:
-                            path:
-                              type: string
-                          required:
-                          - path
-                          type: object
                         gofunc:
-                          description: gofunc-specific fields
+                          description: |-
+                            GoFuncDestination defines fields specific to GoFunc type
+                            This is information needed to call a user-defined, internal Go function
                           properties:
                             name:
+                              description: Name specifies the name of the function
                               type: string
                           required:
                           - name
                           type: object
-                        grpc:
-                          description: gRPC-specific fields
-                          properties:
-                            host:
-                              type: string
-                            method:
-                              type: string
-                            service:
-                              type: string
-                          required:
-                          - host
-                          - method
-                          - service
-                          type: object
                         http:
-                          description: HTTP-specific fields
+                          description: One of these fields is not null depending on
+                            a type, it has specifiaction specific to types
                           properties:
                             method:
+                              description: Method specifies HTTP method
                               type: string
                             path:
+                              description: Path specifies HTTP URI
                               type: string
                           required:
                           - method
                           - path
                           type: object
                         opa:
-                          description: Opa-specific fields
+                          description: |-
+                            OpaDestination defines fields specific to Open Policy Agent type
+                            This is information needed to make an Open Policy Agent request
+                            Call to Opa is actually a special type of HTTP call
                           properties:
                             path:
+                              description: Path specifies HTTP URI, since method is
+                                known
                               type: string
                           required:
                           - path
                           type: object
                         type:
-                          description: 'Discriminator: "HTTP", "FILE", "gRPC", etc.'
+                          description: 'Type specifies if the external system is:
+                            HTTP server in gerneral, special type of HTTP server as
+                            Open Policy Agent or internal, user-defined Go function'
                           type: string
                       required:
                       - type
                       type: object
                     element:
+                      description: One of the fields below is not null
                       properties:
                         name:
                           description: |-
