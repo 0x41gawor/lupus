@@ -4,7 +4,7 @@ import (
 	"reflect"
 )
 
-// UserFunctions struct for user-defined functions
+// UserFunctions struct for user-defined, internal functions
 type UserFunctions struct{}
 
 // A global map to store function references
@@ -43,5 +43,6 @@ func RegisterFunctions(target interface{}) {
 }
 
 func init() {
+	// Fill in the FunctionRegistry map with functions defined as a method of UserFunctions{}
 	RegisterFunctions(UserFunctions{})
 }

@@ -1,46 +1,38 @@
 package v1
 
-// Destination in Action type and in Learn Spec
-// Destination is a polymorphic field that can represent different types
+// Destination represents and external loop element (external system)
+// It holds all the info needed to make a call to an External System
+// It supports calls to HTTP server, Open Policy Agent, internal and user-defined Go function inside an operator
+// It is used in Action of type Send and can be also used (same as Lupus Element) as Next is Element spec
 type Destination struct {
-	// Discriminator: "HTTP", "FILE", "gRPC", etc.
-	Type string `json:"type" kubebuilder:"validation:Enum=HTTP;FILE;gRPC;Opa"`
-	// HTTP-specific fields
-	HTTP *HTTPDestination `json:"http,omitempty" kubebuilder:"validation:Optional"`
-	// File-specific fields
-	File *FileDestination `json:"file,omitempty" kubebuilder:"validation:Optional"`
-	// gRPC-specific fields
-	GRPC *GRPCDestination `json:"grpc,omitempty" kubebuilder:"validation:Optional"`
-	// Opa-specific fields
-	Opa *OpaDestination `json:"opa,omitempty" kubebuilder:"validation:Optional"`
-	// gofunc-specific fields
+	// Type specifies if the external system is: HTTP server in gerneral, special type of HTTP server as Open Policy Agent or internal, user-defined Go function
+	Type string `json:"type" kubebuilder:"validation:Enum=http;opa;gofunc"`
+	// One of these fields is not null depending on a type, it has specifiaction specific to types
+	HTTP   *HTTPDestination   `json:"http,omitempty" kubebuilder:"validation:Optional"`
+	Opa    *OpaDestination    `json:"opa,omitempty" kubebuilder:"validation:Optional"`
 	GoFunc *GoFuncDestination `json:"gofunc,omitempty" kubebuilder:"validation:Optional"`
 }
 
 // HTTPDestination defines fields specific to HTTP type
+// This is information needed to make a HTTP request
 type HTTPDestination struct {
-	Path   string `json:"path"`
+	// Path specifies HTTP URI
+	Path string `json:"path"`
+	// Method specifies HTTP method
 	Method string `json:"method"`
 }
 
-// FileDestination defines fields specific to FILE type
-type FileDestination struct {
-	Path string `json:"path"`
-}
-
-// GRPCDestination defines fields specific to gRPC type
-type GRPCDestination struct {
-	Host    string `json:"host"`
-	Service string `json:"service"`
-	Method  string `json:"method"`
-}
-
 // OpaDestination defines fields specific to Open Policy Agent type
+// This is information needed to make an Open Policy Agent request
+// Call to Opa is actually a special type of HTTP call
 type OpaDestination struct {
+	// Path specifies HTTP URI, since method is known
 	Path string `json:"path"`
 }
 
 // GoFuncDestination defines fields specific to GoFunc type
+// This is information needed to call a user-defined, internal Go function
 type GoFuncDestination struct {
+	// Name specifies the name of the function
 	Name string `json:"name"`
 }

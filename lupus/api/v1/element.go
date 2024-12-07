@@ -24,43 +24,49 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// ObserveSpec defines the desired state of Observe
-type ObserveSpec struct {
-	// List of elements of to which forward the input
+// ElementSpec defines the desired state of Element
+type ElementSpec struct {
+	// Name is the name of the element, its distinct from Kubernetes API Object name, but rather serves ease of managemenet aspect for loop-designer
+	Name string `json:"name"`
+	// Descr is the description of the element, same as Name is serves as ease of management aspect for loop-designer
+	Descr string `json:"descr"`
+	// Actions is a list of Actions that Element has to perform
+	Actions []Action `json:"actions,omitempty"`
+	// Next is a list of element to which send the Data final form
 	Next []Next `json:"next,omitempty"`
 	// Name of master element
 	Master string `json:"master,omitempty"`
 }
 
-// ObserveStatus defines the observed state of Observe
-type ObserveStatus struct {
+// ElementStatus defines the observed state of Element
+type ElementStatus struct {
 	// Input contains operational data
 	Input runtime.RawExtension `json:"input"`
 	// Timestamp of the last update
-	LastUpdated metav1.Time `json:"lastUpdated,omitempty"`
+	LastUpdated metav1.Time `json:"lastUpdated"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 
-// Observe is the Schema for the observes API
-type Observe struct {
+// Element is the Schema for the elements API
+type Element struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ObserveSpec   `json:"spec,omitempty"`
-	Status ObserveStatus `json:"status,omitempty"`
+	Spec   ElementSpec   `json:"spec,omitempty"`
+	Status ElementStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// ObserveList contains a list of Observe
-type ObserveList struct {
+// ElementList contains a list of Element
+type ElementList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Observe `json:"items"`
+	Items           []Element `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Observe{}, &ObserveList{})
+	SchemeBuilder.Register(&Element{}, &ElementList{})
 }

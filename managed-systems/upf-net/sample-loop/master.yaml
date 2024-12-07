@@ -9,44 +9,48 @@ spec:
   name: "adam"
   elements:
     - name: "observe1"
-      type: observe
-      observe:
-        next:
-          - type: decide
+      descr: "Old Observe Element"
+      next:
+        - type: element
+          element:
             name: "decide1"
-            keys: ["*"]
+          keys: ["*"]
     - name: "decide1"
-      type: decide
-      decide:
-        actions:
-          - name: "bounce"
-            type: send
-            send:
-              inputKey: "*"
-              destination:
-                type: HTTP
-                http:
-                  path: "http://192.168.56.111:7000/api/bounce"
-                  method: "POST"
-              outputKey: "*"
-          - name: "send-to-opa"
-            type: send
-            send:
-              inputKey: "*"
-              destination:
-                type: "Opa"
-                opa:
-                  path: "http://192.168.56.111:8181/v1/data/mmet/move_commands"
-              outputKey: "commands"
-        next:
-          - type: execute
+      descr: "Old Decide element"
+      actions:
+        - name: "bounce"
+          type: send
+          send:
+            inputKey: "*"
+            destination:
+              type: HTTP
+              http:
+                path: "http://192.168.56.111:7000/api/bounce"
+                method: "POST"
+            outputKey: "*"
+          next: "send-to-opa"
+        - name: "send-to-opa"
+          type: send
+          send:
+            inputKey: "*"
+            destination:
+              type: Opa
+              opa:
+                path: "http://192.168.56.111:8181/v1/data/mmet/move_commands"
+            outputKey: "commands"
+          next: final
+      next:
+        - type: element
+          element:
             name: "execute1"
-            keys: ["*"]
+          keys: ["*"]
     - name: "execute1"
-      type: execute
-      execute:
-        destination:
-          type: "HTTP"
-          http:
-            path: "http://192.168.56.111:5001/api/commands"
-            method: "POST"
+      descr: "Old Execute element"
+      next:
+        - type: destination
+          destination:
+            type: HTTP
+            http:
+              path: "http://192.168.56.111:5001/api/commands"
+              method: "POST"
+          keys: ["*"]

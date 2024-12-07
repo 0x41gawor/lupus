@@ -205,12 +205,12 @@ func TestData_Get(t *testing.T) {
 	}
 	data2Str := `
 		{
-    "elo": "hej",
-    "poland": {
-        "capital": "Warsaw",
-        "population": 38
-    	}
-	}
+			"elo": "hej",
+			"poland": {
+				"capital": "Warsaw",
+				"population": 38
+			}
+		}
 	`
 	// Create a runtime.RawExtension
 	rawExtension2 := &runtime.RawExtension{
@@ -237,6 +237,11 @@ func TestData_Get(t *testing.T) {
 	}
 	t.Log(data2.String())
 	err = data2.Insert("poland.capital", runtime.RawExtension{Raw: []byte(`{"second": "Krakow"}`)})
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	t.Log(data2.String())
+	err = data2.Set("*", rawExtension2)
 	if err != nil {
 		t.Fatal(err.Error())
 	}

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set OPA server URL
-OPA_URL="http://192.168.56.111:8282"
+OPA_URL="http://127.0.0.1:8383"
 
 # Step 1: Create the policy
 echo "Creating policy for mc_server..."
@@ -27,8 +27,8 @@ curl --location "$OPA_URL/v1/data/mc_server/ram" \
 --header 'Content-Type: application/json' \
 --data '{
     "input": {
-            "in_use": 8,
-            "license": 8
+        "in_use": 8,
+        "license": 8
     }
 }'
 echo -e "\nRAM query complete."
@@ -39,8 +39,8 @@ curl --location "$OPA_URL/v1/data/mc_server/cpu" \
 --header 'Content-Type: application/json' \
 --data '{
     "input": {
-            "in_use": 8,
-            "license": 8
+        "in_use": 8,
+        "license": 8
     }
 }'
 echo -e "\nCPU query complete."

@@ -1,8 +1,11 @@
 #!/bin/bash
 
-# Step 2: Load the OPA policy
+# Define OPA server URL
+OPA_URL="http://localhost:8181"
+
+# Step 1: Load the OPA policy
 echo "Uploading policy..."
-curl --location --request PUT 'http://localhost:8181/v1/policies/mmet' \
+curl --location --request PUT "$OPA_URL/v1/policies/mmet" \
 --header 'Content-Type: text/plain' \
 --data 'package mmet
 
@@ -55,15 +58,16 @@ move_commands[command] {
         "Count": count_int
     }
 }'
+echo -e "\nPolicy uploaded."
 
-# Check if the policy exists
+# Step 2: Check if the policy exists
 echo "Checking if policy is loaded..."
-curl --location 'http://localhost:8181/v1/policies/mmet'
+curl --location "$OPA_URL/v1/policies/mmet"
 echo -e "\n"
 
 # Step 3: Upload data for percentages
 echo "Uploading data for percentages..."
-curl --location --request PUT 'http://localhost:8181/v1/data/percentages' \
+curl --location --request PUT "$OPA_URL/v1/data/percentages" \
 --header 'Content-Type: application/json' \
 --data '{
     "Gdansk": 25,
@@ -71,24 +75,25 @@ curl --location --request PUT 'http://localhost:8181/v1/data/percentages' \
     "Poznan": 25,
     "Warsaw": 25
 }'
+echo -e "\nPercentages data uploaded."
 
-# Check if the data exists
+# Step 4: Check if the data exists
 echo "Checking if data is loaded..."
-curl --location 'http://localhost:8181/v1/data/percentages'
+curl --location "$OPA_URL/v1/data/percentages"
 echo -e "\n"
 
-# Step 4: Perform a test query
+# Step 5: Perform a test query
 echo "Performing test query..."
-curl --location 'http://localhost:8181/v1/data/mmet/move_commands' \
+curl --location "$OPA_URL/v1/data/mmet/move_commands" \
 --header 'Content-Type: application/json' \
 --data '{
-    "input":{
+    "input": {
         "Gdansk": 12,
         "Krakow": 8,
         "Poznan": 10,
         "Warsaw": 13
     }
 }'
-echo -e "\n"
+echo -e "\nTest query completed."
 
 echo "OPA setup and test completed."
