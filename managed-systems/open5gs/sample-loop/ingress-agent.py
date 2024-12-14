@@ -5,6 +5,10 @@ import json
 from datetime import datetime
 import subprocess  # Ensure this line is included
 from kubernetes.client import CustomObjectsApi  # Import CustomObjectsApi
+from flask import Flask, request, jsonify
+from threading import Thread
+
+
 
 # Load Kubernetes configuration
 config.load_kube_config()
@@ -12,8 +16,8 @@ config.load_kube_config()
 # Kubernetes API clients
 core_v1_api = client.CoreV1Api()
 
+global interval
 round = 0
-
 
 def get_pods_starting_with(prefix):
     try:
@@ -93,9 +97,6 @@ def get_json_data():
     
     return json.dumps(pod_metrics)
 
-
-from datetime import datetime
-
 def send_to_kube(state):
     custom_objects_api = CustomObjectsApi()  # Use CustomObjectsApi to interact with CRDs
     try:
@@ -127,7 +128,6 @@ def send_to_kube(state):
         print(f"Error updating custom resource: {e}")
 
 
-
 def periodic_task():
     json_data = get_json_data()
     timestamp = datetime.utcnow().strftime('%Y/%m/%d %H:%M:%S')
@@ -137,13 +137,36 @@ def periodic_task():
     send_to_kube(json_data)
 
 
+app = Flask(__name__)
 
-# Example usage
+@app.route('/api/interval', methods=['POST'])
+def update_interval():
+    global interval
+    try:
+        data = request.get_json()
+        if "value" in data and isinstance(data["value"], int) and data["value"] > 0:
+            interval = data["value"]
+            return jsonify({"message": "Interval updated successfully", "new_interval": interval}), 200
+        else:
+            return jsonify({"error": "Invalid input. 'value' must be a positive integer."}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Periodic K8s metrics fetcher')
     parser.add_argument('--interval', type=int, default=60, help='Interval in seconds for periodic task')
     args = parser.parse_args()
+    
+    global interval  # Declare that you are modifying the global variable
+    interval = args.interval
 
+    # Start Flask server in a separate thread
+    flask_thread = Thread(target=lambda: app.run(host='0.0.0.0', port=9000, debug=False, use_reloader=False))
+    flask_thread.daemon = True
+    flask_thread.start()
+
+    
     while True:
         periodic_task()
-        time.sleep(args.interval)
+        time.sleep(interval)
