@@ -35,7 +35,6 @@ def periodic_task(interval, k8s_client):
 
                 observe['status'] = observe_status
                 
-
                 # Patch the custom resource status
                 k8s_client.patch_namespaced_custom_object_status(
                     group="lupus.gawor.io",
