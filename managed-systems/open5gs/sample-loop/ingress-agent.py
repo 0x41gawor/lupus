@@ -106,7 +106,7 @@ def send_to_kube(state):
             version="v1",
             namespace='default',
             plural="elements",
-            name='lola-observe1'
+            name='lola-lola'
         )
         
         # Update the `status.input` field with the state
@@ -120,7 +120,7 @@ def send_to_kube(state):
             version="v1",
             namespace='default',
             plural="elements",
-            name='lola-observe1',
+            name='lola-lola',
             body={"status": observe_status}  # Send only the `status` field
         )
         print("Updated Kubernetes custom resource status successfully.")
@@ -165,7 +165,6 @@ if __name__ == "__main__":
     flask_thread = Thread(target=lambda: app.run(host='0.0.0.0', port=9000, debug=False, use_reloader=False))
     flask_thread.daemon = True
     flask_thread.start()
-
     
     while True:
         periodic_task()

@@ -105,9 +105,6 @@ func (r *ElementReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	// Step 5 - Perform actions
-	// convert list of actions to a map of actions
-	println("------------\nData Before Actions:")
-	print(data.String(), "\n")
 	if len(element.Spec.Actions) != 0 {
 		next := element.Spec.Actions[0].Name
 		actionsMap, err := ConvertActionsToMap(element.Spec.Actions)
@@ -130,8 +127,6 @@ func (r *ElementReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			}
 		}
 	}
-	println("------------\nData After Actions:")
-	print(data.String(), "\n")
 	// Step 6 - Send data output to the next elements
 	for _, next := range element.Spec.Next {
 		err := r.sendToNext(ctx, element, next, req, data)
