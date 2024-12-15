@@ -120,7 +120,6 @@ func (r *ElementReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 				r.Logger.Info("Failure or empty exit encountered")
 				return ctrl.Result{}, nil
 			}
-			println("Action: ", next, "  Data before:", data.String())
 			next, err = PerformAction(data, actionsMap[next])
 			if err != nil {
 				r.Logger.Error(err, "Failed to perform action")

@@ -65,7 +65,6 @@ func PerformAction(data *util.Data, action v1.Action) (string, error) {
 			return "exit", err
 		}
 	case "switch":
-		print("switch\n")
 		for _, condition := range action.Switch.Conditions {
 			field, err := data.Get([]string{condition.Key})
 			if err != nil {
@@ -77,7 +76,6 @@ func PerformAction(data *util.Data, action v1.Action) (string, error) {
 				err = fmt.Errorf("could not convert data field into string: %w", err)
 				return "exit", err
 			}
-			print("field: ", fieldStr, "\n")
 			eval, err := condition.Evaluate(*field)
 			if err != nil {
 				err = fmt.Errorf("error during condition evaluation: %w", err)
