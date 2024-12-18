@@ -8,28 +8,38 @@ from kubernetes.client import CustomObjectsApi  # Import CustomObjectsApi
 from flask import Flask, request, jsonify
 from threading import Thread
 
-
-
 # Load Kubernetes configuration
 config.load_kube_config()
 
 # Kubernetes API clients
 core_v1_api = client.CoreV1Api()
+apps_v1_api = client.AppsV1Api()
 
 global interval
 round = 0
 
-def get_pods_starting_with(prefix):
+def get_pods_by_deployment_prefix(prefix):
     try:
-        # List all pods in the current namespace
+        # List all deployments in the current namespace
+        deployments = apps_v1_api.list_deployment_for_all_namespaces(watch=False)
+        matching_deployments = [d for d in deployments.items if d.metadata.name.startswith(prefix)]
+        
+        # Find all pods associated with matching deployments
         pods = core_v1_api.list_pod_for_all_namespaces(watch=False)
-        # Filter pods by name starting with the prefix
-        filtered_pods = [pod for pod in pods.items if pod.metadata.name.startswith(prefix)]
-        return filtered_pods
+        deployment_pod_map = {}
+        for deployment in matching_deployments:
+            filtered_pods = []
+            for pod in pods.items:
+                if pod.metadata.owner_references:
+                    for owner in pod.metadata.owner_references:
+                        if owner.kind == "ReplicaSet" and owner.name.startswith(deployment.metadata.name):
+                            filtered_pods.append(pod)
+            deployment_pod_map[deployment.metadata.name] = filtered_pods
+        
+        return deployment_pod_map
     except client.rest.ApiException as e:
-        print(f"Exception when calling CoreV1Api->list_pod_for_all_namespaces: {e}")
-        return []
-
+        print(f"Exception when calling Kubernetes API: {e}")
+        return {}
 
 def get_pod_resources(pod):
     containers = pod.spec.containers
@@ -42,7 +52,6 @@ def get_pod_resources(pod):
             "limits": resources.limits or {},
         })
     return resource_info
-
 
 def get_pod_actual_usage(pod_name, namespace):
     try:
@@ -68,34 +77,33 @@ def get_pod_actual_usage(pod_name, namespace):
         return {}
 
 def get_json_data():
-    pod_prefix = "open5gs-upf"
-    pods = get_pods_starting_with(pod_prefix)
-    pod_metrics = {}
+    deployment_prefix = "open5gs-upf"
+    deployment_pod_map = get_pods_by_deployment_prefix(deployment_prefix)
+    metrics = {}
 
-    for pod in pods:
-        pod_name = pod.metadata.name
-        namespace = pod.metadata.namespace
-
-        # Initialize pod entry in metrics
-        pod_key = pod_name.split('-')[1]  # Assuming 'upf1' etc. is the second segment
-        pod_metrics[pod_key] = {
-            "name": pod_name,
+    for deployment_name, pods in deployment_pod_map.items():
+        # Initialize deployment entry in metrics
+        metrics[deployment_name] = {
             "requests": {},
             "limits": {},
             "actual": {}
         }
 
-        # Resource requests and limits
-        resource_info = get_pod_resources(pod)
-        for container_info in resource_info:
-            pod_metrics[pod_key]["requests"] = container_info["requests"]
-            pod_metrics[pod_key]["limits"] = container_info["limits"]
+        for pod in pods:
+            pod_name = pod.metadata.name
+            namespace = pod.metadata.namespace
 
-        # Actual resource usage
-        actual_usage = get_pod_actual_usage(pod_name, namespace)
-        pod_metrics[pod_key]["actual"] = actual_usage
+            # Resource requests and limits
+            resource_info = get_pod_resources(pod)
+            for container_info in resource_info:
+                metrics[deployment_name]["requests"] = container_info["requests"]
+                metrics[deployment_name]["limits"] = container_info["limits"]
+
+            # Actual resource usage
+            actual_usage = get_pod_actual_usage(pod_name, namespace)
+            metrics[deployment_name]["actual"] = actual_usage
     
-    return json.dumps(pod_metrics)
+    return json.dumps(metrics)
 
 def send_to_kube(state):
     custom_objects_api = CustomObjectsApi()  # Use CustomObjectsApi to interact with CRDs
@@ -127,7 +135,6 @@ def send_to_kube(state):
     except Exception as e:
         print(f"Error updating custom resource: {e}")
 
-
 def periodic_task():
     json_data = get_json_data()
     timestamp = datetime.utcnow().strftime('%Y/%m/%d %H:%M:%S')
@@ -135,7 +142,6 @@ def periodic_task():
     round = round + 1
     print(timestamp + " Round: " + str(round) + "\n" + json_data)
     send_to_kube(json_data)
-
 
 app = Flask(__name__)
 
@@ -152,13 +158,12 @@ def update_interval():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Periodic K8s metrics fetcher')
     parser.add_argument('--interval', type=int, default=60, help='Interval in seconds for periodic task')
     args = parser.parse_args()
     
-    global interval  # Declare that you are modifying the global variable
+    # Declare that you are modifying the global variable
     interval = args.interval
 
     # Start Flask server in a separate thread
