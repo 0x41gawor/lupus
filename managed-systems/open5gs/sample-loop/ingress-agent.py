@@ -15,6 +15,10 @@ config.load_kube_config()
 core_v1_api = client.CoreV1Api()
 apps_v1_api = client.AppsV1Api()
 
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+
 global interval
 round = 0
 
