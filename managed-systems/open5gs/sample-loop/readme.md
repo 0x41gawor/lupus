@@ -13,7 +13,7 @@ Run 4 terminals on MobaXterm and enable split mode:
 
 First, at 4 run egress-agent.
 ```sh
-#TODO
+python3 managed-systems/open5gs/sample-loop/egress-agent.py
 ```
 
 Then, in 2 run the controller:
