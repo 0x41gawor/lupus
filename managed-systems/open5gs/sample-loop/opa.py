@@ -1,64 +1,3 @@
-# Exemplary use of Lupus for Open5GS
-
-# Loop design
-
-First get familiar with [Management problem](../readme.md#management-problem). 
-
-When the Data comes in such format:
-```json
-{
-"actual":
-	{
-		"cpu": "1m"
-		"memory": "18Mi"
-	},
-"limits":
-	{
-		"cpu": "250m",
-		"memory": "256Mi"
-	},
-"requests":
-	{
-		"cpu": "100m",
-		"memory": "128Mi"
-	}
-}
-```
-We can define 4 states in which the system can be, either:
-- operational point: request and limits are set on default values, actual is under default values -> `NORMAL`
-- switch from NORMAL to critical: requests and limits are still set on default, but actual is higher -> `NORMAL_TO_CRITICAL`
-- ciritcal: requests and limits above default, actual above default -> `CRITICAL`
-- switch from CRITICAL to NORMAL: requests and limits still above default, but actual is below default -> `CRITICAL_TO_NORMAL`
-
-What should be done in each state:
-- `NORMAL` - nothing, todos estas bien
-- `NORMAL_TO_CRITICAL` - set requests and limits accordingly, set observe interval to HIGH
-- `CRITICAL` - set requests and limits accordingly
-- `CRITICAL_TO_NORMAL` - set requests and limits to default, set observe interval to LOW
-
-We can derive 3 Open Policy Services from this description:
-- `POINT` -> accepts "*" (all Data fields), sends back "point"
-- `SPEC` -> accepts "actual", sends back "spec" with "reqests" and "limits" inside of it
-- `INTERVAL` -> accepts "point", sends back "interval"
-
-![](../_img/5.png)
-
-### Data flow
-Let's analyze loop flow along with Data for 4 cases - one for each state.
-
-#### Case 1 (NORMAL)
-![](../_img/6.png)
-#### Case 2 (NORMAL_TO_CRITICAL)
-![](../_img/7.png)
-#### Case 3 (CRITICAL)
-![](../_img/8.png)
-#### Case 4 (CRITICAL_TO_NORMAL)
-![](../_img/9.png)
-
-### Open Policy Agent
-#### point
-Implemented in Python as for now (since it is easier).
-```python
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
@@ -230,20 +169,27 @@ def determine_point(data):
         # Fallback if no exact condition matched
         return "NORMAL"
 
-# ------------------ Flask Endpoint ------------------ #
-@app.route("/v1/data/policy/point", methods=["POST"])
-def logic_endpoint():
-    data = request.get_json(force=True)
-    point = determine_point(data)
-    return jsonify({"point": point})
+def _int_mul(value: int, factor: float) -> int:
+    """
+    Multiplies an integer by a float factor and returns an int.
+    E.g. _int_mul(100, 1.2) -> 120
+    """
+    return int(value * factor)
 
-if __name__ == "__main__":
-    # Run the Flask app. You can also set a different port, debug mode, etc.
-    app.run(host="0.0.0.0", port=9500, debug=True)
+def _cpu_to_str(millicores: int) -> str:
+    """
+    Format an integer millicore value back into a string with the 'm' suffix.
+    E.g. 120 -> '120m'
+    """
+    return f"{millicores}m"
 
-```
-#### spec
-```python
+def _mem_to_str(megabytes: int) -> str:
+    """
+    Format an integer MB value back into a string with the 'Mi' suffix.
+    E.g. 256 -> '256Mi'
+    """
+    return f"{megabytes}Mi"
+
 def generate_spec(actual: dict) -> dict:
     """
     Given something like:
@@ -297,9 +243,21 @@ def generate_spec(actual: dict) -> dict:
         }
     }
 
-```
-#### interval
-```python
+# ------------------ Flask Endpoints ------------------ #
+@app.route("/v1/data/policy/point", methods=["POST"])
+def logic_endpoint():
+    data = request.get_json(force=True)
+    point = determine_point(data)
+    return jsonify({"point": point})
+
+@app.route("/v1/data/policy/spec", methods=["POST"])
+def spec_endpoint():
+    data = request.get_json(force=True)
+    actual = data["actual"]
+    spec_obj = generate_spec(actual)
+    return jsonify(spec_obj)
+
+@app.route("/v1/data/policy/interval", methods=["POST"])
 def interval_endpoint():
     data = request.get_json(force=True)
     point_value = data["point"]
@@ -310,40 +268,8 @@ def interval_endpoint():
         interval = "LOW"
 
     return jsonify({"interval": interval})
-```
 
-## Live demo
-### Prerequisties
-- [open5gs-k8s](https://github.com/niloysh/open5gs-k8s) running
-- CRD installed
-- move to the root dir of this repo
 
-### Steps
-#### 0. Prepare OPA
-```sh
-python3 managed-systems/open5gs/sample-loop/opa.py
-```
-#### 1. Main part
-Run 4 terminals on MobaXterm and enable split mode:
-![](../../upf-net/_img/5.png)
-
-First, at 4 run egress-agent.
-```sh
-python3 managed-systems/open5gs/sample-loop/egress-agent.py
-```
-
-Then, in 2 run the controller:
-```sh
-cd lupus
-make run
-```
-
-In 1, create the Lupus elements
-```sh
-k apply -f managed-systems/open5gs/sample-loop/master.yaml
-```
-
-And finally in 2 run ingress-agent:
-```sh
-python3 managed-systems/open5gs/sample-loop/ingress-agent.py --interval 30
-```
+if __name__ == "__main__":
+    # Run the Flask app. You can also set a different port, debug mode, etc.
+    app.run(host="0.0.0.0", port=9500, debug=True)
