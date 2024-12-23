@@ -231,7 +231,7 @@ def generate_spec(actual: dict) -> dict:
         limits_mem   = def_lim_mem
 
     return {
-        "spec": {
+        "result": {
             "requests": {
                 "cpu": _cpu_to_str(requests_cpu),
                 "memory": _mem_to_str(requests_mem)
@@ -247,27 +247,27 @@ def generate_spec(actual: dict) -> dict:
 @app.route("/v1/data/policy/point", methods=["POST"])
 def logic_endpoint():
     data = request.get_json(force=True)
-    point = determine_point(data)
-    return jsonify({"point": point})
+    point = determine_point(data['input'])
+    return jsonify({"result": point})
 
 @app.route("/v1/data/policy/spec", methods=["POST"])
 def spec_endpoint():
     data = request.get_json(force=True)
-    actual = data["actual"]
+    actual = data['input']["actual"]
     spec_obj = generate_spec(actual)
     return jsonify(spec_obj)
 
 @app.route("/v1/data/policy/interval", methods=["POST"])
 def interval_endpoint():
     data = request.get_json(force=True)
-    point_value = data["point"]
+    point_value = data['input']["point"]
 
     if point_value in ("NORMAL_TO_CRITICAL", "CRITICAL"):
         interval = "HIGH"
     else:
         interval = "LOW"
 
-    return jsonify({"interval": interval})
+    return jsonify({"result": interval})
 
 
 if __name__ == "__main__":

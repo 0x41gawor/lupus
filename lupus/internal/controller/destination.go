@@ -13,13 +13,13 @@ import (
 
 func sendToDestination(input interface{}, dest v1.Destination) (interface{}, error) {
 	switch dest.Type {
-	case "HTTP":
+	case "http":
 		res, err := sendToHTTP(dest.HTTP.Path, dest.HTTP.Method, input)
 		if err != nil {
 			return nil, err
 		}
 		return res, nil
-	case "Opa":
+	case "opa":
 		res, err := sendToOpa(dest.Opa.Path, input)
 		if err != nil {
 			return nil, err

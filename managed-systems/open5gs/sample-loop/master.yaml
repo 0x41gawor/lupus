@@ -15,4 +15,76 @@ spec:
           type: print
           print:
             inputKeys: ["*"]
-          next: exit
+          next: "opa-point"
+        - name: "opa-point"
+          type: send
+          send: 
+            inputKey: "open5gs-upf1"
+            destination: 
+              type: opa
+              opa: 
+                path: http://192.168.56.112:9500/v1/data/policy/point
+            outputKey: "point"
+          next: "print2"
+        - name: "print2"
+          type: print
+          print:
+            inputKeys: ["*"]
+          next: "switch1"
+        - name: "switch1"
+          type: switch
+          switch:
+            conditions:
+              - key: "point"
+                operator: eq
+                type: string
+                string: 
+                  value: "NORMAL"
+                next: final
+          next: "opa-spec"
+        - name: "opa-spec"
+          type: send
+          send: 
+            inputKey: "open5gs-upf1.actual"
+            destination: 
+              type: opa
+              opa: 
+                path: http://192.168.56.112:9500/v1/data/policy/spec
+            outputKey: "spec"
+          next: "print3"
+        - name: "print3"
+          type: print
+          print:
+            inputKeys: ["*"]
+          next: "switch2"
+        - name: "switch2"
+          type: switch
+          switch:
+            conditions:
+              - key: "point"
+                operator: eq
+                type: string
+                string: 
+                  value: "CRITICAL"
+                next: final
+          next: "print4"
+        - name: "print4"
+          type: print
+          print:
+            inputKeys: ["*"]
+          next: "opa-interval"
+        - name: "opa-interval"
+          type: send
+          send: 
+            inputKey: "point"
+            destination: 
+              type: opa
+              opa: 
+                path: http://192.168.56.112:9500/v1/data/policy/spec
+            outputKey: "interval"
+          next: "print5"
+        - name: "print5"
+          type: print
+          print:
+            inputKeys: ["*"]
+          next: final
