@@ -40,7 +40,6 @@ func sendToOpa(path string, reqBody interface{}) (interface{}, error) {
 	wrappedBody := map[string]interface{}{
 		"input": reqBody,
 	}
-
 	// Call sendToHTTP to get the response
 	res, err := sendToHTTP(path, "POST", wrappedBody)
 	if err != nil {
@@ -58,6 +57,8 @@ func sendToOpa(path string, reqBody interface{}) (interface{}, error) {
 }
 
 func sendToHTTP(path string, method string, body interface{}) (interface{}, error) {
+	bodyStr, _ := util.InterfaceToString(body)
+	print("Sending ", bodyStr, " to ", method, " ", path, "\n")
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
@@ -77,17 +78,14 @@ func sendToHTTP(path string, method string, body interface{}) (interface{}, erro
 	defer resp.Body.Close()
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		println("here1\n")
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		println("here2\n")
 		return nil, fmt.Errorf("non-ok HTTP Status")
 	}
 
 	var res interface{}
 	if err := json.Unmarshal(respBody, &res); err != nil {
-		println("here3\n")
 		return nil, err
 	}
 	return res, nil

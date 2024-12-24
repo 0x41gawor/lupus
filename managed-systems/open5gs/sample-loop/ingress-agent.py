@@ -27,7 +27,6 @@ def get_pods_by_deployment_prefix(prefix):
         # List all deployments in the current namespace
         deployments = apps_v1_api.list_deployment_for_all_namespaces(watch=False)
         matching_deployments = [d for d in deployments.items if d.metadata.name.startswith(prefix)]
-        
         # Find all pods associated with matching deployments
         pods = core_v1_api.list_pod_for_all_namespaces(watch=False)
         deployment_pod_map = {}
@@ -93,6 +92,7 @@ def get_json_data():
             "actual": {}
         }
 
+
         for pod in pods:
             pod_name = pod.metadata.name
             namespace = pod.metadata.namespace
@@ -118,7 +118,7 @@ def send_to_kube(state):
             version="v1",
             namespace='default',
             plural="elements",
-            name='lola-lola'
+            name='lola-demux'
         )
         
         # Update the `status.input` field with the state
@@ -132,7 +132,7 @@ def send_to_kube(state):
             version="v1",
             namespace='default',
             plural="elements",
-            name='lola-lola',
+            name='lola-demux',
             body={"status": observe_status}  # Send only the `status` field
         )
         print("Updated Kubernetes custom resource status successfully.")

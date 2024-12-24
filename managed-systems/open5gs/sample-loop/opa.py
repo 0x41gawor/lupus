@@ -253,15 +253,14 @@ def logic_endpoint():
 @app.route("/v1/data/policy/spec", methods=["POST"])
 def spec_endpoint():
     data = request.get_json(force=True)
-    actual = data['input']["actual"]
+    actual = data['input']
     spec_obj = generate_spec(actual)
     return jsonify(spec_obj)
 
 @app.route("/v1/data/policy/interval", methods=["POST"])
 def interval_endpoint():
     data = request.get_json(force=True)
-    point_value = data['input']["point"]
-
+    point_value = data['input']
     if point_value in ("NORMAL_TO_CRITICAL", "CRITICAL"):
         interval = "HIGH"
     else:

@@ -116,7 +116,7 @@ type PrintAction struct {
 
 type InsertAction struct {
 	OutputKey string               `json:"outputKey"`
-	Value     runtime.RawExtension `json:"value"` //value can be of type: int, float, bool, string
+	Value     runtime.RawExtension `json:"value"`
 }
 
 type Switch struct {

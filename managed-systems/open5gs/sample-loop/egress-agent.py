@@ -71,5 +71,19 @@ def set_limits():
     response = patch_deployment_resources(namespace, deployment_name, "resources.limits", cpu, memory)
     return jsonify({"response": str(response)})
 
+@app.route('/api/data', methods=['POST'])
+def get_data():
+    data = request.get_json()
+    print(data)
+    deployment_name = data.get('name')
+    namespace = 'open5gs'
+    lim_cpu = data['spec']['limits'].get('cpu')
+    lim_ram = data['spec']['limits'].get('memory')
+    req_cpu = data['spec']['requests'].get('cpu')
+    req_ram = data['spec']['requests'].get('memory')
+    res1 = patch_deployment_resources(namespace, deployment_name, 'resources.limits', lim_cpu, lim_ram)
+    res2 = patch_deployment_resources(namespace, deployment_name, 'resources.requests', req_cpu, req_ram)
+    return jsonify({"res1": str(res1), "res2": str(res2)})
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=9001)
