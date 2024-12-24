@@ -43,47 +43,44 @@ def patch_deployment_resources(namespace, deployment_name, resource_type, cpu, m
     except ApiException as e:
         return str(e)
 
-@app.route('/api/set-requests', methods=['POST'])
-def set_requests():
-    data = request.get_json()
-    deployment_name = data.get('name')  # Deployment name is passed in 'name'
-    namespace = data.get('namespace', 'open5gs')  # Default namespace if not provided
-    cpu = data.get('cpu')
-    memory = data.get('memory')
+import requests
 
-    if not all([deployment_name, cpu, memory]):
-        return jsonify({"error": "Missing required fields: name, cpu, memory"}), 400
+def send_interval_request(url: str, value: int):
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = {
+        "value": value
+    }
+    try:
+        response = requests.post(url, json=data, headers=headers)
+        response.raise_for_status()  # Raise an exception for HTTP errors
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Request failed: {e}")
+        return None
 
-    response = patch_deployment_resources(namespace, deployment_name, "resources.requests", cpu, memory)
-    return jsonify({"response": str(response)})
 
-@app.route('/api/set-limits', methods=['POST'])
-def set_limits():
-    data = request.get_json()
-    deployment_name = data.get('name')  # Deployment name is passed in 'name'
-    namespace = data.get('namespace', 'open5gs')  # Default namespace if not provided
-    cpu = data.get('cpu')
-    memory = data.get('memory')
-
-    if not all([deployment_name, cpu, memory]):
-        return jsonify({"error": "Missing required fields: name, cpu, memory"}), 400
-
-    response = patch_deployment_resources(namespace, deployment_name, "resources.limits", cpu, memory)
-    return jsonify({"response": str(response)})
 
 @app.route('/api/data', methods=['POST'])
 def get_data():
     data = request.get_json()
     print(data)
-    deployment_name = data.get('name')
-    namespace = 'open5gs'
-    lim_cpu = data['spec']['limits'].get('cpu')
-    lim_ram = data['spec']['limits'].get('memory')
-    req_cpu = data['spec']['requests'].get('cpu')
-    req_ram = data['spec']['requests'].get('memory')
-    res1 = patch_deployment_resources(namespace, deployment_name, 'resources.limits', lim_cpu, lim_ram)
-    res2 = patch_deployment_resources(namespace, deployment_name, 'resources.requests', req_cpu, req_ram)
-    return jsonify({"res1": str(res1), "res2": str(res2)})
+    if "spec" in data:
+        deployment_name = data.get('name')
+        namespace = 'open5gs'
+        lim_cpu = data['spec']['limits'].get('cpu')
+        lim_ram = data['spec']['limits'].get('memory')
+        req_cpu = data['spec']['requests'].get('cpu')
+        req_ram = data['spec']['requests'].get('memory')
+        res1 = patch_deployment_resources(namespace, deployment_name, 'resources.limits', lim_cpu, lim_ram)
+        res2 = patch_deployment_resources(namespace, deployment_name, 'resources.requests', req_cpu, req_ram)
+
+    if "interval" in data:
+        interval = data['interval']
+        response = send_interval_request("http://192.168.56.112:9000/api/interval", interval)
+    
+    return jsonify({"res": "ok"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=9001)

@@ -117,6 +117,14 @@ spec:
           print:
             inputKeys: ["*"]
           next: final
+      next: 
+        - type: destination
+          destination: 
+            type: http
+            http: 
+              path: http://192.168.56.112:9001/api/data
+              method: POST
+          keys: ["*"]
     - name: "upf2"
       descr: "Reconcilation of UPF2 deployment"
       actions:
@@ -197,3 +205,11 @@ spec:
           print:
             inputKeys: ["*"]
           next: final
+      next: 
+        - type: destination
+          destination: 
+            type: http
+            http: 
+              path: http://192.168.56.112:9001/api/data
+              method: POST
+          keys: ["*"]
