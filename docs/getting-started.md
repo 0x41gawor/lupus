@@ -76,4 +76,34 @@ General architecture of Lupus as controller looks like this:
 
 ![](../_img/42.png)
 
-Ingress and Egress Agents are input and output points to the Lupus system. They are external to Kubernetes and have to be developed by [designer](defs.md#designer). The only requirement is to be compatible (stick along) with [Lupin and Lupout interfaces specificatin](lupin-lupout-if.md). 
+Ingress and Egress Agents are input and output points to the Lupus system. They are external to Kubernetes and have to be developed by [designer](defs.md#designer). The only requirement for them is to be compatible (stick along) with [Lupin and Lupout interfaces specificatin](lupin-lupout-if.md). 
+
+Our loop will have only one Lupus Element, thus it will be both the [Ingress Element](defs.md#ingress-element) and [Egress Element](defs.md#egress-element).
+
+Our Ingress Agent on one side has to communicate with managed-system, and on the other has to implement [Lupin interface](lupin-lupout-if.md).
+
+![](../_img/43.png)
+
+On the left side it will act as a MQTT Broker and will gather temperature measurement from microcontrollers. Periodically it will change the Status of Element CR* with such json input:
+
+```json
+{
+    "A": {
+        "temp": 12
+    },
+    "B": {
+        "temp": 10
+    },
+    "C": {
+        "temp": 8
+    },
+    "D": {
+        "temp": 14
+    },
+}
+```
+
+> *Python offers great library for interworking with kube-api-server
+
+### 2. Design the Lupus Elements
+
