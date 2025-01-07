@@ -71,10 +71,6 @@ func PerformAction(data *util.Data, action v1.Action) (string, error) {
 				err = fmt.Errorf("could not retrieve data field for evaluating condition: %w", err)
 				return "exit", err
 			}
-			if err != nil {
-				err = fmt.Errorf("could not convert data field into string: %w", err)
-				return "exit", err
-			}
 			eval, err := condition.Evaluate(*field)
 			if err != nil {
 				err = fmt.Errorf("error during condition evaluation: %w", err)
