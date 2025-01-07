@@ -60,3 +60,20 @@ Lupus mission is more to design loop workflow and introcude single point of mana
 
 ## Step by step guide
 
+Ok, let's use the same example to show step by step process with detailed description how to use Lupus for closed control loop.
+
+The most general architecture of Closed Control Loop looks like this:
+
+![](../managed-systems/_img/1.svg)
+
+The four rooms state here as [managed-system](defs.md#managed-system) and the [management-problem](defs.md#management-problem) is to keep their temperatures at desired level.
+
+![](../_img/41.png)
+
+### 1. Develop Ingress Agent
+
+General architecture of Lupus as controller looks like this:
+
+![](../_img/42.png)
+
+Ingress and Egress Agents are input and output points to the Lupus system. They are external to Kubernetes and have to be developed by [designer](defs.md#designer). The only requirement is to be compatible (stick along) with [Lupin and Lupout interfaces specificatin](lupin-lupout-if.md). 
