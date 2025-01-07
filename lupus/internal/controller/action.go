@@ -48,13 +48,13 @@ func PerformAction(data *util.Data, action v1.Action) (string, error) {
 	case "duplicate":
 		err := data.Duplicate(action.Duplicate.InputKey, action.Duplicate.OutputKey)
 		if err != nil {
-			err = fmt.Errorf("cannot set data field: %w", err)
+			err = fmt.Errorf("cannot duplicate data field: %w", err)
 			return "exit", err
 		}
 	case "insert":
 		err := data.Insert(action.Insert.OutputKey, action.Insert.Value)
 		if err != nil {
-			err = fmt.Errorf("cannot inser data field: %w", err)
+			err = fmt.Errorf("cannot insert data field: %w", err)
 			return "exit", err
 		}
 	case "print":
