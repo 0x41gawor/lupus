@@ -1,5 +1,4 @@
 # Getting started
-
 ## Target audience
 
 Lupus is a platform targeted for autoamted management of [systems](defs.md#managed-system) in telco/mobile networks industry. Lupus proposes such management by the means of [Closed Control Loops](defs.md#closed-control-loops). Actually, Lupus does not manage itself. It rather provides a framework that let's its users to design and run loop workflow. The actual processing components of Lupus loop are external to it (and called [external blocks](defs.md#external-block)). Lupus is implemented on top of Kubernetes and leverages its [controller pattern](defs.md#controller-pattern). Thus, due to the speed of Kubernetes itself, it is destined for non-realtime parts of telco systems.
@@ -243,6 +242,17 @@ Note that these are the response from HQ Server for each room. Instead of Data r
 
 We send such Data to Egress-Agent. It will be his mission to translate it to [Management-Action] and execute such action.
 
+To run our loop workflow in Kubernetes just apply the Custom Resource `masters.lupus.gawor.io` by:
+```sh
+kubectl apply -f <filename.yaml>
+```
+
+You can watch applied resources with:
+```sh
+kubectl get masters
+kubectl get elements
+```
+
 ### 3. Design the Egress-Agent
 
 [Egress-Agent](defs.md#egress-agent) has to implement [Lupout interface](defs.md#lupout-interface) on its left side. It can be HTTP server (as it is in our case). Then, on the right side it has to perform [Management-Action](defs.md#management-action), which is out of scope of Lupus specification and specific to [managed-system](defs.md#managed-system). 
@@ -258,5 +268,7 @@ Now the loop is ready. Its workflow runs in Kubernetes as Master CR and Element 
 ## Summary
 
 This was just quick walktrhrough. To go further explore:
-- detailed documentation of Lupus -> [detailed-doc.md](detailed-doc.md), or
-- examples directory -> [examples](/examples/)
+- detailed documentation of Lupus -> [detailed-doc.md](detailed-doc.md) to dive into specific topis, or
+- examples directory -> [examples](/examples/) to see Lupus application in various examples
+
+

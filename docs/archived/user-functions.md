@@ -127,7 +127,6 @@ And from now on, we have a map that has functions names as keys and functions it
 
 Now, we just simply need to call apropriate function based on the func name from the spec.
 
-
 ```go
 func sendToGoFunc(funcName string, body interface{}) (interface{}, error) {
 	if fn, exists := FunctionRegistry[funcName]; exists {
