@@ -54,3 +54,8 @@ Building entity of Loop Workflow. Can be Lupus Element or External Block.
 # destination
 
 # action
+
+# resulting-data
+In each iteration when the Data will be modified with all the elements's actions we name such Data a "resulting". It is simply the Data at the output of element.
+
+# management-action

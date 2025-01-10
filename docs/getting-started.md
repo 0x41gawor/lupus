@@ -76,15 +76,15 @@ General architecture of Lupus as controller looks like this:
 
 ![](../_img/42.png)
 
-Ingress and Egress Agents are input and output points to the Lupus system. They are external to Kubernetes and have to be developed by [designer](defs.md#designer). The only requirement for them is to be compatible with [Lupin and Lupout interfaces specificatin](lupin-lupout-if.md). 
+Ingress and Egress Agents are input and output points to the Lupus system. They are external to Kubernetes cluster and have to be developed by [designer](defs.md#designer). The only requirement for them is to be compatible with [Lupin and Lupout interfaces specification](lupin-lupout-if.md). 
 
-Our loop will have only one Lupus Element, thus it will be both the [Ingress Element](defs.md#ingress-element) and [Egress Element](defs.md#egress-element).
+Our loop will have only one [Lupus Element](defs.md#lupus-element), thus it will be both the [Ingress](defs.md#ingress-element) and [Egress](defs.md#egress-element) Element.
 
-Our Ingress Agent on one side has to communicate with managed-system, and on the other has to implement [Lupin interface](lupin-lupout-if.md).
+[Ingress Agent](defs.md#ingress-agent) on one side has to communicate with [managed-system](defs.md#managed-system), and on the other it has to implement [Lupin interface](lupin-lupout-if.md).
 
 ![](../_img/43.png)
 
-On the left side it will act as a MQTT Broker and will gather temperature measurement from microcontrollers. On the right side (the one implemeting Lupin interface) it will change the Status of Element CR* (ina a periodical manner) with such json input:
+On the left side it will act as a MQTT Broker and will gather temperature measurement from microcontrollers. On the right side (the one implemeting Lupin interface) it will change the Status of [Ingress Element](defs.md#ingress-element) CR* (i na a periodical manner) with such json input:
 
 ```json
 {
@@ -111,9 +111,9 @@ On the left side it will act as a MQTT Broker and will gather temperature measur
 
 ### 2. Design the Lupus Elements
 
-Ok, we've received [managed-system-state](defs.md#managed-system-state), now we have to come up with Loop workflow. What has to be done in each reconcilliation iteration?
+Ok, we've received [managed-system-state](defs.md#managed-system-state), now we have to come up with Loop workflow. What has to be done in each loop iteration?
 
-Looking back as how it was done previously, we need to query HTTP server in HQ for each room.
+Looking back at how it was done previously, we need to query HTTP server in HQ for each room.
 
 How to express such logic in Lupus?
 
@@ -221,3 +221,42 @@ Element spec contains:
 - `next` - next specifies the next [element](defs.md#loop-element) in loop workflow and resulting Data fields that has to be sent there. It can be any [destination](defs.md#destination) or a [lupus-element](defs.md#lupus-element). 
 
 > *Control Flow with conditions (if expression) or sudden exits are possible.
+
+At the end of the loop iteration we have such [Resulting data](defs.md#resulting-data):
+```json
+{
+    "A": {
+        "move_gauge": 1
+    },
+    "B": {
+        "move_gauge": 0
+    },
+    "C": {
+        "move_gauge": 2
+    },
+    "D": {
+        "move_gauge": -2
+    }
+}
+```
+Note that these are the response from HQ Server for each room. Instead of Data representing the [managed-system-state](defs.md#managed-system-state) we have now Data that represents the [management-action](defs.md#management-action).
+
+We send such Data to Egress-Agent. It will be his mission to translate it to [Management-Action] and execute such action.
+
+### 3. Design the Egress-Agent
+
+[Egress-Agent](defs.md#egress-agent) has to implement [Lupout interface](defs.md#lupout-interface) on its left side. It can be HTTP server (as it is in our case). Then, on the right side it has to perform [Management-Action](defs.md#management-action), which is out of scope of Lupus specification and specific to [managed-system](defs.md#managed-system). 
+
+![](../_img/45.png)
+
+In our case Egress-Agent exposes endpoint "http://hq.server.corpnet/lupus/temp/egress-agent, which accepts json in the same format as resulting data above. Then it translates this json to 4 separate management-actions. Each involves sending "move gauge" instruction to respective microcontroller. Exact way of communication here is not relevant and out of scope of this tutorial.
+
+### 4. Closing word
+
+Now the loop is ready. Its workflow runs in Kubernetes as Master CR and Element CR, and its logic runs in HQ Server.
+
+## Summary
+
+This was just quick walktrhrough. To go further explore:
+- detailed documentation of Lupus -> [detailed-doc.md](detailed-doc.md), or
+- examples directory -> [examples](/examples/)

@@ -1,0 +1,16 @@
+{
+    "A": {
+        "move_gauge": 1
+    },
+    "B": {
+        "move_gauge": 0
+    },
+    "C": {
+        "move_gauge": 2
+    },
+    "D": {
+        "move_gauge": -2
+    }
+}
+
+
