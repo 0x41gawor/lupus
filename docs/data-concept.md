@@ -43,8 +43,6 @@ This means that action:
 - "cpu-new-license" - will take root field "cpu" send it somewhere, and save its response as field "cpu", replacing this field in Data structure.
 - "ram-new-license" - will take root field "ram" send it somewhere, and save its response as field "ram", replacing this field in Data structure.
 
-
-
 For example the Desination can be Opa server and the whole action looks like this:
 
 ![](../_img/17.png)

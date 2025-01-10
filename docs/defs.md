@@ -12,9 +12,12 @@
 
 # egress-agent
 
-# loop-logic
+# reconcilliation-logic
 
 # loop-workflow
+
+# loop-element
+Building entity of Loop Workflow. Can be Lupus Element or External Block.
 
 # user-functions
 
@@ -33,3 +36,21 @@
 # ingress-element
 
 # egress-element
+
+# managed-system-state
+
+# elements.lupus.gawor.io
+
+# masters.lupus.gawor.io
+
+# master
+
+# lupn
+
+# operator
+
+# loop-iteration
+
+# destination
+
+# action

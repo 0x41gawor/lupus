@@ -1,0 +1,61 @@
+apiVersion: lupus.gawor.io/v1
+kind: Master
+metadata:
+  labels:
+    app.kubernetes.io/name: lupus
+    app.kubernetes.io/managed-by: kustomize
+  name: Temp
+spec:
+  name: Temp
+  elements:
+    - name: "Main"
+      descr: "Queries HQ Server for each room"
+      actions:
+        - name: "room A"
+          type: send
+          inputKey: "A"
+          outputKey: "A"
+          destination:
+            type: http
+            http: 
+              path: "http://hq.server.corpnet/administration/rooms/temp"
+              method: GET
+          next: "room B"
+        - name: "room B"
+          type: send
+          inputKey: "B"
+          outputKey: "B"
+          destination:
+            type: http
+            http: 
+              path: "http://hq.server.corpnet/administration/rooms/temp"
+              method: GET
+          next: "room C"
+        - name: "room C"
+          type: send
+          inputKey: "C"
+          outputKey: "C"
+          destination:
+            type: http
+            http: 
+              path: "http://hq.server.corpnet/administration/rooms/temp"
+              method: GET
+          next: "room D"
+        - name: "room D"
+          type: send
+          inputKey: "D"
+          outputKey: "D"
+          destination:
+            type: http
+            http: 
+              path: "http://hq.server.corpnet/administration/rooms/temp"
+              method: GET
+          next: final
+      next: 
+        - type: destination
+          destination:
+            type: http
+            http:
+              path: "http://hq.server.corpnet/lupus/temp/egress-agent"  
+              method: POST
+            keys: ["*"]
