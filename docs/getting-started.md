@@ -110,7 +110,7 @@ On the left side it will act as a MQTT Broker and will gather temperature measur
 
 ### 2. Design the Lupus Elements
 
-Ok, we've received [managed-system-state](defs.md#managed-system-state), now we have to come up with Loop workflow. What has to be done in each loop iteration?
+Ok, we've received [current-state](defs.md#current-state), now we have to come up with Loop workflow. What has to be done in each loop iteration?
 
 Looking back at how it was done previously, we need to query HTTP server in HQ for each room.
 
@@ -238,7 +238,7 @@ At the end of the loop iteration we have such [Resulting data](defs.md#resulting
     }
 }
 ```
-Note that these are the response from HQ Server for each room. Instead of Data representing the [managed-system-state](defs.md#managed-system-state) we have now Data that represents the [management-action](defs.md#management-action).
+Note that these are the response from HQ Server for each room. Instead of Data representing the [current-state](defs.md#current-state) we have now Data that represents the [management-action](defs.md#management-action).
 
 We send such Data to Egress-Agent. It will be his mission to translate it to [Management-Action] and execute such action.
 
