@@ -11,7 +11,9 @@
 
 Lupus is an open-source platform that enables you to design and run closed control loops within a Kubernetes cluster. The project focuses on managing telco and mobile network systems.
 
-In robotics and automation, a control loop is a non-terminating process that regulates the state of a system. Kubernetes inherently implements the [controller pattern](https://kubernetes.io/docs/concepts/architecture/controller/). We leverage this by combining Kubernetes extensions such as [Custom Resource Definitions (CRDs)](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/) and the [Operator Pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) to create a reusable architecture that allows users to design and run any kind of closed control loop for system management. In [ICS](https://en.wikipedia.org/wiki/Industrial_control_system) terminology Lupus acts as a [control system](https://en.wikipedia.org/wiki/Control_system).
+In robotics and automation, a control loop is a non-terminating process that regulates the state of a system. Kubernetes inherently implements the [controller pattern](https://kubernetes.io/docs/concepts/architecture/controller/). We leverage this by combining Kubernetes extensions such as [Custom Resource Definitions (CRDs)](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/) and the [Operator Pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) to create a reusable architecture that allows users to design and run any kind of closed control loop for system management.
+
+In [ICS](https://en.wikipedia.org/wiki/Industrial_control_system) terminology Lupus acts as a [control system](https://en.wikipedia.org/wiki/Control_system), but for telco/mobile industry.
 
 ## ETSI Context
 
