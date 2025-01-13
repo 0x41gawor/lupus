@@ -74,7 +74,7 @@ A [workflow](#workflow) performed during one iteration of a control loop. A loop
 In Lupus, the loop workflow is expressed in [LupN](#lupn).
 
 # loop-element
-A building block of the [loop-workflow](#loop-workflow). Loop elements can be either [lupus-elements](#lupus-element) or [external-elements](#external-element).
+A building block of the [loop-workflow](#loop-workflow). Loop elements can be either [lupus-elements](#lupus-element) or references to [external-elements](#external-element).
 
 # lupus-element
 A [loop-element](#loop-element) that runs in a Kubernetes cluster. Its purpose is to express the [loop-workflow](#loop-workflow) and delegate the [computing-part](#computing-part) to [external-elements](#external-element). 
@@ -110,12 +110,14 @@ An individual or organization using Lupus for automating the management of [mana
 An individual responsible for designing the [loop-workflow](#loop-workflow) in [LupN](#lupn). Designers typically rely on software engineers to handle system integrations.
 
 # lupus-controllers
-A collective term for the controllers of [master](#master) and [lupus-elements](#lupus-element).
+A collective term for the controllers of [lupus-master](#lupus-master) and [lupus-elements](#lupus-element).
 
 # data
-The carrier of information in JSON format, used throughout a loop iteration. Data evolves as follows:
+The carrier of information in JSON format, used throughout a loop iteration inside a single [lupus-element](#lupus-element).
+
+Data evolves as follows:
 - Initial form: Derived from [current-state](#current-state) via the [lupin-interface](#lupin-interface).
-- Intermediate forms: Modified by [loop-elements](#loop-element).
+- Intermediate forms: Modified by [actions](#action) of [loop-element](#loop-element).
 - Final form: Sent to the [lupout-interface](#lupout-interface) as [final-data](#final-data).
 
 # ingress-element
@@ -124,8 +126,8 @@ A [loop-element](#loop-element) that terminates the [lupin-interface](#lupin-int
 # egress-element
 A [loop-element](#loop-element) that sends the final [control-action](#control-action) to the [lupout-interface](#lupout-interface).
 
-# master
-A type of [custom-resource](#custom-resources) named `masters.lupus.gawor.io`. The master is responsible for spawning [lupus-elements](#lupus-element). Its YAML specification includes the [LupN](#lupn) notation.
+# lupus-master
+A type of [custom-resource](#custom-resources) named `masters.lupus.gawor.io`. The master is responsible for spawning [lupus-elements](#lupus-element). Its YAML manifest file includes the [LupN](#lupn) notation.
 
 # lupn
 A YAML-based notation for defining [loop-workflows](#loop-workflow) in Lupus. LupN supports sequential workflows, flow control, and immediate exits, as well as [actions](#action) for data manipulation.
@@ -161,7 +163,7 @@ CRDs define new custom resource types and enable their registration in a Kuberne
 # controller
 A Kubernetes term: https://kubernetes.io/docs/concepts/architecture/controller/
 
-Controllers run control loops for Kubernetes resources, reconciling their [current state](#current-state) with the [desired state](#desired-state). Lupus leverages [controllers](#controller) to manage its [custom resources](#custom-resources), including the [master](#master) and [elemenet](#lupus-element).
+Controllers run control loops for Kubernetes resources, reconciling their [current state](#current-state) with the [desired state](#desired-state). Lupus leverages [controllers](#controller) to manage its [custom resources](#custom-resources), including the [lupus-master](#lupus-master) and [elemenet](#lupus-element).
 
 # operator-pattern
 This is a Kubernetes term: https://kubernetes.io/docs/concepts/extend-kubernetes/operator/
