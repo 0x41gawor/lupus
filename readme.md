@@ -13,7 +13,7 @@ Lupus is an open-source platform that enables you to design and run closed contr
 
 In robotics and automation, a control loop is a non-terminating process that regulates the state of a system. Kubernetes inherently implements the [controller pattern](https://kubernetes.io/docs/concepts/architecture/controller/). We leverage this by combining Kubernetes extensions such as [Custom Resource Definitions (CRDs)](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/) and the [Operator Pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) to create a reusable architecture that allows users to design and run any kind of closed control loop for system management.
 
-In [ICS](https://en.wikipedia.org/wiki/Industrial_control_system) terminology Lupus acts as a [control system](https://en.wikipedia.org/wiki/Control_system), but for telco/mobile industry.
+In [ICS](https://en.wikipedia.org/wiki/Industrial_control_system) terminology, Lupus acts as a [control system](https://en.wikipedia.org/wiki/Control_system), but for telco/mobile industry.
 
 ## ETSI Context
 
@@ -21,14 +21,14 @@ The direct inspiration for this project comes from the work of the [ETSI](https:
 
 ## How to Use It?
 
-If you have a system that produces observable data and exposes interfaces (API) for management actions, Lupus is the perfect platform to begin your automation journey.
+If you have a system that exposes interfaces (API) for observation and management actions, Lupus is the perfect platform to begin your automation journey.
 
 <p align="center">
   <img src="_img/readme/1.png" alt="Lupus control loop overview"/>
 </p>
 
 All you need to do is:
-- Install Lupus in your Kubernetes cluster
+- [Install Lupus](docs/installation.md) in your Kubernetes cluster
 - Integrate your [managed-system](docs/defs.md#managed-system) with Lupus by the development of [Ingress and Egress Agents](docs/defs.md#ingress-agent).
 - Prepare your [loop-workflow](docs/defs.md#loop-workflow) in a tool of your choice.
 - Prepare [external-elements](docs/defs.md#external-element) of you loop if needed.
