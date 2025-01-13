@@ -11,26 +11,28 @@
 
 Lupus is an open-source platform that enables you to design and run closed control loops within a Kubernetes cluster. The project focuses on managing telco and mobile network systems.
 
-In robotics and automation, a control loop is a non-terminating process that regulates the state of a system. Kubernetes inherently implements the [controller pattern](https://kubernetes.io/docs/concepts/architecture/controller/). We leverage this by combining Kubernetes extensions such as [Custom Resource Definitions (CRDs)](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/) and the [Operator Pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) to create a reusable architecture that allows users to design and run any kind of closed control loop for system management.
+In robotics and automation, a control loop is a non-terminating process that regulates the state of a system. Kubernetes inherently implements the [controller pattern](https://kubernetes.io/docs/concepts/architecture/controller/). We leverage this by combining Kubernetes extensions such as [Custom Resource Definitions (CRDs)](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/) and the [Operator Pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) to create a reusable architecture that allows users to design and run any kind of closed control loop for system management. In [ICS](https://en.wikipedia.org/wiki/Industrial_control_system) terminology Lupus acts as a [control system](https://en.wikipedia.org/wiki/Control_system).
 
 ## ETSI Context
 
-The direct inspiration for this project comes from the work of the [ETSI](https://www.etsi.org) committee, specifically ["ENI - Experiential Networked Intelligence"](https://www.etsi.org/technologies/experiential-networked-intelligence). The document ["Overview of Prominent Control Loop Architectures"](https://www.etsi.org/deliver/etsi_gr/ENI/001_099/017/02.01.01_60/gr_ENI017v020101p.pdf) discusses various control loop architectures. The natural next step is to develop a way to implement and run such loops. Kubernetes was chosen as the runtime due to its widespread adoption within the telco community.
+The direct inspiration for this project comes from the work of the [ETSI](https://www.etsi.org) committee, specifically ["ENI - Experiential Networked Intelligence"](https://www.etsi.org/technologies/experiential-networked-intelligence). The document ["Overview of Prominent Control Loop Architectures"](https://www.etsi.org/deliver/etsi_gr/ENI/001_099/017/02.01.01_60/gr_ENI017v020101p.pdf) discusses various control loop architectures. The natural next step is to develop a way to design and run such loops. Kubernetes was chosen as the runtime due to its widespread adoption within the telco community.
 
-## How to Use It
+## How to Use It?
 
-If you have a system that produces observable data and supports management actions based on that data, Lupus is the perfect platform to begin your automation journey.
+If you have a system that produces observable data and exposes interfaces (API) for management actions, Lupus is the perfect platform to begin your automation journey.
 
 <p align="center">
   <img src="_img/readme/1.png" alt="Lupus control loop overview"/>
 </p>
 
-To get started:
-- Develop Ingress and Egress Agents according to the **Lupin** and **Lupout** interface specifications (detailed documentation coming soon).
-- Design your loop workflow using an external tool of your choice (e.g., flowcharts, BPMN diagrams).
-- Express the designed logic in Master CR YAML manifest.
+All you need to do is:
+- Install Lupus in your Kubernetes cluster
+- Integrate your [managed-system](docs/defs.md#managed-system) with Lupus by the development of [Ingress and Egress Agents](docs/defs.md#ingress-agent).
+- Prepare your [loop-workflow](docs/defs.md#loop-workflow) in a tool of your choice.
+- Prepare [external-elements](docs/defs.md#external-element) of you loop if needed.
+- Express the [loop-workflow](docs/defs.md#loop-workflow) in [Master CR](docs/defs.md#master) YAML files and apply them in the cluster.
 
-Read our [Getting started](getting-started.md) guide for more details.
+For more details, read our [Getting started guide](docs/getting-started.md).
 
 ## Project Status
 
