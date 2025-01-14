@@ -1,10 +1,10 @@
 # managed-system
-A system that can be managed by Lupus in a [Closed Control Loop](#closed-control-loop) manner. Lupus primarily targets systems in the telecommunications and mobile networks industries.
+A system that is a candidate to be managed by Lupus in a [Closed Control Loop](#closed-control-loop) manner. Lupus primarily targets systems in the telecommunications and mobile networks industries.
 
 # control-loop
-A fundamental building block of [control-systems](#control-system) that manages, commands, directs, or regulates the behavior of other devices or systems in industrial control systems.
+In [ICS](https://en.wikipedia.org/wiki/Industrial_control_system) a control loop is fundamental building block of [control-systems](#control-system) that manages, commands, directs, or regulates the behavior of other devices or systems in industrial control systems.
 
-Control-loops are divided into two categories based on the incorporation of feedback mechanisms:
+Control loops are categorized based on whether they incorporate feedback mechanisms
 - **Open Control Loops**: The control action (input to the managed system) is independent of the managed system's output.
 - **Closed Control Loops**: The output of the managed system is "fed back" to the [control-system](#control-system) and influences the control action.
 
@@ -17,7 +17,7 @@ The target state of a [managed-system](#managed-system) that the [control-system
 # closed-control-loop
 In Kubernetes, every control-loop is of type closed loop and Kubernetes names them simply - "control loops". In Lupus, we adapt terminology from [Overview of Prominent Control Loop Architectures](https://www.etsi.org/deliver/etsi_gr/ENI/001_099/017/02.01.01_60/gr_ENI017v020101p.pdf), but in mix with [ICS](https://en.wikipedia.org/wiki/Industrial_control_system) one.
 
-Since, a "Closed control loop" is a loop with architecture as in:
+Hence in Lupus we define "Closed control loop" as a loop with architecture as below:
 
 ![](../_img/46.png)
 
@@ -135,6 +135,9 @@ A YAML-based notation for defining [loop-workflows](#loop-workflow) in Lupus. Lu
 # action
 An operation defined in LupN that modifies [data](#data) during a [loop-iteration](#loop-iteration). Do not confuse with [control-action].
 
+# loop-iteration
+A single run of a [loop-workflow](#loop-workflow). 
+
 # final-data
 The state of [data](#data) at the end of a loop iteration, representing its final form before being sent to the [lupout-interface](#lupout-interface). [Egress-Agent](#egress-agent) will derive a [control-action](#control-action) from it.
 
@@ -158,7 +161,7 @@ Sometimes built-in (default) resources like Pods, Deployments, Services are not 
 # crd
 A Kubernetes term: https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/
 
-CRDs define new custom resource types and enable their registration in a Kubernetes cluster.
+It is a file that defines new [custom-resource](#custom-resources) types and enables their registration in a Kubernetes cluster.
 
 # controller
 A Kubernetes term: https://kubernetes.io/docs/concepts/architecture/controller/
