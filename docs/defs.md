@@ -161,7 +161,7 @@ Sometimes built-in (default) resources like Pods, Deployments, Services are not 
 # crd
 A Kubernetes term: https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/
 
-It is a file that defines new [custom-resource](#custom-resources) types and enables their registration in a Kubernetes cluster.
+It is a file that defines new [custom-resource](#custom-resources) type and enables its registration in a Kubernetes cluster.
 
 # controller
 A Kubernetes term: https://kubernetes.io/docs/concepts/architecture/controller/

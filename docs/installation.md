@@ -10,7 +10,7 @@ There is no thing as installation of Lupus (e.g. in your Operating System or so)
 
 ### 1. Prerequisities
 
-Of course you need to have a running Kubernetes cluster (can be [Minikube](https://minikube.sigs.k8s.io/docs/)), some container engine (like [Docker](https://docs.docker.com)) and [Go language](https://go.dev) installed.
+Of course you need to have a running Kubernetes cluster (can be [Minikube](https://minikube.sigs.k8s.io/docs/)), some container engine (like [Docker](https://docs.docker.com)) and [Go language](https://go.dev) installed. 
 
 #### 1.1 Install Kubebuilder
 
@@ -31,7 +31,7 @@ This will apply [crd](defs.md#crd) of [master](defs.md#master) and [element](def
 make install
 ```
 
-### 4. Run controllers for master and element crd
+### 4. Run controllers for master and element custom resources
 
 This will run [controller](defs.md#controller) for [master](defs.md#master) and [element](defs.md#lupus-element) custom resources. 
 
