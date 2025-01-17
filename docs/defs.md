@@ -38,18 +38,26 @@ An action sent to or performed on a [managed-system](#managed-system) by the [co
 # reconciliation
 The process of bringing the [current-state](#current-state) of a [managed-system](#managed-system) closer to the [desired-state](#desired-state).
 
-# ingress-agent
+# translation-agent
 An intermediary that integrates a [managed-system](#managed-system) with Lupus. This is especially useful when the [user](#user) cannot modify the managed system. 
+
+We have two types for translation agents:
+- [ingress-agent](#ingress-agent) - for translation of [control-feedback](#control-feedback)
+- [egress-agent](#egress-agent) - for translation of [control-action](#control-action)
+
+# ingress-agent
+A [translation-agent](#translation-agent) at the ingress of Lupus. It it responsible for translating [control-feedback](#control-feedback) from the [managed-system](#managed-system).
 
 Typical responsibilities of an ingress-agent include:
 - Receiving or gathering information from the [managed-system](#managed-system).
 - Monitoring changes in the [managed-system](#managed-system).
-- Translating managed system terminology into Lupus-compatible nomenclature.
+- Translating managed system data into Lupus-compatible nomenclature.
 
 The communication between the ingress-agent and the [managed-system](#managed-system) is case-specific and must be implemented by the [user](#user). Communication between the ingress-agent and Lupus is standardized via the [lupin-interface](#lupin-interface).
 
 # egress-agent
-An intermediary that translates the [control-action](#control-action) from Lupus into actions performed on the [managed-system](#managed-system).
+A [translation-agent](#translation-agent) at the egress of Lupus.
+It translates the [control-action](#control-action) from Lupus into actions performed on the [managed-system](#managed-system).
 
 The egress agent receives the [control-action](#control-action) as [final-data](#final-data) in JSON format from Lupus via the [lupout-interface](#lupout-interface) and performs the corresponding actions on the [managed-system](#managed-system).
 
@@ -121,16 +129,18 @@ Data evolves as follows:
 - Final form: Sent to the [lupout-interface](#lupout-interface) as [final-data](#final-data).
 
 # ingress-element
-A [loop-element](#loop-element) that terminates the [lupin-interface](#lupin-interface) and initiates the [loop-workflow](#loop-workflow).
+A [lupus-element](#loop-element) that terminates the [lupin-interface](#lupin-interface) and initiates the [loop-workflow](#loop-workflow).
 
 # egress-element
-A [loop-element](#loop-element) that sends the final [control-action](#control-action) to the [lupout-interface](#lupout-interface).
+A [lupus-element](#loop-element) that sends the  [final-data](#final-data) to the [lupout-interface](#lupout-interface).
 
 # lupus-master
 A type of [custom-resource](#custom-resources) named `masters.lupus.gawor.io`. The master is responsible for spawning [lupus-elements](#lupus-element). Its YAML manifest file includes the [LupN](#lupn) notation.
 
 # lupn
 A YAML-based notation for defining [loop-workflows](#loop-workflow) in Lupus. LupN supports sequential workflows, flow control, and immediate exits, as well as [actions](#action) for data manipulation.
+
+# lupn-file
 
 # action
 An operation defined in LupN that modifies [data](#data) during a [loop-iteration](#loop-iteration). Do not confuse with [control-action].
@@ -139,7 +149,7 @@ An operation defined in LupN that modifies [data](#data) during a [loop-iteratio
 A single run of a [loop-workflow](#loop-workflow). 
 
 # final-data
-The state of [data](#data) at the end of a loop iteration, representing its final form before being sent to the [lupout-interface](#lupout-interface). [Egress-Agent](#egress-agent) will derive a [control-action](#control-action) from it.
+The state of [data](#data) at the end of a loop iteration (at the end of [egress-element](#egress-element)), representing its final form before being sent on the [lupout-interface](#lupout-interface). [Egress-Agent](#egress-agent) will translate it into a [control-action](#control-action). 
 
 # workflow
 A sequence of connected actions, sometimes conditionally dependent, that achieve a specific goal.
@@ -182,3 +192,18 @@ Colloqually a [controller](#controller) for [custom-resources](#custom-resources
 This is a Kubernetes term: https://kubernetes.io/docs/concepts/architecture/#etcd
 
 This is a database that stores the current state of a cluster.
+
+# status
+This is a Kubernetes term: https://kubernetes.io/docs/concepts/overview/working-with-objects/#object-spec-and-status
+
+The status describes the current state of the object, supplied and updated by the Kubernetes system and its components. The Kubernetes control plane continually and actively manages every object's actual state to match the desired state you supplied.
+
+# Rawextension
+
+This is a Kubernetes term: https://github.com/kubernetes/apimachinery/blob/master/pkg/runtime/types.go
+
+It is a struct defined within a Kubernetes runtime package able to carry any data, thus it was chosen to represents the [status](#status) of [lupus-element](#lupus-element). 
+
+# Lupus-deploment
+
+An act where [user](#user), utilizes Lupus to solve his [management-problem](#management-problem).
