@@ -25,9 +25,9 @@ import (
 
 // MasterSpec defines the desired state of Master
 type MasterSpec struct {
-	// Name of the Master CR
+	// Name of the Master CR (indicating the name of the loop)
 	Name string `json:"name"`
-	// Elements is a list of Loop Elements
+	// Elements is a list of Lupus-Elements
 	Elements []*ElementSpec `json:"elements"`
 }
 

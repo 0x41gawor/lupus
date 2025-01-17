@@ -1,9 +1,9 @@
 package v1
 
-// It specifies the of next node in loop workflow, it may be other Lupus element or some external Destination
-// It allows not to forward the whole Data final form, but also parts of it
+// It specifies the of next loop-element in loop workflow, it may be either lupus-element or reference to external-element
+// It allows to forward the whole final-data, but also parts of it
 type Next struct {
-	// Type specifies class of next node in loop workflow, it may be other Lupus element or some external Destination
+	// Type specifies the type of next loop-element, lupus-element (element) or external-element (destination)
 	Type string `json:"type" kubebuilder:"validation:Enum=element,destination"`
 	// List of input keys (Data fields) that have to be forwarded
 	// Pass array with single element '*' to forward the whole input

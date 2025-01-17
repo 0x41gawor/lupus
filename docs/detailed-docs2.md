@@ -21,7 +21,7 @@ And the system that we aim to manage is [managed-system](defs.md#managed-system)
 A [control-system](defs.md#control-system) is a system that regulates the work of [managed-system](defs.md#managed-system).
 For example:
 - a Cruising Control System regulates the work of engine in order to keep steady pace,
-- refiregerator who controls the work of compressor to maintain a cool temperature,
+- refiregerator which controls the work of compressor to maintain a cool temperature,
 - Kubernetes that keeps an eye if the desired number of Pods is running
 
 In other words, it solves the [management-problem](defs.md#management-problem). 
@@ -41,7 +41,7 @@ Control loops are categorized based on whether they incorporate feedback mechani
 - **Open Control Loops**: The control action (input to the managed system) is independent of the managed system's output.
 - **Closed Control Loops**: The output of the managed system is "fed back" to the [control-system](defs.md#control-system) and influences the control action.
 
-In Lupus we focus only on the [closed-control-loops](defs.md#closed-control-loop). 
+In Lupus, we take onto consideration only on the [closed-control-loops](defs.md#closed-control-loop). 
 
 ## 4. Closed control loop
 
@@ -55,7 +55,7 @@ and definitions as such:
 - [control-action](defs.md#control-action) - An action sent to or performed on a [managed-system](defs.md#managed-system) that brings it closer to the [desired-state](defs.md#desired-state).
 - [control-feedback](defs.md#control-feedback) - A representation of the [current-state](defs.md#current-state) sent from [managed-system](defs.md#managed-system). 
 
-In the architecture above Lupus acts as a [control-system]. 
+In the architecture above Lupus acts as a [control-system](defs.md#control-system).
 
 //TODO a good example will explain it really good
 
@@ -70,7 +70,7 @@ From communication points of view, we can divide each translation-agent into two
 
 We have two translation agents, one for [ingress](defs.md#ingress-agent) and one for [egress](defs.md#egress-agent) communication. 
 
-In each [loop-iteration](defs.md#loop-iteration) the mission of [Ingress-Agent](defs.md#ingress-agent) is to receive/gather [control-feedback](defs.md#control-feedback) from [managed-system](defs.md#managed-system) and translated it to Lupus via [lupin-interface](defs.md#lupin-interface). As for the [Egress-Agent](defs.md#egress-agent), the mission is to receive [final-data](defs.md#final-data) via [lupout-interface](defs.md#lupout-interface) and translate it to [control-action](defs.md#control-action) that can be later sent to (performed on) the [managed-system](defs.md#managed-system). 
+In each [loop-iteration](defs.md#loop-iteration) the mission of [Ingress-Agent](defs.md#ingress-agent) is to receive/gather [control-feedback](defs.md#control-feedback) from [managed-system](defs.md#managed-system) and translate it to Lupus via [lupin-interface](defs.md#lupin-interface). As for the [Egress-Agent](defs.md#egress-agent), the mission is to receive [final-data](defs.md#final-data) via [lupout-interface](defs.md#lupout-interface) and translate it  the [control-action](defs.md#control-action) that can be later sent to (performed on) the [managed-system](defs.md#managed-system). 
 
 The architecture with introduction of Translation Agents looks like this:
 ![](../_img/51.png)
@@ -93,17 +93,17 @@ Blue rounded rects are the [lupus-element](defs.md#lupus-element) while, the red
 
 As it can be seen, one [lupus-element](defs.md#lupus-element) can communicate with zero, one or multiple [external-elements](defs.md#external-element) (this number can even vary in each [loop-iteration](defs.md#loop-iteration)). 
 
-[Lupus elements](defs.md#lupus-element) are implemented as [custom-resources](defs.md#custom-resources) and communication between them is done via their [kubernetes controllers](defs.md#controller). [Controller](defs.md#controller) of one [lupus-element](defs.md#lupus-element) modifies the [status](defs.md#status) of the next lupus-element, which triggers its [controller](defs.md#controller). Mission of the lupus-element controller is to deliver the [reconciliation-logic](defs.md#reconciliation-logic). 
+[Lupus elements](defs.md#lupus-element) are implemented as [custom-resources](defs.md#custom-resources) and communication between them is done via their [kubernetes controllers](defs.md#controller). [Controller](defs.md#controller) of one [lupus-element](defs.md#lupus-element) modifies the [status](defs.md#status) of the next lupus-element, which again triggers [controller](defs.md#controller) of lupus-elements (but for other instance of element). Mission of the lupus-element controller is to deliver the [reconciliation-logic](defs.md#reconciliation-logic). 
 
 A specification of [LupN](defs.md#lupn) can be [found here](spec/lupn.md).
 
 ## 7. Data and actions
 
-Let's dive now into a [lupus-element](defs.md#lupus-element). It was said before that it is triggered (in some way this is where the lupus-element is summoned or wakes up) by the modification of lupus-element [status](defs.md#status) by the previous element. But how exactly? With what data? It is up to [designer](defs.md#designer) what kind of data will be sent here, but we call it ... [data](defs.md#data). It can be any json*. In Kubernetes cluster it is represented by [RawExtension](defs.md#rawextension) and in [controller's](defs.md#controller) of [lupus-element](defs.md#lupus-element) golang code as `map[string]interface{}`. 
+Let's dive now to the inside a [lupus-element](defs.md#lupus-element). It was said before that it is triggered (summoned) by the modification of lupus-element [status](defs.md#status) by the previous element. But how exactly? With what data? It is up to [designer](defs.md#designer) what kind of data will be sent here, but we call it ... [data](defs.md#data). It can be any json*. In Kubernetes cluster, it is represented by [RawExtension](defs.md#rawextension) and in golang code of the  [lupus-element](defs.md#lupus-element)[controller's](defs.md#controller)  as `map[string]interface{}`. 
 
 [Data](defs.md#data) is an information carrier within a [loop-iteration](defs.md#loop-iteration). At the entry point of [ingress-element](defs.md#ingress-element) it represents the [current-state](defs.md#current-state) of [managed-system](defs.md#managed-system). Then, througout the [loop-iteration](defs.md#loop-iteration) it is a [designer](defs.md#designer) decision what information it carries** but at the end, in its [final form](defs.md#final-data) while sent as json to the [egress-agent](defs.md#egress-agent) it has to represent the [control-action](defs.md#control-action).
 
-But how do we work (operate) on [data](defs.md#data)? This is done by [actions](defs.md#action). Each [lupus-element](defs.md#lupus-element) has a [workflow](defs.md#workflow) of [actions](defs.md#action). An [action](defs.md#action) simply performs some operation on [data](defs.md#data), that results in its modification. Action can be of several types, but the most important is type "send" via which [lupus-elemenet](defs.md#lupus-element) can communicate with [external-element](defs.md#external-element). 
+But how do we work (operate) on this [data](defs.md#data) during execution of lupus-element? This is done by [actions](defs.md#action). Each [lupus-element](defs.md#lupus-element) has a [workflow](defs.md#workflow) of [actions](defs.md#action). An [action](defs.md#action) simply performs some operation on [data](defs.md#data), that results in its modification. Action can be of several types, but the most important is type "send" via which [lupus-elemenet](defs.md#lupus-element) can communicate with [external-element](defs.md#external-element). Other types of [action](defs.md#action) serve for organisation of [data](defs.md#data).
 
 - [specification of Data](spec/data.md)
 - [specification od actions](spec/actions.md)

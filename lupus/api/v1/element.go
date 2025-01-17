@@ -28,13 +28,13 @@ import (
 type ElementSpec struct {
 	// Name is the name of the element, its distinct from Kubernetes API Object name, but rather serves ease of managemenet aspect for loop-designer
 	Name string `json:"name"`
-	// Descr is the description of the element, same as Name is serves as ease of management aspect for loop-designer
+	// Descr is the description of the lupus-element, same as Name is serves as ease of management aspect for loop-designer
 	Descr string `json:"descr"`
-	// Actions is a list of Actions that Element has to perform
+	// Actions is a list of Actions that lupus-element has to perform
 	Actions []Action `json:"actions,omitempty"`
-	// Next is a list of element to which send the Data final form
+	// Next is a list of next objects (can be lupus-element or external-element) to which send the final-data
 	Next []Next `json:"next,omitempty"`
-	// Name of master element
+	// Name of master element (used to use it as prefix for lupus-element name)
 	Master string `json:"master,omitempty"`
 }
 

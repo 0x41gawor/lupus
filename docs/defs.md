@@ -27,7 +27,7 @@ and definition of "A non-terminating loop that regulates the state of a system b
 # control-system
 The brain of a closed-control-loop. It reads the [control-feedback](#control-feedback) and determines the [control-action](#control-action) required to address the [management-problem](#management-problem).
 
-Lupus aspires to function as such a control-system.
+Lupus aspires to function as control-system.
 
 # control-feedback
 A representation of the [current-state](#current-state) sent from the [managed-system](#managed-system) to the [control-system](#control-system).
@@ -97,6 +97,9 @@ Supported types include:
 - Open Policy Agent (a subtype of HTTP server)
 - [user-functions](#user-functions)
 
+# destination
+A Go object which represents reference to [external-element](#external-element). It typically unambiguously (explicitly) describes the HTTP query to be performed by [lupus-element](#lupus-element), by indiation of the url and HTTP method.
+
 # user-functions
 A lightweight alternative to deploying HTTP servers for simple computations. User functions act as [external-elements](#external-element) but are executed within the Kubernetes cluster.
 
@@ -128,6 +131,9 @@ Data evolves as follows:
 - Intermediate forms: Modified by [actions](#action) of [loop-element](#loop-element).
 - Final form: Sent to the [lupout-interface](#lupout-interface) as [final-data](#final-data).
 
+# data-field
+[Data](#data) is a key-value type storage that can be expressed as json. We adopt the term of "field" from json and apply it here.
+
 # ingress-element
 A [lupus-element](#loop-element) that terminates the [lupin-interface](#lupin-interface) and initiates the [loop-workflow](#loop-workflow).
 
@@ -135,12 +141,15 @@ A [lupus-element](#loop-element) that terminates the [lupin-interface](#lupin-in
 A [lupus-element](#loop-element) that sends the  [final-data](#final-data) to the [lupout-interface](#lupout-interface).
 
 # lupus-master
-A type of [custom-resource](#custom-resources) named `masters.lupus.gawor.io`. The master is responsible for spawning [lupus-elements](#lupus-element). Its YAML manifest file includes the [LupN](#lupn) notation.
+A type of [custom-resource](#custom-resources) named `masters.lupus.gawor.io`. The master is responsible for spawning [lupus-elements](#lupus-element). Its YAML manifest file includes the [LupN](#lupn) notation. Its [controller](#controller) spawns and destroy and is owner of [lupus-element](#lupus-element).
 
 # lupn
 A YAML-based notation for defining [loop-workflows](#loop-workflow) in Lupus. LupN supports sequential workflows, flow control, and immediate exits, as well as [actions](#action) for data manipulation.
 
 # lupn-file
+
+# lupn-object
+
 
 # action
 An operation defined in LupN that modifies [data](#data) during a [loop-iteration](#loop-iteration). Do not confuse with [control-action].
@@ -160,6 +169,11 @@ A design principle where Lupus elements express the [loop-workflow](#loop-workfl
 Only in this way it is possible to propose a framework that can run **ANY** loop. The [controller](#controller) of loop element in Kubernetes can't have any of the [loop-logic](#loop-logic), the logic has to be delegated somehwere else, but still belong to the loop. We divide [loop-elements](#loop-element) into two groups:
 - [lupus-element](#lupus-element) - These run in Kubernetes cluster, they serve to express loop workflow and delegate actual computing to [external-elements]
 - [external-element](#external-element) - These run outside of Kubernetes cluster, typically as HTTP servers (especially [Open Policy Agent](#open-policy-agent))
+
+# yaml-manifest-file
+A Kubernetes term: https://kubernetes.io/docs/concepts/overview/working-with-objects/#describing-a-kubernetes-object
+
+This is a file that conveys the object spec. Objects can be created from such files with the program [kubectl](https://kubernetes.io/docs/reference/kubectl/) and its `apply` command.
 
 # custom-resources
 A Kubernetes term: https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/
@@ -199,10 +213,12 @@ This is a Kubernetes term: https://kubernetes.io/docs/concepts/overview/working-
 The status describes the current state of the object, supplied and updated by the Kubernetes system and its components. The Kubernetes control plane continually and actively manages every object's actual state to match the desired state you supplied.
 
 # Rawextension
-
 This is a Kubernetes term: https://github.com/kubernetes/apimachinery/blob/master/pkg/runtime/types.go
 
 It is a struct defined within a Kubernetes runtime package able to carry any data, thus it was chosen to represents the [status](#status) of [lupus-element](#lupus-element). 
+
+# API object
+This is a Kubernetes term: https://kubernetes.io/docs/concepts/overview/working-with-objects/
 
 # Lupus-deploment
 
