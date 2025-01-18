@@ -82,7 +82,7 @@ When Lupus receives the [control-feedback](defs.md#control-feedback) it triggers
 - a [lupus-element](defs.md#lupus-element) which runs in Kubernetes and its mission is to perform [loop-workflow](defs.md#loop-workflow)
 - a reference to [external-element](defs.md#external-element) which runs outside of Kubernetes and its mission is to perform [computation](defs.md#computing-part) need by the [loop-logic](defs.md#loop-logic).
 
-A Loop Workflow is expressed in [LupN](defs.md#lupn) a special notation for expressing loop workflows.
+A Loop Workflow is expressed in [LupN](defs.md#lupn) a special notation for loop workflows.
 
 An exemplary Loop Workflow can look like this:
 ![](../_img/52.png)

@@ -13,8 +13,8 @@ type Next struct {
 	Destination *Destination `json:"destination,omitempty" kubebuilder:"validation:Optional"`
 }
 
+// NextElement indicates the next loop-element in loop-workflow of type lupus-element by its name
 type NextElement struct {
-	// Kubernetes name of the API Object
-	// This is the name that you give in Master CR spec
+	// Name is the lupus-name of lupus-element (the one specified in Element struct)
 	Name string `json:"name"`
 }

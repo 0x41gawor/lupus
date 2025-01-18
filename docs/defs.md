@@ -150,6 +150,8 @@ A YAML-based notation for defining [loop-workflows](#loop-workflow) in Lupus. Lu
 
 # lupn-object
 
+# next
+A [lupn-object] that represents the next [loop-element](#loop-element) in the [loop-workflow](#loop-workflow). It can indicate the [lupus-element](#lupus-element) by its name or an [external-element](#external-element) by its [destiantion](#destination). Next is a field of [lupus-element](#lupus-element).
 
 # action
 An operation defined in LupN that modifies [data](#data) during a [loop-iteration](#loop-iteration). Do not confuse with [control-action].

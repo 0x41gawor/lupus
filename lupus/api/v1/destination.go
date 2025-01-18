@@ -1,8 +1,8 @@
 package v1
 
-// Destination represents and external loop element (external system)
+// Destination represents an external-element
 // It holds all the info needed to make a call to an External System
-// It supports calls to HTTP server, Open Policy Agent, internal and user-defined Go function inside an operator
+// It supports calls to HTTP server, Open Policy Agent or internal and user-defined Go function inside an operator
 // It is used in Action of type Send and can be also used (same as Lupus Element) as Next is Element spec
 type Destination struct {
 	// Type specifies if the external system is: HTTP server in gerneral, special type of HTTP server as Open Policy Agent or internal, user-defined Go function

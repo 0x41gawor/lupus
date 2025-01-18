@@ -1,12 +1,13 @@
 # Getting started
 ## Target audience
-Lupus is a platform targeted for automated management of [systems](defs.md#managed-system) in mobile networks industry, but it can be used with any system that exposes API for its observation of current state and for management or control actions.
+Lupus is a platform targeted for automated management of [systems](defs.md#managed-system) in mobile networks industry, but it can be used with any system that exposes API for observation of its current state and for management or control actions.
 
 ## Initial development requirements and assumptions
 - Targeted for telco industry, especially Mobile Networks
 - Enables to design and run any closed control loop architecture (workflow), especially the ones proposed in [Overview of Prominent Control Loop Architectures](https://www.etsi.org/deliver/etsi_gr/ENI/001_099/017/02.01.01_60/gr_ENI017v020101p.pdf).
 - Processes managed by Lupus will be non-realtime.
 - Implemented on top of Kubernetes, leveraging its controller pattern.
+- Lupus is data-driven, which means that it does not impose and does not have any loop logic sewn in by default
 - Actual processing components of Lupus loop are external to it (e.g. These are some HTTP Servers, especially [Open Policy Agents](https://www.openpolicyagent.org))
 
 ## What problems Lupus can solve
