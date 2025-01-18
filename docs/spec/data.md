@@ -10,3 +10,8 @@ Data is the way in which user can:
 during a single [loop-iteration](../defs.md#loop-iteration).
 
 In each iteration [data](../defs.md#data) resets.
+
+Data is an information carrier. Let's discuss how it stores thie information.
+
+
+

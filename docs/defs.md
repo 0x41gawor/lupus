@@ -229,6 +229,8 @@ It is a struct defined within a Kubernetes runtime package able to carry any dat
 # API object
 This is a Kubernetes term: https://kubernetes.io/docs/concepts/overview/working-with-objects/
 
+Kubernetes uses API Objects to manage the cluster state. API Objects are instances of resources like Pods, Deployments, Services etc..
+
 # Lupus-deploment
 
 An act where [user](#user), utilizes Lupus to solve his [management-problem](#management-problem).

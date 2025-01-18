@@ -64,7 +64,6 @@ Each element of the `Elements` list will trigger [Lupus-Master](../defs.md#lupus
 ### ElementSpec
 <img src="../../_img/55.png" style="zoom:50%">
 
-It corresponds to the `ElemenetSpec` golang struct:
 ```go
 // ElementSpec defines the desired state of Element
 type ElementSpec struct {
@@ -80,8 +79,6 @@ type ElementSpec struct {
 	Master string `json:"master,omitempty"`
 }
 ```
-
-
 
 ### Next
 <img src="../../_img/56.png" style="zoom:50%">
@@ -197,7 +194,7 @@ type Action struct {
 	Print     *PrintAction     `json:"print,omitempty" kubebuilder:"validation:Optional"`
 	Insert    *InsertAction    `json:"insert,omitempty" kubebuilder:"validation:Optional"`
 	Switch    *Switch          `json:"switch,omitempty" kubebuilder:"validation:Optional"`
-	// Next is the name of the next action to execute, in the case of Switch-type action it stands as default branch
+	// Next is the name of the next action to execute, in the case of Switch-type action it stands as a default branch
 	Next string `json:"next"`
 }
 ```
