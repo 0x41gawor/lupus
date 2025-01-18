@@ -1,6 +1,5 @@
 # Spec of Lupin and Lupout interfaces
 ## Architecture
-
 ![](../../_img/50.png)
 
 ## Lupin interface

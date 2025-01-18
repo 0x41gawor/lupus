@@ -156,6 +156,17 @@ A [lupn-object] that represents the next [loop-element](#loop-element) in the [l
 # action
 An operation defined in LupN that modifies [data](#data) during a [loop-iteration](#loop-iteration). Do not confuse with [control-action].
 
+# actions-workflow
+A [workflow](#workflow) of [actions](#action) that is executed within a single [lupus-element](#lupus-element). 
+
+In [LupN](#LupN) it is expressed under `actions` object (of type `[]Action`), with the `next` action's and special type of action `switch` as the flow control. 
+
+Both [loop-workflow](#loop-workflow) and actions-workflow are [workflows](#workflow) but with some differences resulting from their implementation specifics.
+- [loop-workflow](#loop-workflow) is a [workflow](#workflow) of [lupus-elements](#lupus-element). They communicate via triggers of their [controllers](#controller). 
+- [actions-workflow](#actions-workflow) is a [workflow](#workflow) of [actions](#action). They communicate via RAM memory allocated by a single [lupus-element](#lupus-element) [controller](#controller). 
+
+v 
+
 # loop-iteration
 A single run of a [loop-workflow](#loop-workflow). 
 
@@ -163,7 +174,9 @@ A single run of a [loop-workflow](#loop-workflow).
 The state of [data](#data) at the end of a loop iteration (at the end of [egress-element](#egress-element)), representing its final form before being sent on the [lupout-interface](#lupout-interface). [Egress-Agent](#egress-agent) will translate it into a [control-action](#control-action). 
 
 # workflow
-A sequence of connected actions, sometimes conditionally dependent, that achieve a specific goal.
+A sequence of connected nodes, sometimes conditionally dependent, that achieve a specific goal. 
+
+In case of [loop-workflow](#loop-workflow) and [actions-workflow](#actions-workflow), connection between two nodes not only indicates the sequence but also communication between the nodes.
 
 # data-driven
 A design principle where Lupus elements express the [loop-workflow](#loop-workflow) but delegate [computing-part of loop-lofic](#computing-part) to [external-elements](#external-element).

@@ -8,7 +8,7 @@ import (
 )
 
 // Condition represents signle condition present in Switch action
-// It defines on which Data field it has to be performed, actual condition and next Action if evaluation returns true
+// It defines on which Data field it has to be performed, actual condition to be evaluated and next Action if evaluation returns true
 type Condition struct {
 	// Key indicates the Data field that has to be retrieved
 	Key string `json:"key"`

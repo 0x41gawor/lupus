@@ -1,5 +1,4 @@
 # LupN
-
 ## Foreword
 LupN (for Lup (Loop) Notation) is a language/notation to express a [loop-workflow](../defs.md#loop-workflow). It lacks the description of [computing-part](../defs.md#computing-part) of the [loop-logic](../defs.md#loop-logic). [Computing-part](../defs.md#computing-part) is specified outside of Lupus, in [external-elements](../defs.md#external-element).
 
@@ -7,17 +6,17 @@ LupN specifies then:
 - [workflow](../defs.md#workflow) of [lupus-elements](../defs.md#loop-element) withing a loop,
 - references to [external-elements](../defs.md#external-element) expressed as [destinations](../defs.md#destination),
 - [workflow](../defs.md#worokflow) of [actions](../defs.md#action) within a [lupus-element](../defs.md#lupus-element),
-- reference or references to [egress-agent](../defs.md#egress-agent) as [destination](../defs.md#destination).
+- reference (or references) to [egress-agent](../defs.md#egress-agent) as [destination](../defs.md#destination).
 
-As you can note LupN expresses some workflow on 2 levels, one global (a workflow of lupus-elements) and one inside a lupus-element (a workflow of actions). The capabilities of both are close to each other, but ultimately divergent. This document will also cover this issue.
+As you can note LupN expresses some workflow on 2 levels. One global (a [workflow of lupus-elements](../defs.md#loop-workflow)) and one inside a lupus-element (a [workflow of actions](../defs.md#actions-workflow)). The capabilities of both are close to each other, but ultimately divergent. This document will also cover this issue.
 
 From the implementation point of view a [LupN file](../defs.md#lupn-file) is actually a [YAML manifest file](../defs.md#yaml-manifest-file) of [Lupus-Master CR](../defs.md#lupus-master). Once [applied](../defs.md#yaml-manifest-file), a [Lupus-Master controller](../defs.md#lupus-master) spawns [lupus-elements](../defs.md#lupus-element) that deliver the expressed [loop-workflow](../defs.md#loop-workflow).
 
-[LupN](../defs.md#lupn) expresses [loop-workflow](../defs.md#loop-workflow) by the specification of various objects in [YAML notation](https://yaml.org). Let's call these object a [LupN objects](../defs.md#lupn-object). This document will specify these objects and relation between them. Also it will indicate what usage of each one will mean in the [loop-workflow](../defs.md#loop-workflow) terminology and how [lupus-element](../defs.md#lupus-element) [controller](../defs.md#controller) will interprete them during runtime.
+[LupN](../defs.md#lupn) expresses [loop-workflow](../defs.md#loop-workflow) by the specification of various objects in [YAML notation](https://yaml.org). Let's call these object a [LupN objects](../defs.md#lupn-object). This document will specify these objects and relation between them. Also it will indicate what usage of each one will mean in the [loop-workflow](../defs.md#loop-workflow) and how [lupus-element](../defs.md#lupus-element) [controller](../defs.md#controller) will interpret them during runtime.
 
 It happends to be, that YAML objects inside [YAML manifest files](../defs.md#yaml-manifest-file) are derived from Golang structs (Golang types), therefore we can describe [lupn-objects](../defs.md#lupn-object) based on these Golang structs.
 
-It is mandatory to be familiar with [YAML](https://yaml.org) first. This document does not cover the translation between golang strucst to YAML object representations. The serialization is done by [controller-gen](https://github.com/kubernetes-sigs/controller-tools) and described [here, in kubebuilder book](https://book.kubebuilder.io/reference/generating-crd). Such translation can be easily observed and learned by reader during examination of [examples](../../examples/)/
+It is mandatory to be familiar with [YAML](https://yaml.org) first. This document does not cover the translation between golang strucst to YAML object representations. The serialization is done by [controller-gen](https://github.com/kubernetes-sigs/controller-tools) and described [here, in kubebuilder book](https://book.kubebuilder.io/reference/generating-crd). Such translation can be easily observed and learned by reader during examination of [examples](../../examples/)
 
 ## Specification
 
@@ -35,21 +34,20 @@ spec:
 	<lupn-objects>
 ```
 
-Every root has to be set as in the snippet abovem except the `metadata.name`, it diffrienties loop instances within a Kubernetes cluster.
+Every root has to be set as in the snippet above except the `metadata.name`, it diffrienties loop instances within a Kubernetes cluster.
 
-It does not matter wheter we consider `apiVersion`, `kind` and `metadata` as LupN or not. In some way it specifies the loop (e.g. metadata has object name), in some not (name is anyway repeated later in `spec`). But as for sure the the [Lupn objecst](../defs.md#lupn-object) under `spec` state as a Loop description.
+It does not matter wheter we consider `apiVersion`, `kind` and `metadata` as LupN or not. In some way it specifies the loop (e.g. metadata has object name), in some it does not (name is anyway repeated later in `spec`). But as for sure the the [Lupn objecst](../defs.md#lupn-object) under `spec` state as a Loop description.
 
 ### LupN Objects tree
 As we will traverse through [LupN objects](../defs.md#lupn-object) specifications it will be helpful to know actual postion on the objects dependency tree. The full dependency tree of [Lupn-objcest](../defs.md#lupn-object) is present down below.
 
 ![](../../_img/53.png)
 
-Arrows here mean that one Lupn-object is used as a field in the other one. 
+Arrows here mean that one Lupn-object is used as a field value in the other one (compisition).
 
 ### MasterSpec
 <img src="../../_img/54.png" style="zoom:50%">
 
-It corresponds to the `MasterSpec` golang struct:
 ```go
 // MasterSpec defines the desired state of Master
 type MasterSpec struct {
@@ -60,7 +58,8 @@ type MasterSpec struct {
 }
 ```
 
-Each element of the `Elements` list will trigger [Lupus-Master](../defs.md#lupus-master) [controller](../defs.md#controller) to spawn an [API object](../defs.md#api-object) of type [lupus-element](../defs.md#lupus-element) with the given spec. The sequence of elements workflow is expressed in the elements itself (as next property).
+Each element of the `Elements` list will trigger [Lupus-Master](../defs.md#lupus-master) [controller](../defs.md#controller) to spawn an [API object](../defs.md#api-object) of type [lupus-element](../defs.md#lupus-element) with the given spec. 
+
 
 ### ElementSpec
 <img src="../../_img/55.png" style="zoom:50%">
@@ -82,12 +81,13 @@ type ElementSpec struct {
 }
 ```
 
-### Next
 
+
+### Next
 <img src="../../_img/56.png" style="zoom:50%">
 
 ```go
-// Next specifies the of next loop-element in loop workflow, it may be either lupus-element or reference to external-element
+// Next specifies the of next loop-element in a loop workflow, it may be either lupus-element or reference to an external-element
 // It allows to forward the whole final-data, but also parts of it
 type Next struct {
 	// Type specifies the type of next loop-element, lupus-element (element) or external-element (destination)
@@ -101,18 +101,17 @@ type Next struct {
 }
 ```
 
-With the help of `next` objects, we can arrange the sequence of [lupus-elements](../defs.md#lupus-element) execution (i.e. define the [workflow](../defs.md#workflow) of [lupus-element](../defs.md#lupus-element)).
+With the help of `next` objects, we can arrange the sequence of [lupus-elements](../defs.md#lupus-element) execution (i.e. define the [workflow](../defs.md#workflow) of [lupus-elements](../defs.md#lupus-element)).
 
-It is not mandatory, that whole [data](../defs.md#data) will be passed to the next element. With `Keys`, we can pass only the selected subset of [data-fields](../defs.md#data-field).
+It is not mandatory, that whole [data](../defs.md#data) will be passed to the next loop-element. With `Keys`, we can pass only the selected subset of [data-fields](../defs.md#data-field).
 
 Here we can see the design principle of [Go-Style Polymorphism with Pointers](../go-style-polymorphism.md).
 
 #### NextElement
-
 <img src="../../_img/57.png" style="zoom:50%">
 
 ```go
-// NextElement indicates the next loop-element in loop-workflow of type lupus-element by its name
+// NextElement indicates the next loop-element in loop-workflow of type lupus-element
 type NextElement struct {
 	// Name is the lupus-name of lupus-element (the one specified in Element struct)
 	Name string `json:"name"`
@@ -120,18 +119,16 @@ type NextElement struct {
 ```
 
 #### Destination
-
 <img src="../../_img/58.png" style="zoom:50%">
 
 ```go
 // Destination represents an external-element
-// It holds all the info needed to make a call to an External System
+// It holds all the info needed to make a call to an external-element
 // It supports calls to HTTP server, Open Policy Agent or user-functions
-// It is used in Action of type Send and can be also used (same as Lupus Element) as Next is Element spec
 type Destination struct {
-	// Type specifies if the external system is: HTTP server in gerneral, special type of HTTP server as Open Policy Agent or internal, user-defined Go function
+	// Type specifies if the external element is: a HTTP server in gerneral, a special kind of HTTP server like Open Policy Agent or internal, a user-function
 	Type string `json:"type" kubebuilder:"validation:Enum=http;opa;gofunc"`
-	// One of these fields is not null depending on a type, it has specifiaction specific to types
+	// One of these fields is not null depending on a Type
 	HTTP   *HTTPDestination   `json:"http,omitempty" kubebuilder:"validation:Optional"`
 	Opa    *OpaDestination    `json:"opa,omitempty" kubebuilder:"validation:Optional"`
 	GoFunc *GoFuncDestination `json:"gofunc,omitempty" kubebuilder:"validation:Optional"`
@@ -139,11 +136,10 @@ type Destination struct {
 ```
 
 ##### HTTPDestination
-
 <img src="../../_img/59.png" style="zoom:50%">
 
 ```go
-// HTTPDestination defines fields specific to HTTP type
+// HTTPDestination defines fields specific to a HTTP type
 // This is information needed to make a HTTP request
 type HTTPDestination struct {
 	// Path specifies HTTP URI
@@ -154,7 +150,6 @@ type HTTPDestination struct {
 ```
 
 ##### OpaDestination
-
 <img src="../../_img/60.png" style="zoom:50%">
 
 ```go
@@ -168,7 +163,6 @@ type OpaDestination struct {
 ```
 
 ##### GoFuncDestination
-
 <img src="../../_img/61.png" style="zoom:50%">
 
 ```go
@@ -181,13 +175,12 @@ type GoFuncDestination struct {
 ```
 
 ### Action
-
 <img src="../../_img/62.png" style="zoom:50%">
 
 ```go
 // Action represents operation that is performed on Data
-// Action is used in Element spec. Element has a list of Actions and executes them
-// In general each action has an input and output keys that define which Data fields it has to work on
+// Action is used in Element spec. Element has a list of Actions and executes them in a chain
+// In general, each action has an input and output keys that define which Data fields it has to work on
 // Each action indicates the name of the next Action in Action Chain
 // There is special type - Switch. Actually, it does not perform any operation on Data, but rather controls the flow of Actions chain
 type Action struct {
@@ -209,8 +202,9 @@ type Action struct {
 }
 ```
 
-#### SendAction
+As it was said before [LupN] specified [workflow] on 2 levels, the first one was via [elements] and their `next` attribute.
 
+#### SendAction
 <img src="../../_img/63.png" style="zoom:50%">
 
 ```go
@@ -226,7 +220,6 @@ type SendAction struct {
 ```
 
 #### InsertAction
-
 <img src="../../_img/64.png" style="zoom:50%">
 
 ```go
@@ -240,7 +233,6 @@ type InsertAction struct {
 ```
 
 #### NestAction
-
 <img src="../../_img/65.png" style="zoom:50%">
 
 ```go
@@ -254,7 +246,6 @@ type NestAction struct {
 ```
 
 #### RemoveAction
-
 <img src="../../_img/66.png" style="zoom:50%">
 
 ```go
@@ -266,7 +257,6 @@ type RemoveAction struct {
 ```
 
 #### RenameAction
-
 <img src="../../_img/67.png" style="zoom:50%">
 
 ```go
@@ -280,7 +270,6 @@ type RenameAction struct {
 ```
 
 #### DuplicateAction
-
 <img src="../../_img/68.png" style="zoom:50%">
 
 ```go
@@ -294,7 +283,6 @@ type DuplicateAction struct {
 ```
 
 #### PrintAction
-
 <img src="../../_img/69.png" style="zoom:50%">
 
 ```go
@@ -306,7 +294,6 @@ type PrintAction struct {
 ```
 
 #### Switch
-
 <img src="../../_img/70.png" style="zoom:50%">
 
 ```go
@@ -319,33 +306,53 @@ type Switch struct {
 ```
 
 ##### Condition
-
 <img src="../../_img/71.png" style="zoom:50%">
 
 ```go
-
+// Condition represents signle condition present in Switch action
+// It defines on which Data field it has to be performed, actual condition to be evaluated and next Action if evaluation returns true
+type Condition struct {
+	// Key indicates the Data field that has to be retrieved
+	Key string `json:"key"`
+	// Operator defines the comparison operation, e.g. eq, ne, gt, lt
+	Operator string `json:"operator" kubebuilder:"validation:Enum=eq,ne,gt,lt"`
+	// Type specifies the type of the value: string, int, float, bool
+	Type string `json:"type" kubebuilder:"validation:Enum=string,int,float,bool"`
+	// One of these fields is not null depending on a Type.
+	BoolCondition   *BoolCondition   `json:"bool,omitempty" kubebuilder:"validation:Optional"`
+	IntCondition    *IntCondition    `json:"int,omitempty" kubebuilder:"validation:Optional"`
+	StringCondition *StringCondition `json:"string,omitempty" kubebuilder:"validation:Optional"`
+	// Next specifies the name of the next action to execute if evalution returns true
+	Next string `json:"next"`
+}
 ```
 
 ###### BoolCondition
-
 <img src="../../_img/72.png" style="zoom:50%">
 
 ```go
-
+// BoolCondition defines a boolean-specific condition
+type BoolCondition struct {
+	Value bool `json:"value"`
+}
 ```
 
 ###### IntCondition
-
 <img src="../../_img/73.png" style="zoom:50%">
 
 ```go
-
+// IntCondition defines an integer-specific condition
+type IntCondition struct {
+	Value int `json:"value"`
+}
 ```
 
 ###### StringCondition
-
 <img src="../../_img/74.png" style="zoom:50%">
 
 ```go
-
+// StringCondition defines a string-specific condition
+type StringCondition struct {
+	Value string `json:"value"`
+}
 ```
