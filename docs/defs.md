@@ -161,12 +161,6 @@ A [workflow](#workflow) of [actions](#action) that is executed within a single [
 
 In [LupN](#LupN) it is expressed under `actions` object (of type `[]Action`), with the `next` action's and special type of action `switch` as the flow control. 
 
-Both [loop-workflow](#loop-workflow) and actions-workflow are [workflows](#workflow) but with some differences resulting from their implementation specifics.
-- [loop-workflow](#loop-workflow) is a [workflow](#workflow) of [lupus-elements](#lupus-element). They communicate via triggers of their [controllers](#controller). 
-- [actions-workflow](#actions-workflow) is a [workflow](#workflow) of [actions](#action). They communicate via RAM memory allocated by a single [lupus-element](#lupus-element) [controller](#controller). 
-
-v 
-
 # loop-iteration
 A single run of a [loop-workflow](#loop-workflow). 
 

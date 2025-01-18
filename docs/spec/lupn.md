@@ -204,6 +204,10 @@ type Action struct {
 
 As it was said before [LupN] specified [workflow] on 2 levels, the first one was via [elements] and their `next` attribute.
 
+`next` field here has two keywords defined: `final` and `exit`L
+- `final` indicates that data after this action is marked as [final](../defs.md#final-data) and has to be forwarded to the `next` object of the parent `element`
+- `exit` indicates that loop terminates here and no [control-action](../defs.md#control-action) will be sent in this [loop-iteration](../defs.md#loop-iteration) (typically due to an error or satifying [current-state](../defs.md#current-state))
+
 #### SendAction
 <img src="../../_img/63.png" style="zoom:50%">
 
