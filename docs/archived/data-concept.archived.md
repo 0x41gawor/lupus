@@ -45,16 +45,16 @@ This means that action:
 
 For example the Desination can be Opa server and the whole action looks like this:
 
-![](../_img/17.png)
+![](../../_img/17.png)
 
 > *Take in mind that the wrapping in input and result are specific to Opa. Normally non such action takes place
 
-![](../_img/18.png)
+![](../../_img/18.png)
 
 
 Now the logic works like this:
 
-![](../_img/19.png)
+![](../../_img/19.png)
 
 - Each action defines which root field** to take as an input.
 - Where to send it
@@ -70,7 +70,7 @@ In the future a more complicated engine for json Data can be developed. Where e.
 - Concat action is needed to concatenate multiple input fields and form one final (e.g. ram and cpu fields can form a commands field)
 
 
-![](../_img/20.png)
+![](../../_img/20.png)
 
 
 ## Actions
@@ -94,15 +94,15 @@ Every action has an InputField and performs something on that InputField, typica
 > additionaly with more atomicity it is ever better.
 
 ### Send
-![](../_img/21.png)
+![](../../_img/21.png)
 ### Nest
-![](../_img/22.png)
+![](../../_img/22.png)
 ### Remove
-![](../_img/23.png)
+![](../../_img/23.png)
 ### Rename
-![](../_img/24.png)
+![](../../_img/24.png)
 ### Duplicate 
-![](../_img/24.png)
+![](../../_img/24.png)
 
 # Rules for loop design regarding to the Data
 
@@ -110,12 +110,12 @@ Every action has an InputField and performs something on that InputField, typica
 - In the final form of Data a field called "commands" must be present. It is required by the lupout interface. Other fields can be present there, e.g. Decide can send them to some Learn/Store element. But Decide needs to push "commands" to the Execute element. 
 
 *In general:
-![](../_img/26.png)
+![](../../_img/26.png)
 
 
 Let's junxtapose each type of action:
 
-![](../_img/27.png)
+![](....//_img/27.png)
 
 > `Field` was renamed to `key` as it better reflects the map[string]interface{} shape of Data.
 
