@@ -1,13 +1,13 @@
 # LupN
 
 ## Foreword
-LupN (for Lup (Loop) Notation) is a language/notation to express a [loop-workflow]. It lacks the description of [computing-part](../defs.md#computing-part) of the [loop-logic](../defs.md#loop-logic). [Computing-part](../defs.md#computing-part) is specified outside of Lupus, in [external-elements](../defs.md#external-element).
+LupN (for Lup (Loop) Notation) is a language/notation to express a [loop-workflow](../defs.md#loop-workflow). It lacks the description of [computing-part](../defs.md#computing-part) of the [loop-logic](../defs.md#loop-logic). [Computing-part](../defs.md#computing-part) is specified outside of Lupus, in [external-elements](../defs.md#external-element).
 
 LupN specifies then:
-- [workflow](../defs.md#workflow) of [lupus-elements](../defs.md#loop-element) withing a loop
-- references to [external-elements](../defs.md#external-element) expressed as [destinations](../defs.md#destination)
-- [workflow](../defs.md#worokflow) of [actions](../defs.md#action) within a [lupus-element]
-- reference or references to [egress-agent](../defs.md#egress-agent) expressed as [destination](../defs.md#destination)
+- [workflow](../defs.md#workflow) of [lupus-elements](../defs.md#loop-element) withing a loop,
+- references to [external-elements](../defs.md#external-element) expressed as [destinations](../defs.md#destination),
+- [workflow](../defs.md#worokflow) of [actions](../defs.md#action) within a [lupus-element](../defs.md#lupus-element),
+- reference or references to [egress-agent](../defs.md#egress-agent) as [destination](../defs.md#destination).
 
 As you can note LupN expresses some workflow on 2 levels, one global (a workflow of lupus-elements) and one inside a lupus-element (a workflow of actions). The capabilities of both are close to each other, but ultimately divergent. This document will also cover this issue.
 
@@ -15,16 +15,32 @@ From the implementation point of view a [LupN file](../defs.md#lupn-file) is act
 
 [LupN](../defs.md#lupn) expresses [loop-workflow](../defs.md#loop-workflow) by the specification of various objects in [YAML notation](https://yaml.org). Let's call these object a [LupN objects](../defs.md#lupn-object). This document will specify these objects and relation between them. Also it will indicate what usage of each one will mean in the [loop-workflow](../defs.md#loop-workflow) terminology and how [lupus-element](../defs.md#lupus-element) [controller](../defs.md#controller) will interprete them during runtime.
 
-It happends to be, that YAML object inside [YAML manifest files](../defs.md#yaml-manifest-file) are derived from Golang structs (Golang types), therefore we can describe [lupn-objects](../defs.md#lupn-object) based on these Golang structs.
+It happends to be, that YAML objects inside [YAML manifest files](../defs.md#yaml-manifest-file) are derived from Golang structs (Golang types), therefore we can describe [lupn-objects](../defs.md#lupn-object) based on these Golang structs.
 
-It is mandatory to be familiar with [YAML](https://yaml.org) first. 
+It is mandatory to be familiar with [YAML](https://yaml.org) first. This document does not cover the translation between golang strucst to YAML object representations. The serialization is done by [controller-gen](https://github.com/kubernetes-sigs/controller-tools) and described [here, in kubebuilder book](https://book.kubebuilder.io/reference/generating-crd). Such translation can be easily observed and learned by reader during examination of [examples](../../examples/)/
 
 ## Specification
 
-It does not matter wheter we consider `apiVersion`, `kind` and `metadata` as LupN or not. In some way it specifies the loop (e.g. metadata has object name), in some not (name is anyway repeated later in `spec`). But as for sure the `spec` objects states a Loop description.
+A [LupN file](../defs.md#lupn-file) has 4 top root yaml fields: `apiVersion`, `kind`, `metadata` and `spec`.
+
+```yaml
+apiVersion: lupus.gawor.io/v1
+kind: Master
+metadata:
+  labels:
+    app.kubernetes.io/name: lupus
+    app.kubernetes.io/managed-by: kustomize
+  name: lola
+spec:
+	<lupn-objects>
+```
+
+Every root has to be set as in the snippet abovem except the `metadata.name`, it diffrienties loop instances within a Kubernetes cluster.
+
+It does not matter wheter we consider `apiVersion`, `kind` and `metadata` as LupN or not. In some way it specifies the loop (e.g. metadata has object name), in some not (name is anyway repeated later in `spec`). But as for sure the the [Lupn objecst](../defs.md#lupn-object) under `spec` state as a Loop description.
 
 ### LupN Objects tree
-As we will travers through [LupN objects](../defs.md#lupn-object) specifications it will be helpful to know actual postion on the objects dependency tree. The full dependency tree of [Lupn-objcest](../defs.md#lupn-object) is present down below.
+As we will traverse through [LupN objects](../defs.md#lupn-object) specifications it will be helpful to know actual postion on the objects dependency tree. The full dependency tree of [Lupn-objcest](../defs.md#lupn-object) is present down below.
 
 ![](../../_img/53.png)
 
@@ -71,7 +87,7 @@ type ElementSpec struct {
 <img src="../../_img/56.png" style="zoom:50%">
 
 ```go
-// It specifies the of next loop-element in loop workflow, it may be either lupus-element or reference to external-element
+// Next specifies the of next loop-element in loop workflow, it may be either lupus-element or reference to external-element
 // It allows to forward the whole final-data, but also parts of it
 type Next struct {
 	// Type specifies the type of next loop-element, lupus-element (element) or external-element (destination)
@@ -106,3 +122,230 @@ type NextElement struct {
 #### Destination
 
 <img src="../../_img/58.png" style="zoom:50%">
+
+```go
+// Destination represents an external-element
+// It holds all the info needed to make a call to an External System
+// It supports calls to HTTP server, Open Policy Agent or user-functions
+// It is used in Action of type Send and can be also used (same as Lupus Element) as Next is Element spec
+type Destination struct {
+	// Type specifies if the external system is: HTTP server in gerneral, special type of HTTP server as Open Policy Agent or internal, user-defined Go function
+	Type string `json:"type" kubebuilder:"validation:Enum=http;opa;gofunc"`
+	// One of these fields is not null depending on a type, it has specifiaction specific to types
+	HTTP   *HTTPDestination   `json:"http,omitempty" kubebuilder:"validation:Optional"`
+	Opa    *OpaDestination    `json:"opa,omitempty" kubebuilder:"validation:Optional"`
+	GoFunc *GoFuncDestination `json:"gofunc,omitempty" kubebuilder:"validation:Optional"`
+}
+```
+
+##### HTTPDestination
+
+<img src="../../_img/59.png" style="zoom:50%">
+
+```go
+// HTTPDestination defines fields specific to HTTP type
+// This is information needed to make a HTTP request
+type HTTPDestination struct {
+	// Path specifies HTTP URI
+	Path string `json:"path"`
+	// Method specifies HTTP method
+	Method string `json:"method"`
+}
+```
+
+##### OpaDestination
+
+<img src="../../_img/60.png" style="zoom:50%">
+
+```go
+// OpaDestination defines fields specific to Open Policy Agent type
+// This is information needed to make an Open Policy Agent request
+// Call to Opa is actually a special type of HTTP call
+type OpaDestination struct {
+	// Path specifies HTTP URI, since method is known
+	Path string `json:"path"`
+}
+```
+
+##### GoFuncDestination
+
+<img src="../../_img/61.png" style="zoom:50%">
+
+```go
+// GoFuncDestination defines fields specific to GoFunc type
+// This is information needed to call an user-function
+type GoFuncDestination struct {
+	// Name specifies the name of the function
+	Name string `json:"name"`
+}
+```
+
+### Action
+
+<img src="../../_img/62.png" style="zoom:50%">
+
+```go
+// Action represents operation that is performed on Data
+// Action is used in Element spec. Element has a list of Actions and executes them
+// In general each action has an input and output keys that define which Data fields it has to work on
+// Each action indicates the name of the next Action in Action Chain
+// There is special type - Switch. Actually, it does not perform any operation on Data, but rather controls the flow of Actions chain
+type Action struct {
+	// Name of the Action, it is for designer to ease the management of the Loop
+	Name string `json:"name"`
+	// Type of Action
+	Type string `json:"type" kubebuilder:"validation:Enum=send,nest,remove,rename,duplicate,print,insert,switch"`
+	// One of these fields is not null depending on a Type.
+	Send      *SendAction      `json:"send,omitempty" kubebuilder:"validation:Optional"`
+	Nest      *NestAction      `json:"nest,omitempty" kubebuilder:"validation:Optional"`
+	Remove    *RemoveAction    `json:"remove,omitempty" kubebuilder:"validation:Optional"`
+	Rename    *RenameAction    `json:"rename,omitempty" kubebuilder:"validation:Optional"`
+	Duplicate *DuplicateAction `json:"duplicate,omitempty" kubebuilder:"validation:Optional"`
+	Print     *PrintAction     `json:"print,omitempty" kubebuilder:"validation:Optional"`
+	Insert    *InsertAction    `json:"insert,omitempty" kubebuilder:"validation:Optional"`
+	Switch    *Switch          `json:"switch,omitempty" kubebuilder:"validation:Optional"`
+	// Next is the name of the next action to execute, in the case of Switch-type action it stands as default branch
+	Next string `json:"next"`
+}
+```
+
+#### SendAction
+
+<img src="../../_img/63.png" style="zoom:50%">
+
+```go
+// SendAction is used to make call to external-element
+// Element's controller obtains a data field using InputKey,
+// and attaches it as a json body when perfoming a call to destination.
+// Respnse is saved in data under an OutputKey
+type SendAction struct {
+	InputKey    string      `json:"inputKey"`
+	Destination Destination `json:"destination"`
+	OutputKey   string      `json:"outputKey"`
+}
+```
+
+#### InsertAction
+
+<img src="../../_img/64.png" style="zoom:50%">
+
+```go
+// InsertAction is used to make a new field and insert value to it
+// Normally new fields are created as an outcome of other types of actions
+// It is useful in debugging or loggin, e.g. can idicate the path taken by the actions workflow
+type InsertAction struct {
+	OutputKey string               `json:"outputKey"`
+	Value     runtime.RawExtension `json:"value"`
+}
+```
+
+#### NestAction
+
+<img src="../../_img/65.png" style="zoom:50%">
+
+```go
+// NestAction is used to group a number of data-fields together.
+// Element's controllers gathers fields indicates by InputKeys list
+// and nests them in a new field under an OutputKey.
+type NestAction struct {
+	InputKeys []string `json:"inputKeys"`
+	OutputKey string   `json:"outputKey"`
+}
+```
+
+#### RemoveAction
+
+<img src="../../_img/66.png" style="zoom:50%">
+
+```go
+// RemoveAction is used to delete a data-field.
+// Elements's controllers removes fields indicated by the list InputKeys
+type RemoveAction struct {
+	InputKeys []string `json:"inputKeys"`
+}
+```
+
+#### RenameAction
+
+<img src="../../_img/67.png" style="zoom:50%">
+
+```go
+// RenameAction is used to change name of a data-field.
+// InputKey indicates a field to be renamed
+// OutputKey is the new field name.
+type RenameAction struct {
+	InputKey  string `json:"inputKey"`
+	OutputKey string `json:"outputKey"`
+}
+```
+
+#### DuplicateAction
+
+<img src="../../_img/68.png" style="zoom:50%">
+
+```go
+// DuplicateAction is used to make a copy of data-field.
+// InputKey indicates the field of which value has to be copied.
+// OutputKey indicates the field to which values has to be pasted in.
+type DuplicateAction struct {
+	InputKey  string `json:"inputKey"`
+	OutputKey string `json:"outputKey"`
+}
+```
+
+#### PrintAction
+
+<img src="../../_img/69.png" style="zoom:50%">
+
+```go
+// PrintAction is used to print value of each field indicated by InputKeys in a controller's console.
+// It is useful in debugging or logging
+type PrintAction struct {
+	InputKeys []string `json:"inputKeys"`
+}
+```
+
+#### Switch
+
+<img src="../../_img/70.png" style="zoom:50%">
+
+```go
+// Switch is a special type of action used for flow-control
+// When Element's controller encounters switch action on the chain
+// it emulates the work of switch known in other programming languages
+type Switch struct {
+	Conditions []Condition `json:"conditions"`
+}
+```
+
+##### Condition
+
+<img src="../../_img/71.png" style="zoom:50%">
+
+```go
+
+```
+
+###### BoolCondition
+
+<img src="../../_img/72.png" style="zoom:50%">
+
+```go
+
+```
+
+###### IntCondition
+
+<img src="../../_img/73.png" style="zoom:50%">
+
+```go
+
+```
+
+###### StringCondition
+
+<img src="../../_img/74.png" style="zoom:50%">
+
+```go
+
+```

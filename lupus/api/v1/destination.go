@@ -2,7 +2,7 @@ package v1
 
 // Destination represents an external-element
 // It holds all the info needed to make a call to an External System
-// It supports calls to HTTP server, Open Policy Agent or internal and user-defined Go function inside an operator
+// It supports calls to HTTP server, Open Policy Agent or user-functions
 // It is used in Action of type Send and can be also used (same as Lupus Element) as Next is Element spec
 type Destination struct {
 	// Type specifies if the external system is: HTTP server in gerneral, special type of HTTP server as Open Policy Agent or internal, user-defined Go function
@@ -31,7 +31,7 @@ type OpaDestination struct {
 }
 
 // GoFuncDestination defines fields specific to GoFunc type
-// This is information needed to call a user-defined, internal Go function
+// This is information needed to call an user-function
 type GoFuncDestination struct {
 	// Name specifies the name of the function
 	Name string `json:"name"`

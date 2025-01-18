@@ -7,12 +7,10 @@ import (
 )
 
 // Action represents operation that is performed on Data
-// https://github.com/0x41gawor/lupus/blob/master/docs/data-concept.md
 // Action is used in Element spec. Element has a list of Actions and executes them
 // In general each action has an input and output keys that define which Data fields it has to work on
-// Each type of Action has fields specific for it
 // Each action indicates the name of the next Action in Action Chain
-// There is special type - Switch. Actually, it does not perform any operation on Data, but rather controls the flow of Action Chain
+// There is special type - Switch. Actually, it does not perform any operation on Data, but rather controls the flow of Actions chain
 type Action struct {
 	// Name of the Action, it is for designer to ease the management of the Loop
 	Name string `json:"name"`
@@ -85,40 +83,63 @@ func (a *Action) String() string {
 	return result
 }
 
+// SendAction is used to make call to external-element
+// Element's controller obtains a data field using InputKey,
+// and attaches it as a json body when perfoming a call to destination.
+// Respnse is saved in data under an OutputKey
 type SendAction struct {
 	InputKey    string      `json:"inputKey"`
 	Destination Destination `json:"destination"`
 	OutputKey   string      `json:"outputKey"`
 }
 
+// NestAction is used to group a number of data-fields together.
+// Element's controllers gathers fields indicates by InputKeys list
+// and nests them in a new field under an OutputKey.
 type NestAction struct {
 	InputKeys []string `json:"inputKeys"`
 	OutputKey string   `json:"outputKey"`
 }
 
+// RemoveAction is used to delete a data-field.
+// Elements's controllers removes fields indicated by the list InputKeys
 type RemoveAction struct {
 	InputKeys []string `json:"inputKeys"`
 }
 
+// RenameAction is used to change name of a data-field.
+// InputKey indicates a field to be renamed
+// OutputKey is the new field name.
 type RenameAction struct {
 	InputKey  string `json:"inputKey"`
 	OutputKey string `json:"outputKey"`
 }
 
+// DuplicateAction is used to make a copy of data-field.
+// InputKey indicates the field of which value has to be copied.
+// OutputKey indicates the field to which values has to be pasted in.
 type DuplicateAction struct {
 	InputKey  string `json:"inputKey"`
 	OutputKey string `json:"outputKey"`
 }
 
+// PrintAction is used to print value of each field indicated by InputKeys in a controller's console.
+// It is useful in debugging or logging
 type PrintAction struct {
 	InputKeys []string `json:"inputKeys"`
 }
 
+// InsertAction is used to make a new field and insert value to it
+// Normally new fields are created as an outcome of other types of actions
+// It is useful in debugging or loggin, e.g. can idicate the path taken by the actions workflow
 type InsertAction struct {
 	OutputKey string               `json:"outputKey"`
 	Value     runtime.RawExtension `json:"value"`
 }
 
+// Switch is a special type of action used for flow-control
+// When Element's controller encounters switch action on the chain
+// it emulates the work of switch known in other programming languages
 type Switch struct {
 	Conditions []Condition `json:"conditions"`
 }
