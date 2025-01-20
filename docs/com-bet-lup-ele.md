@@ -19,3 +19,4 @@ This atrribute of Kubernetes, when developing operators for custom resources can
 
 ![](../_img/83.png)
 
+![](../_img/3rd-arch.drawio.svg)
