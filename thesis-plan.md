@@ -10,30 +10,30 @@
      - krótki opis ENI
      - krótki opis pętli przedstawionych w [Overview of Prominent Control Loop Architectures](https://www.etsi.org/deliver/etsi_gr/ENI/001_099/017/02.01.01_60/gr_ENI017v020101p.pdf)
 
-2. **Architektura**
-   - 2.1 Wstęp
-       - 2.1 Opis zamkniętych pętli sterowania znanych z automatyki i robotyki
-       - 2.1 Wymagania i Założenia na platformę
-   - 2.2 Krótki wstęp czym jest w odniesieniu do pojęć z 2.1 oraz, że w oparciu o Kubernetes
+3. **Architektura**
+   - 3.1 Wstęp
+       - 3.1 Opis zamkniętych pętli sterowania znanych z automatyki i robotyki
+       - 3.1 Wymagania i Założenia na platformę
+   - 3.2 Krótki wstęp czym jest w odniesieniu do pojęć z 2.1 oraz, że w oparciu o Kubernetes
      - Tak jak tu [readme#intro](https://github.com/0x41gawor/lupus?tab=readme-ov-file#lupus)
-   - 2.3 Architektura w odniesieniu do 2.1 
+   - 3.3 Architektura w odniesieniu do 2.1 
      - Tak jak tu [top-level-arch.png](https://github.com/0x41gawor/lupus/blob/master/_img/readme/1.png)
-   - 2.4 Podstawowe pojęcia i zasady 
+   - 3.4 Podstawowe pojęcia i zasady 
      - Tak jak tu: [detailed-docs](https://github.com/0x41gawor/lupus/blob/master/docs/detailed-docs.md)
      - Odniesienia do [definitions](https://github.com/0x41gawor/lupus/blob/master/docs/defs.md), które będą w załączniku
      - Odniesienia do pełnych specyfikacji [specs/](https://github.com/0x41gawor/lupus/tree/master/docs/spec), które będą w załącznikach
-   - 2.5 Krótka instrukcja jak używać
+   - 3.5 Krótka instrukcja jak używać
      - Może opis jak tu: [Getting-Started](https://github.com/0x41gawor/lupus/blob/master/docs/getting-started.md)
      - A może same potrzebne kroki jak tu: [readme#how-to-use-it](https://github.com/0x41gawor/lupus/tree/master?tab=readme-ov-file#how-to-use-it)
      > Architektura wg. definicji ENI -> "set of rules and methods that describe the functionality, organization, and implementation of a system"
-3. **Implementacja**
-   - 3.1 Wstęp
-   - 3.2 Mechanizmy stojące za Lupus
+4. **Implementacja**
+   - 4.1 Wstęp
+   - 4.2 Mechanizmy stojące za Lupus
      - Opis [controller](https://kubernetes.io/docs/concepts/architecture/controller/) w Kubernetes na buil-in resources
      - Opis [CRD](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/) i [OperatorPattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)
      - Opis platformy [Kubebuilder](https://book.kubebuilder.io)
        - Koniecznie architektura oraz flow controllera (operatora)
-   - 3.3 Decyzje podjęte podczas developmentu (każda wynikająca z wymagań następnie opis implementacji)
+   - 4.3 Decyzje podjęte podczas developmentu (każda wynikająca z wymagań następnie opis implementacji)
      - To tu objawia się badawcza natura pracy
      - [Komunikacja pomiędzy lupus-elements](https://github.com/0x41gawor/lupus/blob/master/docs/com-bet-lup-ele.md)
      - [Data](https://github.com/0x41gawor/lupus/blob/master/docs/spec/data.md)
@@ -43,10 +43,10 @@
      - [Open Policy Agents](https://github.com/0x41gawor/lupus/blob/master/docs/open-policy-agents.md)
      - [User-functions](https://github.com/0x41gawor/lupus/blob/master/docs/user-functions.md)
      - Może historia zmian w developmencie? Jak to się zmieniało na przestrzeni sprintów. Tak jak tu: [journal.md](https://github.com/0x41gawor/lupus/blob/master/journal.md)
-4. **Test platformy na Open5GS**
-    - 4.1 Wstęp
-    - 4.2 Opis podobny jak w [examples/open5gs](https://github.com/0x41gawor/lupus/tree/master/examples/open5gs), jednocześnie stanowiący walk-through guide dla usera na żywym przykładzie, krok po kroku, cały kod Ingress-Agent, LupN, Egress-Agent, rysunek workflow i przepływ Date'y w załącznikach.
-5. **Wnioski**
+5. **Test platformy na Open5GS**
+    - 5.1 Wstęp
+    - 5.2 Opis podobny jak w [examples/open5gs](https://github.com/0x41gawor/lupus/tree/master/examples/open5gs), jednocześnie stanowiący walk-through guide dla usera na żywym przykładzie, krok po kroku, cały kod Ingress-Agent, LupN, Egress-Agent, rysunek workflow i przepływ Date'y w załącznikach.
+6. **Wnioski**
    - Co się udało a co nie, czy nadaje się to do użycia itp.
    - Co można poprawić
    - Dalszy rozwój
@@ -167,15 +167,6 @@ Techniczna praca magisterska powinna zawierać konkretne elementy, które spełn
 - Oświadczenie o samodzielności wykonania pracy.
 
 ---
-
-### Dodatkowe wskazówki:
-- **Język**: Zwięzły, techniczny, bez zbędnych ozdobników.
-- **Formatowanie**: Zgodne z wymaganiami uczelni (czcionka, marginesy, interlinie).
-- **Wizualizacja danych**: Tabele, wykresy, diagramy pomagają w przejrzystej prezentacji wyników.
-- **Konsultacje**: Regularnie omawiaj postępy z promotorem.
-
-Czy chcesz szczegółowo opracować któryś z tych elementów? 😊
-
 
 # Iria Miguel Gonzalez
 
