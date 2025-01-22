@@ -71,3 +71,9 @@
 
 - Wszelki kody źródłowe i rysunki związane z testem na Open5GS
 
+
+
+
+Może jakiś state of the art?
+- https://www.ericsson.com/en/blog/2019/3/dynamic-orchestration-5g-and-ai-powered-self-healing-networks
+- https://www.ericsson.com/en/blog/2019/4/what-is-closed-loop-automation
