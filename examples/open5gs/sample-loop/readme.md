@@ -321,7 +321,7 @@ def interval_endpoint():
 ### Steps
 #### 0. Prepare OPA
 ```sh
-python3 managed-systems/open5gs/sample-loop/opa.py
+python3 examples/open5gs/sample-loop/opa.py
 ```
 #### 1. Main part
 Run 4 terminals on MobaXterm and enable split mode:
@@ -329,7 +329,7 @@ Run 4 terminals on MobaXterm and enable split mode:
 
 First, at 4 run egress-agent.
 ```sh
-python3 managed-systems/open5gs/sample-loop/egress-agent.py
+python3 examples/open5gs/sample-loop/egress-agent.py
 ```
 
 Then, in 2 run the controller:
@@ -340,10 +340,10 @@ make run
 
 In 1, create the Lupus elements
 ```sh
-k apply -f managed-systems/open5gs/sample-loop/master.yaml
+k apply -f examples/open5gs/sample-loop/master.yaml
 ```
 
 And finally in 2 run ingress-agent:
 ```sh
-python3 managed-systems/open5gs/sample-loop/ingress-agent.py --interval 30
+python3 examples/open5gs/sample-loop/ingress-agent.py --interval 30
 ```
