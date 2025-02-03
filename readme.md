@@ -1,7 +1,7 @@
 <h1 align="center">Lupus</h1>
 
 <p align="center">
-  <img src="_img/logo-full.svg" alt="Lupus logo"/>
+  <img src="_img/logo-full.svg" alt="Lupus logo" width="50%"/>
   <br>
   <i>Lupus - Design and Run Closed Control Loops in Kubernetes</i>
   <br>
