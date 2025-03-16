@@ -40,11 +40,6 @@ spec:
     - name: "upf1"
       descr: "Reconcilation of UPF1 deployment"
       actions:
-        - name: "print1"
-          type: print
-          print:
-            inputKeys: ["*"]
-          next: "opa-point"
         - name: "opa-point"
           type: send
           send: 
@@ -55,11 +50,6 @@ spec:
                 path: http://192.168.56.112:9500/v1/data/policy/point
             outputKey: "point"
           next: "print2"
-        - name: "print2"
-          type: print
-          print:
-            inputKeys: ["*"]
-          next: "switch1"
         - name: "switch1"
           type: switch
           switch:
